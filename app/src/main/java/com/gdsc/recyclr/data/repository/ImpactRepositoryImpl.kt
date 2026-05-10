@@ -1,0 +1,108 @@
+package com.gdsc.recyclr.data.repository
+
+import com.gdsc.recyclr.data.local.dao.UserImpactDao
+import com.gdsc.recyclr.data.local.entities.CachedUserImpactEntity
+import com.gdsc.recyclr.data.model.UserImpactDto
+import com.gdsc.recyclr.data.service.ImpactService
+import com.gdsc.recyclr.domain.model.Response
+import com.gdsc.recyclr.domain.model.UserImpact
+import com.gdsc.recyclr.domain.repository.ImpactRepository
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class ImpactRepositoryImpl @Inject constructor(
+    private val service: ImpactService,
+    private val dao: UserImpactDao
+) : ImpactRepository {
+    override suspend fun getUserImpact(userId: String): Response<UserImpact> {
+        if (userId == "guest") {
+            val cached = dao.get(userId)?.toDomain() ?: defaultImpact(userId).toDomain()
+            return Response.Success(cached)
+        }
+
+        return service.getUserImpact(userId)
+            .fold(
+                onSuccess = { dto ->
+                    val impact = (dto ?: defaultImpact(userId)).toDomain()
+                    dao.upsert(impact.toCached())
+                    Response.Success(impact)
+                },
+                onFailure = {
+                    val cached = dao.get(userId)?.toDomain()
+                    if (cached != null) Response.Success(cached) else Response.Failure(it as Exception)
+                }
+            )
+    }
+
+    override suspend fun updateImpactAfterScan(
+        userId: String,
+        pointsDelta: Int,
+        co2SavedGramsDelta: Float,
+        wasteDivertedKgDelta: Float,
+        energyRecoveredKwhDelta: Float,
+        treesEquivalentDelta: Int
+    ): Response<Boolean> {
+        if (userId == "guest") {
+            val base = dao.get(userId)?.toDomain() ?: defaultImpact(userId).toDomain()
+            val updated = base.copy(
+                totalScans = base.totalScans + 1,
+                wasteDivertedKg = base.wasteDivertedKg + wasteDivertedKgDelta,
+                co2SavedKg = base.co2SavedKg + (co2SavedGramsDelta / 1000f),
+                energyRecoveredKwh = base.energyRecoveredKwh + energyRecoveredKwhDelta,
+                treesEquivalent = base.treesEquivalent + treesEquivalentDelta,
+                pointsBalance = base.pointsBalance + pointsDelta
+            )
+            dao.upsert(updated.toCached())
+            return Response.Success(true)
+        }
+
+        return service.getUserImpact(userId)
+            .fold(
+                onSuccess = { current ->
+                    val base = (current ?: defaultImpact(userId))
+                    val updated = base.copy(
+                        totalScans = base.totalScans + 1,
+                        wasteDivertedKg = base.wasteDivertedKg + wasteDivertedKgDelta,
+                        co2SavedKg = base.co2SavedKg + (co2SavedGramsDelta / 1000f),
+                        energyRecoveredKwh = base.energyRecoveredKwh + energyRecoveredKwhDelta,
+                        treesEquivalent = base.treesEquivalent + treesEquivalentDelta,
+                        pointsBalance = base.pointsBalance + pointsDelta
+                    )
+                    service.upsertUserImpact(updated)
+                        .fold(
+                            onSuccess = {
+                                dao.upsert(updated.toDomain().toCached())
+                                Response.Success(true)
+                            },
+                            onFailure = { Response.Failure(it as Exception) }
+                        )
+                },
+                onFailure = { Response.Failure(it as Exception) }
+            )
+    }
+
+    private fun defaultImpact(userId: String): UserImpactDto = UserImpactDto(userId = userId)
+
+    private fun UserImpact.toCached() = CachedUserImpactEntity(
+        userId = userId,
+        totalScans = totalScans,
+        wasteDivertedKg = wasteDivertedKg,
+        co2SavedKg = co2SavedKg,
+        energyRecoveredKwh = energyRecoveredKwh,
+        treesEquivalent = treesEquivalent,
+        pointsBalance = pointsBalance
+    )
+
+    private fun CachedUserImpactEntity.toDomain() = UserImpact(
+        userId = userId,
+        totalScans = totalScans,
+        wasteDivertedKg = wasteDivertedKg,
+        co2SavedKg = co2SavedKg,
+        energyRecoveredKwh = energyRecoveredKwh,
+        treesEquivalent = treesEquivalent,
+        pointsBalance = pointsBalance,
+        lastUpdatedMillis = null
+    )
+}
+

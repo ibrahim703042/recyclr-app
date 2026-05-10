@@ -1,0 +1,182 @@
+package com.gdsc.recyclr.di
+
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import com.gdsc.recyclr.data.repository.AuthRepositoryImpl
+import com.gdsc.recyclr.data.repository.CollectionPointsRepositoryImpl
+import com.gdsc.recyclr.data.repository.ImpactRepositoryImpl
+import com.gdsc.recyclr.data.repository.RedemptionRepositoryImpl
+import com.gdsc.recyclr.data.repository.SettingsRepositoryImpl
+import com.gdsc.recyclr.data.repository.ScanRecordsRepositoryImpl
+import com.gdsc.recyclr.data.repository.ShopRepositoryImpl
+import com.gdsc.recyclr.data.ml.TensorflowLiteWasteDetector
+import com.gdsc.recyclr.data.local.RecyclrMigrations
+import com.gdsc.recyclr.data.location.GeofenceManager
+import com.gdsc.recyclr.data.location.GeofenceManagerImpl
+import com.gdsc.recyclr.data.local.RecyclrDatabase
+import com.gdsc.recyclr.data.local.dao.CollectionPointDao
+import com.gdsc.recyclr.data.local.dao.RedemptionDao
+import com.gdsc.recyclr.data.local.dao.ScanRecordDao
+import com.gdsc.recyclr.data.local.dao.ShopItemDao
+import com.gdsc.recyclr.data.local.dao.UserImpactDao
+import com.gdsc.recyclr.data.service.AuthService
+import com.gdsc.recyclr.data.service.CollectionPointsService
+import com.gdsc.recyclr.data.service.ImpactService
+import com.gdsc.recyclr.data.service.RedemptionService
+import com.gdsc.recyclr.data.service.ScanRecordsService
+import com.gdsc.recyclr.data.service.ShopService
+import com.gdsc.recyclr.data.service.impl.AuthServiceImpl
+import com.gdsc.recyclr.data.service.impl.CollectionPointsServiceImpl
+import com.gdsc.recyclr.data.service.impl.ImpactServiceImpl
+import com.gdsc.recyclr.data.service.impl.RedemptionServiceImpl
+import com.gdsc.recyclr.data.service.impl.ScanRecordsServiceImpl
+import com.gdsc.recyclr.data.service.impl.ShopServiceImpl
+import com.gdsc.recyclr.domain.repository.AuthRepository
+import com.gdsc.recyclr.domain.repository.CollectionPointsRepository
+import com.gdsc.recyclr.domain.repository.ImpactRepository
+import com.gdsc.recyclr.domain.repository.SettingsRepository
+import com.gdsc.recyclr.domain.repository.ScanRecordsRepository
+import com.gdsc.recyclr.domain.repository.ShopRepository
+import com.gdsc.recyclr.domain.repository.RedemptionRepository
+import com.gdsc.recyclr.domain.ml.WasteDetector
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Singleton
+import android.content.Context
+import androidx.room.Room
+
+@Module
+@InstallIn(SingletonComponent::class)
+object AppModule {
+    
+    // Firebase Providers
+    @Provides
+    @Singleton
+    fun provideFirebaseAuth(): FirebaseAuth = Firebase.auth
+
+    @Provides
+    @Singleton
+    fun provideFirestore(): FirebaseFirestore = Firebase.firestore
+    
+    // Service Providers
+    @Provides
+    @Singleton
+    fun provideAuthService(firebaseAuth: FirebaseAuth): AuthService {
+        return AuthServiceImpl(firebaseAuth)
+    }
+    
+    @Provides
+    @Singleton
+    fun provideShopService(firestore: FirebaseFirestore): ShopService {
+        return ShopServiceImpl(firestore)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCollectionPointsService(firestore: FirebaseFirestore): CollectionPointsService {
+        return CollectionPointsServiceImpl(firestore)
+    }
+
+    @Provides
+    @Singleton
+    fun provideScanRecordsService(firestore: FirebaseFirestore): ScanRecordsService {
+        return ScanRecordsServiceImpl(firestore)
+    }
+
+    @Provides
+    @Singleton
+    fun provideImpactService(firestore: FirebaseFirestore): ImpactService {
+        return ImpactServiceImpl(firestore)
+    }
+
+    @Provides
+    @Singleton
+    fun provideRedemptionService(firestore: FirebaseFirestore): RedemptionService {
+        return RedemptionServiceImpl(firestore)
+    }
+    
+    // Repository Providers
+    @Provides
+    @Singleton
+    fun provideAuthRepository(authService: AuthService): AuthRepository {
+        return AuthRepositoryImpl(authService)
+    }
+    
+    @Provides
+    @Singleton
+    fun provideShopRepository(shopService: ShopService, dao: ShopItemDao): ShopRepository {
+        return ShopRepositoryImpl(shopService, dao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCollectionPointsRepository(service: CollectionPointsService, dao: CollectionPointDao): CollectionPointsRepository {
+        return CollectionPointsRepositoryImpl(service, dao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideScanRecordsRepository(service: ScanRecordsService, dao: ScanRecordDao): ScanRecordsRepository {
+        return ScanRecordsRepositoryImpl(service, dao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideImpactRepository(service: ImpactService, dao: UserImpactDao): ImpactRepository {
+        return ImpactRepositoryImpl(service, dao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideRedemptionRepository(service: RedemptionService, dao: RedemptionDao): RedemptionRepository {
+        return RedemptionRepositoryImpl(service, dao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWasteDetector(impl: TensorflowLiteWasteDetector): WasteDetector = impl
+
+    @Provides
+    @Singleton
+    fun provideSettingsRepository(
+        @ApplicationContext context: Context
+    ): SettingsRepository {
+        return SettingsRepositoryImpl(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGeofenceManager(
+        @ApplicationContext context: Context
+    ): GeofenceManager = GeofenceManagerImpl(context)
+
+    @Provides
+    @Singleton
+    fun provideDatabase(@ApplicationContext context: Context): RecyclrDatabase {
+        return Room.databaseBuilder(context, RecyclrDatabase::class.java, "recyclr.db")
+            .addMigrations(RecyclrMigrations.MIGRATION_1_2)
+            .fallbackToDestructiveMigration()
+            .build()
+    }
+
+    @Provides
+    fun provideScanRecordDao(db: RecyclrDatabase): ScanRecordDao = db.scanRecordDao()
+
+    @Provides
+    fun provideUserImpactDao(db: RecyclrDatabase): UserImpactDao = db.userImpactDao()
+
+    @Provides
+    fun provideCollectionPointDao(db: RecyclrDatabase): CollectionPointDao = db.collectionPointDao()
+
+    @Provides
+    fun provideShopItemDao(db: RecyclrDatabase): ShopItemDao = db.shopItemDao()
+
+    @Provides
+    fun provideRedemptionDao(db: RecyclrDatabase): RedemptionDao = db.redemptionDao()
+}

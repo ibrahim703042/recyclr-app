@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Recyclr</string>
+    <!-- Web client (type 3) — requis pour requestIdToken + Firebase Google Auth ; aligné sur google-services.json -->
+    <string name="default_web_client_id" translatable="false">909025540028-u3ntnk9canpo5gm2kmrkjqicn5a0l7u4.apps.googleusercontent.com</string>
+    <string name="web_client_id" translatable="false">909025540028-u3ntnk9canpo5gm2kmrkjqicn5a0l7u4.apps.googleusercontent.com</string>
+    <!-- ShopScreen -->
+    <string name="redeem">Redeem</string>
+</resources>
