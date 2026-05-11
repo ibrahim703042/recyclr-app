@@ -9,7 +9,9 @@ import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.Response.Loading
 import com.gdsc.recyclr.domain.model.Response.Success
 import com.gdsc.recyclr.domain.model.UserImpact
+import com.gdsc.recyclr.domain.model.engagement.UserBadge
 import com.gdsc.recyclr.domain.repository.AuthRepository
+import com.gdsc.recyclr.domain.repository.EngagementRepository
 import com.gdsc.recyclr.domain.repository.ImpactRepository
 import com.gdsc.recyclr.domain.repository.ReloadUserResponse
 import com.gdsc.recyclr.domain.repository.RevokeAccessResponse
@@ -21,8 +23,9 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val repo: AuthRepository,
-    private val impactRepository: ImpactRepository
-): ViewModel() {
+    private val impactRepository: ImpactRepository,
+    private val engagementRepository: EngagementRepository,
+) : ViewModel() {
     var revokeAccessResponse by mutableStateOf<RevokeAccessResponse>(Success(false))
         private set
     var reloadUserResponse by mutableStateOf<ReloadUserResponse>(Success(false))
@@ -31,9 +34,11 @@ class ProfileViewModel @Inject constructor(
     var impactResponse by mutableStateOf<Response<UserImpact>>(Loading)
         private set
 
+    var badges by mutableStateOf<List<UserBadge>>(emptyList())
+        private set
+
     val currentUser get() = repo.currentUser
 
-    /** Recharge profil Firebase + impact (ex. après connexion ou retour sur l’onglet). */
     fun refreshProfileSnapshot() {
         viewModelScope.launch {
             runCatching {
@@ -65,6 +70,11 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             impactResponse = Loading
             impactResponse = impactRepository.getUserImpact(uid)
+            val points = (impactResponse as? Success)?.data?.pointsBalance ?: 0
+            when (val dashboard = engagementRepository.getHomeDashboard(uid, points)) {
+                is Success -> badges = dashboard.data?.badges.orEmpty()
+                else -> badges = emptyList()
+            }
         }
     }
 

@@ -129,4 +129,45 @@
     <string name="auth_have_account">Already have an account?</string>
     <string name="auth_submit">Submit</string>
     <string name="auth_google_unavailable">Google sign-in is unavailable on this device.</string>
+
+    <string name="loading">Loading…</string>
+    <string name="error_generic">Something went wrong.</string>
+    <string name="home_streak_title">Eco-Streak</string>
+    <string name="home_streak_days">%1$d days</string>
+    <string name="home_streak_multiplier">x%1$.1f multiplier</string>
+    <string name="home_rec_wallet">$REC wallet</string>
+    <string name="home_rec_balance">%1$.2f $REC</string>
+    <string name="home_carbon_credits">%1$.2f tCO₂e credits</string>
+    <string name="home_active_challenge">Active challenge</string>
+    <string name="home_challenge_progress">%1$d / %2$d scans · %3$d days left</string>
+    <string name="home_leaderboard">Leaderboard</string>
+    <string name="home_community">Community</string>
+    <string name="home_post_likes">%1$d likes</string>
+    <string name="home_request_pickup">Request pickup</string>
+    <string name="home_open_map">Open map</string>
+    <string name="challenge_title">Weekly challenge</string>
+    <string name="challenge_reward">Reward: %1$d points</string>
+    <string name="challenge_ends_in">Ends in %1$d days</string>
+    <string name="leaderboard_title">Leaderboard</string>
+    <string name="community_title">Community feed</string>
+    <string name="wallet_title">Token wallet</string>
+    <string name="wallet_rec_balance">Balance: %1$.2f $REC</string>
+    <string name="wallet_points_balance">Points: %1$d</string>
+    <string name="wallet_conversion_rate">100 points = 1 $REC</string>
+    <string name="wallet_carbon_credits">Carbon credits: %1$.2f tCO₂e</string>
+    <string name="wallet_lifetime_rec">Lifetime minted: %1$.2f $REC</string>
+    <string name="wallet_donate_rec">Donate $REC</string>
+    <string name="pickup_title">Pickup request</string>
+    <string name="pickup_address">Pickup address</string>
+    <string name="pickup_weight">Estimated weight: %1$.0f kg</string>
+    <string name="pickup_repeat">Repeat every 2 weeks</string>
+    <string name="pickup_submit">Submit request</string>
+    <string name="pickup_success">Pickup request submitted.</string>
+    <string name="donation_hub_title">Donation hub</string>
+    <string name="donation_cost">%1$d points</string>
+    <string name="donation_redeem">Donate</string>
+    <string name="profile_badges">Badges</string>
+    <string name="profile_open_wallet">Open $REC wallet</string>
+    <string name="scan_barcode">Barcode</string>
+    <string name="scan_barcode_hint">Enter barcode number</string>
 </resources>

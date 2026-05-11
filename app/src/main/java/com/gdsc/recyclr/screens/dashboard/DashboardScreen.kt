@@ -71,6 +71,7 @@ fun BottomBar(navController: NavHostController) {
     val screens = listOf(
         BottomBarPage.Home,
         BottomBarPage.Scan,
+        BottomBarPage.Map,
         BottomBarPage.Shop,
         BottomBarPage.Profile,
     )

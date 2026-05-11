@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
+import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
@@ -59,6 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.compose.material.OutlinedTextField
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.gdsc.recyclr.R
 import com.gdsc.recyclr.components.preferences.ThemeToggleIconButton
@@ -99,6 +101,8 @@ fun ScanScreen(
     var pendingHazardousResult by remember { mutableStateOf<ScanResult?>(null) }
     var capturing by remember { mutableStateOf(false) }
     var inlineResult by remember { mutableStateOf<ScanResult?>(null) }
+    var showBarcodeEntry by remember { mutableStateOf(false) }
+    var barcodeValue by remember { mutableStateOf("") }
 
     val submitFailure = (viewModel.submitResponse as? Response.Failure)?.e
     LaunchedEffect(submitFailure) {
@@ -166,6 +170,20 @@ fun ScanScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 ScanViewfinder()
+            }
+
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 110.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                OutlinedButton(onClick = { showManualEntry = true }) {
+                    Text(stringResource(R.string.scan_manual_title))
+                }
+                OutlinedButton(onClick = { showBarcodeEntry = true }) {
+                    Text(stringResource(R.string.scan_barcode))
+                }
             }
 
             IconButton(
@@ -241,6 +259,35 @@ fun ScanScreen(
                 is Response.Failure -> Unit
             }
         }
+    }
+
+    if (showBarcodeEntry) {
+        AlertDialog(
+            onDismissRequest = { showBarcodeEntry = false },
+            title = { Text(stringResource(R.string.scan_barcode)) },
+            text = {
+                OutlinedTextField(
+                    value = barcodeValue,
+                    onValueChange = { barcodeValue = it },
+                    label = { Text(stringResource(R.string.scan_barcode_hint)) },
+                    singleLine = true,
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.submitBarcodeScan(barcodeValue)
+                        showBarcodeEntry = false
+                        barcodeValue = ""
+                    },
+                ) { Text(stringResource(R.string.scan_continue)) }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showBarcodeEntry = false }) {
+                    Text(stringResource(R.string.scan_cancel))
+                }
+            },
+        )
     }
 
     if (showManualEntry) {

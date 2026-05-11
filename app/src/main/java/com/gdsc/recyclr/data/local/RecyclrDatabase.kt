@@ -2,16 +2,20 @@ package com.gdsc.recyclr.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import com.gdsc.recyclr.data.local.dao.BarcodeCacheDao
 import com.gdsc.recyclr.data.local.dao.CollectionPointDao
+import com.gdsc.recyclr.data.local.dao.PickupQueueDao
 import com.gdsc.recyclr.data.local.dao.RedemptionDao
 import com.gdsc.recyclr.data.local.dao.ScanRecordDao
 import com.gdsc.recyclr.data.local.dao.ShopItemDao
 import com.gdsc.recyclr.data.local.dao.UserImpactDao
+import com.gdsc.recyclr.data.local.entities.CachedBarcodeEntity
 import com.gdsc.recyclr.data.local.entities.CachedCollectionPointEntity
 import com.gdsc.recyclr.data.local.entities.CachedRedemptionEntity
 import com.gdsc.recyclr.data.local.entities.CachedScanRecordEntity
 import com.gdsc.recyclr.data.local.entities.CachedShopItemEntity
 import com.gdsc.recyclr.data.local.entities.CachedUserImpactEntity
+import com.gdsc.recyclr.data.local.entities.LocalPickupRequestEntity
 
 @Database(
     entities = [
@@ -19,9 +23,11 @@ import com.gdsc.recyclr.data.local.entities.CachedUserImpactEntity
         CachedUserImpactEntity::class,
         CachedCollectionPointEntity::class,
         CachedShopItemEntity::class,
-        CachedRedemptionEntity::class
+        CachedRedemptionEntity::class,
+        CachedBarcodeEntity::class,
+        LocalPickupRequestEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 abstract class RecyclrDatabase : RoomDatabase() {
@@ -30,5 +36,7 @@ abstract class RecyclrDatabase : RoomDatabase() {
     abstract fun collectionPointDao(): CollectionPointDao
     abstract fun shopItemDao(): ShopItemDao
     abstract fun redemptionDao(): RedemptionDao
+    abstract fun barcodeCacheDao(): BarcodeCacheDao
+    abstract fun pickupQueueDao(): PickupQueueDao
 }
 

@@ -53,6 +53,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.gdsc.recyclr.R
 import com.gdsc.recyclr.components.preferences.ThemeToggleIconButton
+import com.gdsc.recyclr.screens.engagement.DonationHubSection
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.ShopItem
 import com.gdsc.recyclr.ui.theme.LeafGreen
@@ -68,6 +69,7 @@ fun ShopScreen(
     val redeemResponse = viewModel.redeemResponse
     var selectedItem by remember { mutableStateOf<ShopItem?>(null) }
     var showConfirmation by remember { mutableStateOf(false) }
+    var showDonations by remember { mutableStateOf(false) }
 
     val shopLoadError = (shopItemsResponse as? Response.Failure)?.e?.message
     LaunchedEffect(shopLoadError) {
@@ -144,6 +146,46 @@ fun ShopScreen(
                             )
                         }
                         is Response.Success -> {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Button(
+                                    onClick = { showDonations = false },
+                                    colors = ButtonDefaults.buttonColors(
+                                        backgroundColor = if (!showDonations) LeafGreen else MaterialTheme.colors.surface,
+                                    ),
+                                    modifier = Modifier.weight(1f),
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.shop_title),
+                                        color = if (!showDonations) Color.White else MaterialTheme.colors.onSurface,
+                                    )
+                                }
+                                Button(
+                                    onClick = { showDonations = true },
+                                    colors = ButtonDefaults.buttonColors(
+                                        backgroundColor = if (showDonations) LeafGreen else MaterialTheme.colors.surface,
+                                    ),
+                                    modifier = Modifier.weight(1f),
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.donation_hub_title),
+                                        color = if (showDonations) Color.White else MaterialTheme.colors.onSurface,
+                                    )
+                                }
+                            }
+                            if (showDonations) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(16.dp),
+                                ) {
+                                    DonationHubSection()
+                                }
+                            } else {
                             val shopItems = shopItemsResponse.data.orEmpty()
                             LazyVerticalGrid(
                                 modifier = Modifier
@@ -159,6 +201,7 @@ fun ShopScreen(
                                         onRedeem = { selectedItem = it },
                                     )
                                 }
+                            }
                             }
                         }
                     }

@@ -38,9 +38,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gdsc.recyclr.R
 import com.gdsc.recyclr.components.design.RecyclrCategoryRow
+import com.gdsc.recyclr.components.home.HomeChallengeBanner
+import com.gdsc.recyclr.components.home.HomeCommunityPreview
+import com.gdsc.recyclr.components.home.HomeLeaderboardPreview
+import com.gdsc.recyclr.components.home.HomeQuickActionsRow
+import com.gdsc.recyclr.components.home.HomeStreakAndWalletRow
 import com.gdsc.recyclr.components.preferences.ThemeToggleIconButton
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.UserImpact
+import com.gdsc.recyclr.domain.model.engagement.HomeDashboard
 import com.gdsc.recyclr.ui.theme.LeafGreen
 import com.gdsc.recyclr.ui.theme.RecyclrThemeColors
 import com.gdsc.recyclr.ui.theme.recyclrMutedText
@@ -67,8 +73,15 @@ private data class HomeCategory(
 fun HomeContent(
     padding: PaddingValues,
     impactResponse: Response<UserImpact>,
+    dashboardResponse: Response<HomeDashboard>,
     onOpenCategory: (String) -> Unit,
     onOpenScan: () -> Unit,
+    onOpenChallenge: () -> Unit,
+    onOpenLeaderboard: () -> Unit,
+    onOpenCommunity: () -> Unit,
+    onOpenWallet: () -> Unit,
+    onOpenPickup: () -> Unit,
+    onOpenMap: () -> Unit,
 ) {
     val categories = homeCategories()
 
@@ -111,7 +124,36 @@ fun HomeContent(
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(20.dp))
+        when (val dashboard = dashboardResponse) {
+            is Response.Success -> {
+                val data = dashboard.data
+                if (data != null) {
+                HomeStreakAndWalletRow(
+                    streak = data.streak,
+                    wallet = data.wallet,
+                    onOpenWallet = onOpenWallet,
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                HomeChallengeBanner(challenge = data.challenge, onClick = onOpenChallenge)
+                Spacer(modifier = Modifier.height(16.dp))
+                HomeLeaderboardPreview(entries = data.leaderboard, onOpenLeaderboard = onOpenLeaderboard)
+                Spacer(modifier = Modifier.height(16.dp))
+                data.communityPreview?.let { post ->
+                    HomeCommunityPreview(post = post, onOpenCommunity = onOpenCommunity)
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+                HomeQuickActionsRow(onOpenPickup = onOpenPickup, onOpenMap = onOpenMap)
+                Spacer(modifier = Modifier.height(20.dp))
+                }
+            }
+            is Response.Loading -> {
+                CircularProgressIndicator(modifier = Modifier.padding(vertical = 8.dp))
+                Spacer(modifier = Modifier.height(20.dp))
+            }
+            is Response.Failure -> Unit
+        }
+
         Text(text = stringResource(R.string.home_categories), fontWeight = FontWeight.Bold, fontSize = 18.sp)
         Spacer(modifier = Modifier.height(12.dp))
 

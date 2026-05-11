@@ -10,6 +10,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 fun HomeScreen(
     onOpenCategory: (String) -> Unit,
     onOpenScan: () -> Unit,
+    onOpenChallenge: () -> Unit,
+    onOpenLeaderboard: () -> Unit,
+    onOpenCommunity: () -> Unit,
+    onOpenWallet: () -> Unit,
+    onOpenPickup: () -> Unit,
+    onOpenMap: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     Scaffold(
@@ -18,8 +24,15 @@ fun HomeScreen(
         HomeContent(
             padding = padding,
             impactResponse = viewModel.impactResponse,
+            dashboardResponse = viewModel.dashboardResponse,
             onOpenCategory = onOpenCategory,
             onOpenScan = onOpenScan,
+            onOpenChallenge = onOpenChallenge,
+            onOpenLeaderboard = onOpenLeaderboard,
+            onOpenCommunity = onOpenCommunity,
+            onOpenWallet = onOpenWallet,
+            onOpenPickup = onOpenPickup,
+            onOpenMap = onOpenMap,
         )
     }
 }

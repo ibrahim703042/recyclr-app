@@ -10,6 +10,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import com.gdsc.recyclr.data.repository.AuthRepositoryImpl
+import com.gdsc.recyclr.data.repository.EngagementRepositoryImpl
 import com.gdsc.recyclr.data.repository.CollectionPointsRepositoryImpl
 import com.gdsc.recyclr.data.repository.ImpactRepositoryImpl
 import com.gdsc.recyclr.data.repository.RedemptionRepositoryImpl
@@ -21,7 +22,9 @@ import com.gdsc.recyclr.data.local.RecyclrMigrations
 import com.gdsc.recyclr.data.location.GeofenceManager
 import com.gdsc.recyclr.data.location.GeofenceManagerImpl
 import com.gdsc.recyclr.data.local.RecyclrDatabase
+import com.gdsc.recyclr.data.local.dao.BarcodeCacheDao
 import com.gdsc.recyclr.data.local.dao.CollectionPointDao
+import com.gdsc.recyclr.data.local.dao.PickupQueueDao
 import com.gdsc.recyclr.data.local.dao.RedemptionDao
 import com.gdsc.recyclr.data.local.dao.ScanRecordDao
 import com.gdsc.recyclr.data.local.dao.ShopItemDao
@@ -38,7 +41,10 @@ import com.gdsc.recyclr.data.service.impl.ImpactServiceImpl
 import com.gdsc.recyclr.data.service.impl.RedemptionServiceImpl
 import com.gdsc.recyclr.data.service.impl.ScanRecordsServiceImpl
 import com.gdsc.recyclr.data.service.impl.ShopServiceImpl
+import com.gdsc.recyclr.data.service.EngagementService
+import com.gdsc.recyclr.data.service.impl.EngagementServiceImpl
 import com.gdsc.recyclr.domain.repository.AuthRepository
+import com.gdsc.recyclr.domain.repository.EngagementRepository
 import com.gdsc.recyclr.domain.repository.CollectionPointsRepository
 import com.gdsc.recyclr.domain.repository.ImpactRepository
 import com.gdsc.recyclr.domain.repository.SettingsRepository
@@ -100,6 +106,12 @@ object AppModule {
     fun provideRedemptionService(firestore: FirebaseFirestore): RedemptionService {
         return RedemptionServiceImpl(firestore)
     }
+
+    @Provides
+    @Singleton
+    fun provideEngagementService(firestore: FirebaseFirestore): EngagementService {
+        return EngagementServiceImpl(firestore)
+    }
     
     // Repository Providers
     @Provides
@@ -144,6 +156,10 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideEngagementRepository(impl: EngagementRepositoryImpl): EngagementRepository = impl
+
+    @Provides
+    @Singleton
     fun provideSettingsRepository(
         @ApplicationContext context: Context
     ): SettingsRepository {
@@ -160,7 +176,10 @@ object AppModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): RecyclrDatabase {
         return Room.databaseBuilder(context, RecyclrDatabase::class.java, "recyclr.db")
-            .addMigrations(RecyclrMigrations.MIGRATION_1_2)
+            .addMigrations(
+                RecyclrMigrations.MIGRATION_1_2,
+                RecyclrMigrations.MIGRATION_2_3,
+            )
             .fallbackToDestructiveMigration()
             .build()
     }
@@ -179,4 +198,10 @@ object AppModule {
 
     @Provides
     fun provideRedemptionDao(db: RecyclrDatabase): RedemptionDao = db.redemptionDao()
+
+    @Provides
+    fun provideBarcodeCacheDao(db: RecyclrDatabase): BarcodeCacheDao = db.barcodeCacheDao()
+
+    @Provides
+    fun providePickupQueueDao(db: RecyclrDatabase): PickupQueueDao = db.pickupQueueDao()
 }

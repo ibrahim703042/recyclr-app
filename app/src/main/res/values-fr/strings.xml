@@ -127,4 +127,45 @@
     <string name="auth_have_account">Vous avez déjà un compte ?</string>
     <string name="auth_submit">Envoyer</string>
     <string name="auth_google_unavailable">Connexion Google indisponible sur cet appareil.</string>
+
+    <string name="loading">Chargement…</string>
+    <string name="error_generic">Une erreur est survenue.</string>
+    <string name="home_streak_title">Éco-série</string>
+    <string name="home_streak_days">%1$d jours</string>
+    <string name="home_streak_multiplier">Multiplicateur x%1$.1f</string>
+    <string name="home_rec_wallet">Portefeuille $REC</string>
+    <string name="home_rec_balance">%1$.2f $REC</string>
+    <string name="home_carbon_credits">%1$.2f tCO₂e de crédits</string>
+    <string name="home_active_challenge">Défi actif</string>
+    <string name="home_challenge_progress">%1$d / %2$d scans · %3$d jours restants</string>
+    <string name="home_leaderboard">Classement</string>
+    <string name="home_community">Communauté</string>
+    <string name="home_post_likes">%1$d mentions J\'aime</string>
+    <string name="home_request_pickup">Demander une collecte</string>
+    <string name="home_open_map">Ouvrir la carte</string>
+    <string name="challenge_title">Défi hebdomadaire</string>
+    <string name="challenge_reward">Récompense : %1$d points</string>
+    <string name="challenge_ends_in">Se termine dans %1$d jours</string>
+    <string name="leaderboard_title">Classement</string>
+    <string name="community_title">Fil communautaire</string>
+    <string name="wallet_title">Portefeuille de jetons</string>
+    <string name="wallet_rec_balance">Solde : %1$.2f $REC</string>
+    <string name="wallet_points_balance">Points : %1$d</string>
+    <string name="wallet_conversion_rate">100 points = 1 $REC</string>
+    <string name="wallet_carbon_credits">Crédits carbone : %1$.2f tCO₂e</string>
+    <string name="wallet_lifetime_rec">Total émis : %1$.2f $REC</string>
+    <string name="wallet_donate_rec">Donner des $REC</string>
+    <string name="pickup_title">Demande de collecte</string>
+    <string name="pickup_address">Adresse de collecte</string>
+    <string name="pickup_weight">Poids estimé : %1$.0f kg</string>
+    <string name="pickup_repeat">Répéter toutes les 2 semaines</string>
+    <string name="pickup_submit">Envoyer la demande</string>
+    <string name="pickup_success">Demande de collecte envoyée.</string>
+    <string name="donation_hub_title">Hub dons</string>
+    <string name="donation_cost">%1$d points</string>
+    <string name="donation_redeem">Donner</string>
+    <string name="profile_badges">Badges</string>
+    <string name="profile_open_wallet">Ouvrir le portefeuille $REC</string>
+    <string name="scan_barcode">Code-barres</string>
+    <string name="scan_barcode_hint">Saisir le code-barres</string>
 </resources>

@@ -2,6 +2,7 @@ package com.gdsc.recyclr.screens.profile.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,8 +47,11 @@ import com.gdsc.recyclr.components.preferences.ThemeToggleIconButton
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.User
 import com.gdsc.recyclr.domain.model.UserImpact
+import com.gdsc.recyclr.domain.model.engagement.UserBadge
 import com.gdsc.recyclr.ui.theme.ForestGreen
+import com.gdsc.recyclr.ui.theme.LeafGreen
 import com.gdsc.recyclr.ui.theme.RecyclrThemeColors
+import com.gdsc.recyclr.ui.theme.recyclrMutedText
 import com.gdsc.recyclr.ui.theme.recyclrScreenBackground
 
 @Composable
@@ -55,6 +59,8 @@ fun ProfileContent(
     padding: PaddingValues,
     user: User?,
     impactResponse: Response<UserImpact>,
+    badges: List<UserBadge>,
+    onOpenWallet: () -> Unit,
 ) {
     val displayName = user?.displayName?.takeIf { it.isNotBlank() }
         ?: stringResource(R.string.profile_sample_name)
@@ -187,6 +193,40 @@ fun ProfileContent(
                 }
             }
 
+            Spacer(modifier = Modifier.height(12.dp))
+            if (badges.isNotEmpty()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    backgroundColor = MaterialTheme.colors.surface,
+                    elevation = 0.dp,
+                ) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(text = stringResource(R.string.profile_badges), fontWeight = FontWeight.Bold)
+                        badges.forEach { badge ->
+                            Text(
+                                text = if (badge.earned) "✓ ${badge.title}" else "○ ${badge.title}",
+                                color = if (badge.earned) LeafGreen else recyclrMutedText(),
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onOpenWallet),
+                shape = RoundedCornerShape(16.dp),
+                backgroundColor = MaterialTheme.colors.surface,
+                elevation = 0.dp,
+            ) {
+                Text(
+                    text = stringResource(R.string.profile_open_wallet),
+                    modifier = Modifier.padding(16.dp),
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
             Spacer(modifier = Modifier.height(12.dp))
             Card(
                 modifier = Modifier.fillMaxWidth(),

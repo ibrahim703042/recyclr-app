@@ -11,6 +11,7 @@ import com.gdsc.recyclr.domain.model.Response.Loading
 import com.gdsc.recyclr.domain.model.ScanRecord
 import com.gdsc.recyclr.domain.ml.WasteDetector
 import com.gdsc.recyclr.domain.repository.AuthRepository
+import com.gdsc.recyclr.domain.repository.EngagementRepository
 import com.gdsc.recyclr.domain.repository.ImpactRepository
 import com.gdsc.recyclr.domain.repository.ScanRecordsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -33,7 +34,8 @@ class ScanViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val scanRecordsRepository: ScanRecordsRepository,
     private val impactRepository: ImpactRepository,
-    private val wasteDetector: WasteDetector
+    private val wasteDetector: WasteDetector,
+    private val engagementRepository: EngagementRepository,
 ) : ViewModel() {
 
     var submitResponse: Response<ScanResult> by mutableStateOf(Response.Success(null))
@@ -50,6 +52,24 @@ class ScanViewModel @Inject constructor(
     fun submitManualScan(itemType: String) {
         viewModelScope.launch {
             persistScan(itemType, scanSource = "manual")
+        }
+    }
+
+    fun submitBarcodeScan(barcode: String) {
+        viewModelScope.launch {
+            val uid = authRepository.currentUser?.uid ?: "guest"
+            when (val lookup = engagementRepository.lookupBarcode(barcode, uid)) {
+                is Response.Success -> {
+                    val match = lookup.data
+                    if (match != null) {
+                        persistScan(match.first, scanSource = "barcode")
+                    } else {
+                        submitResponse = Response.Failure(IllegalArgumentException("Barcode not found"))
+                    }
+                }
+                is Response.Failure -> submitResponse = lookup
+                is Response.Loading -> Unit
+            }
         }
     }
 

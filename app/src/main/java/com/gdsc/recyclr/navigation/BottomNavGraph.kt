@@ -8,7 +8,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.gdsc.recyclr.screens.category.CategoryDetailScreen
+import com.gdsc.recyclr.screens.engagement.ChallengeScreen
+import com.gdsc.recyclr.screens.engagement.CommunityScreen
+import com.gdsc.recyclr.screens.engagement.LeaderboardScreen
+import com.gdsc.recyclr.screens.engagement.PickupScreen
+import com.gdsc.recyclr.screens.engagement.WalletScreen
 import com.gdsc.recyclr.screens.home.HomeScreen
+import com.gdsc.recyclr.screens.map.MapScreen
 import com.gdsc.recyclr.screens.profile.ProfileScreen
 import com.gdsc.recyclr.screens.scan.ScanScreen
 import com.gdsc.recyclr.screens.shop.ShopScreen
@@ -33,6 +39,17 @@ fun BottomNavGraph(
                         launchSingleTop = true
                     }
                 },
+                onOpenChallenge = { navController.navigate(FeatureRoute.Challenges) },
+                onOpenLeaderboard = { navController.navigate(FeatureRoute.Leaderboard) },
+                onOpenCommunity = { navController.navigate(FeatureRoute.Community) },
+                onOpenWallet = { navController.navigate(FeatureRoute.Wallet) },
+                onOpenPickup = { navController.navigate(FeatureRoute.Pickup) },
+                onOpenMap = {
+                    navController.navigate(BottomBarPage.Map.route) {
+                        popUpTo(navController.graph.findStartDestination().id)
+                        launchSingleTop = true
+                    }
+                },
             )
         }
         composable(route = BottomBarPage.Scan.route) {
@@ -40,11 +57,16 @@ fun BottomNavGraph(
                 navigateToResults = navigateToResults,
             )
         }
+        composable(route = BottomBarPage.Map.route) {
+            MapScreen()
+        }
         composable(route = BottomBarPage.Shop.route) {
             ShopScreen()
         }
         composable(route = BottomBarPage.Profile.route) {
-            ProfileScreen()
+            ProfileScreen(
+                onOpenWallet = { navController.navigate(FeatureRoute.Wallet) },
+            )
         }
         composable(
             route = "category/{categoryKey}",
@@ -54,6 +76,21 @@ fun BottomNavGraph(
                 categoryKey = entry.arguments?.getString("categoryKey").orEmpty(),
                 onBack = { navController.popBackStack() },
             )
+        }
+        composable(FeatureRoute.Challenges) {
+            ChallengeScreen(onBack = { navController.popBackStack() })
+        }
+        composable(FeatureRoute.Leaderboard) {
+            LeaderboardScreen(onBack = { navController.popBackStack() })
+        }
+        composable(FeatureRoute.Community) {
+            CommunityScreen(onBack = { navController.popBackStack() })
+        }
+        composable(FeatureRoute.Wallet) {
+            WalletScreen(onBack = { navController.popBackStack() })
+        }
+        composable(FeatureRoute.Pickup) {
+            PickupScreen(onBack = { navController.popBackStack() })
         }
     }
 }
