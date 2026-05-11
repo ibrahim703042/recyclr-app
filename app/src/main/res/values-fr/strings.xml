@@ -1,0 +1,130 @@
+<resources>
+    <string name="app_name">Recyclr</string>
+
+    <string name="nav_home">Accueil</string>
+    <string name="nav_scan">Scanner</string>
+    <string name="nav_shop">Boutique</string>
+    <string name="nav_profile">Profil</string>
+    <string name="nav_map">Carte</string>
+
+    <string name="theme_toggle">Changer de thème</string>
+    <string name="theme_label">Thème</string>
+    <string name="theme_system">Système</string>
+    <string name="theme_light">Clair</string>
+    <string name="theme_dark">Sombre</string>
+    <string name="language_label">Langue</string>
+    <string name="language_system">Système</string>
+    <string name="language_english">Anglais</string>
+    <string name="language_french">Français</string>
+
+    <string name="onboarding_skip">Passer</string>
+    <string name="onboarding_next">Suivant</string>
+    <string name="onboarding_title_intro">Commençons à protéger notre environnement</string>
+    <string name="onboarding_title_scan">Scannez les déchets</string>
+    <string name="onboarding_title_rewards">Gagnez et plantez un arbre</string>
+    <string name="onboarding_subtitle">Le scan vous aide à comprendre ce qui peut être recyclé à la maison et ce qui ne l\'est pas.</string>
+    <string name="onboarding_intro_body">Triez les déchets ensemble et gardez les recyclables hors des décharges.</string>
+    <string name="onboarding_reward_earned">Vous avez gagné</string>
+    <string name="onboarding_points">points</string>
+    <string name="onboarding_points_last_week">12 points la semaine dernière</string>
+    <string name="category_plastic">Plastique</string>
+    <string name="category_paper">Papier</string>
+    <string name="category_glass">Verre</string>
+    <string name="category_metal">Métal</string>
+    <string name="category_textile">Textile</string>
+    <string name="category_plastic_subtitle">Découvrir la recyclabilité du plastique</string>
+    <string name="category_paper_subtitle">Découvrir la recyclabilité du papier</string>
+    <string name="category_glass_subtitle">Découvrir la recyclabilité du verre</string>
+    <string name="category_metal_subtitle">Découvrir la recyclabilité du métal</string>
+    <string name="category_textile_subtitle">Découvrir la recyclabilité du textile</string>
+
+    <string name="home_welcome_back">Bon retour !</string>
+    <string name="home_categories">Catégories</string>
+    <string name="home_points_earned">Vous avez gagné</string>
+    <string name="home_points_label">points</string>
+    <string name="home_points_last_week">12 points la semaine dernière</string>
+    <string name="home_scan">Scanner</string>
+
+    <string name="category_recyclable_title">Quels %1$s peuvent être recyclés ?</string>
+    <string name="category_not_recyclable_title">Quels %1$s ne peuvent pas être recyclés ?</string>
+    <string name="category_fact_title">Faits sur le recyclage du %1$s</string>
+    <string name="category_title_plastics">Plastiques</string>
+    <string name="category_title_paper">Papier</string>
+    <string name="category_title_glass">Verre</string>
+    <string name="category_title_metal">Métal</string>
+    <string name="category_title_textile">Textile</string>
+
+    <string name="scan_title">Scanner</string>
+    <string name="scan_permission_required">L\'autorisation caméra est nécessaire pour scanner.</string>
+    <string name="scan_capture_failed">Impossible de lire la photo</string>
+    <string name="scan_capture_error">Échec de la capture</string>
+    <string name="scan_save_failed">Impossible d\'enregistrer le scan</string>
+    <string name="scan_manual_title">Type d\'article</string>
+    <string name="scan_manual_plastic">Plastique</string>
+    <string name="scan_manual_paper">Papier</string>
+    <string name="scan_manual_furniture">Mobilier</string>
+    <string name="scan_manual_hazardous">Dangereux</string>
+    <string name="scan_cancel">Annuler</string>
+    <string name="scan_hazardous_title">Article dangereux</string>
+    <string name="scan_hazardous_message">Les piles et déchets électroniques doivent aller dans un point de collecte spécialisé.</string>
+    <string name="scan_continue">Continuer</string>
+    <string name="scan_result_message">Vous avez scanné un %1$s</string>
+    <string name="scan_result_points">%1$d pièces gagnées</string>
+
+    <string name="shop_title">Boutique</string>
+    <string name="shop_product_review">Avis produit</string>
+    <string name="shop_load_failed">Échec du chargement de la boutique</string>
+    <string name="shop_redemption_failed">Échec de l\'échange</string>
+    <string name="shop_description">Description</string>
+    <string name="shop_description_fallback">Récompense écologique fabriquée à partir de matériaux recyclés.</string>
+    <string name="shop_confirmation_title">Confirmation</string>
+    <string name="shop_confirmation_message">Produit échangé !</string>
+    <string name="shop_ok">OK</string>
+    <string name="redeem">Échanger</string>
+    <string name="coins">pièces</string>
+
+    <string name="profile_title">Profil</string>
+    <string name="profile_guest_name">Invité</string>
+    <string name="profile_sample_name">John Doe</string>
+    <string name="profile_trees_saved">Vous avez sauvé %1$d arbre</string>
+    <string name="profile_menu_address">Mon adresse</string>
+    <string name="profile_menu_personal_info">Informations personnelles</string>
+    <string name="profile_menu_exchange_points">Échanger des points</string>
+    <string name="profile_menu_notifications">Notifications</string>
+    <string name="profile_email">E-mail : %1$s</string>
+    <string name="profile_sample_email">example@gmail.com</string>
+
+    <string name="results_title">Résultats du scan</string>
+    <string name="results_scanned">Vous avez scanné un %1$s</string>
+    <string name="results_points">%1$d pièces gagnées</string>
+    <string name="results_co2">CO₂ évité : %1$s g</string>
+    <string name="results_destination">Destination : %1$s</string>
+    <string name="results_recycle_again">Recycler à nouveau</string>
+    <string name="results_view_rewards">Voir les récompenses</string>
+
+    <string name="auth_title_sign_in">Connexion</string>
+    <string name="auth_subtitle_sign_in">Accédez à vos points, scans et récompenses.</string>
+    <string name="auth_title_sign_up">Créer un compte</string>
+    <string name="auth_subtitle_sign_up">Rejoignez Recyclr et commencez à gagner des récompenses.</string>
+    <string name="auth_title_forgot_password">Réinitialiser le mot de passe</string>
+    <string name="auth_subtitle_forgot_password">Nous enverrons un lien de réinitialisation à votre e-mail.</string>
+    <string name="auth_invalid_email">E-mail invalide</string>
+    <string name="auth_invalid_password">Mot de passe (6 caractères min.)</string>
+    <string name="auth_forgot_password">Mot de passe oublié ?</string>
+    <string name="auth_sign_in">Connexion</string>
+    <string name="auth_continue_guest">Continuer en invité</string>
+    <string name="auth_or_sign_in_with">Ou connexion avec</string>
+    <string name="auth_phone_number">Numéro de téléphone</string>
+    <string name="auth_phone_hint">+243… (indicatif pays inclus)</string>
+    <string name="auth_send_sms">Recevoir le code SMS</string>
+    <string name="auth_sms_code">Code SMS</string>
+    <string name="auth_verify_code">Vérifier le code</string>
+    <string name="auth_no_account">Pas encore de compte ?</string>
+    <string name="auth_sign_up">S\'inscrire</string>
+    <string name="auth_name">Nom</string>
+    <string name="auth_invalid_name">Entrez votre nom</string>
+    <string name="auth_sign_up_action">S\'inscrire</string>
+    <string name="auth_have_account">Vous avez déjà un compte ?</string>
+    <string name="auth_submit">Envoyer</string>
+    <string name="auth_google_unavailable">Connexion Google indisponible sur cet appareil.</string>
+</resources>

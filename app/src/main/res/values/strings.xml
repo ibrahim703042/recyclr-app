@@ -1,8 +1,132 @@
 <resources>
     <string name="app_name">Recyclr</string>
-    <!-- Web client (type 3) — requis pour requestIdToken + Firebase Google Auth ; aligné sur google-services.json -->
     <string name="default_web_client_id" translatable="false">909025540028-u3ntnk9canpo5gm2kmrkjqicn5a0l7u4.apps.googleusercontent.com</string>
     <string name="web_client_id" translatable="false">909025540028-u3ntnk9canpo5gm2kmrkjqicn5a0l7u4.apps.googleusercontent.com</string>
-    <!-- ShopScreen -->
+
+    <string name="nav_home">Home</string>
+    <string name="nav_scan">Scan</string>
+    <string name="nav_shop">Shop</string>
+    <string name="nav_profile">Profile</string>
+    <string name="nav_map">Map</string>
+
+    <string name="theme_toggle">Toggle theme</string>
+    <string name="theme_label">Theme</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="language_label">Language</string>
+    <string name="language_system">System</string>
+    <string name="language_english">English</string>
+    <string name="language_french">French</string>
+
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_title_intro">Let\'s start protecting our environment</string>
+    <string name="onboarding_title_scan">Scan the waste</string>
+    <string name="onboarding_title_rewards">Earn and plant a tree</string>
+    <string name="onboarding_subtitle">Scanning helps you understand what can be recycled at home and what can\'t.</string>
+    <string name="onboarding_intro_body">Sort waste together and keep recyclables out of landfill.</string>
+    <string name="onboarding_reward_earned">You\'ve earned</string>
+    <string name="onboarding_points">points</string>
+    <string name="onboarding_points_last_week">12 points last week</string>
+    <string name="category_plastic">Plastic</string>
+    <string name="category_paper">Paper</string>
+    <string name="category_glass">Glass</string>
+    <string name="category_metal">Metal</string>
+    <string name="category_textile">Textile</string>
+    <string name="category_plastic_subtitle">Discover plastic recyclability</string>
+    <string name="category_paper_subtitle">Discover paper recyclability</string>
+    <string name="category_glass_subtitle">Discover glass recyclability</string>
+    <string name="category_metal_subtitle">Discover metal recyclability</string>
+    <string name="category_textile_subtitle">Discover textile recyclability</string>
+
+    <string name="home_welcome_back">Welcome Back!</string>
+    <string name="home_categories">Categories</string>
+    <string name="home_points_earned">You\'ve earned</string>
+    <string name="home_points_label">points</string>
+    <string name="home_points_last_week">12 points last week</string>
+    <string name="home_scan">Scan</string>
+
+    <string name="category_recyclable_title">Which %1$s can be recycled?</string>
+    <string name="category_not_recyclable_title">Which %1$s can\'t be recycled?</string>
+    <string name="category_fact_title">%1$s recycling facts</string>
+    <string name="category_title_plastics">Plastics</string>
+    <string name="category_title_paper">Paper</string>
+    <string name="category_title_glass">Glass</string>
+    <string name="category_title_metal">Metal</string>
+    <string name="category_title_textile">Textile</string>
+
+    <string name="scan_title">Scan</string>
+    <string name="scan_permission_required">Camera permission is required to scan.</string>
+    <string name="scan_capture_failed">Could not read the photo</string>
+    <string name="scan_capture_error">Capture failed</string>
+    <string name="scan_save_failed">Scan could not be saved</string>
+    <string name="scan_manual_title">Item type</string>
+    <string name="scan_manual_plastic">Plastic</string>
+    <string name="scan_manual_paper">Paper</string>
+    <string name="scan_manual_furniture">Furniture</string>
+    <string name="scan_manual_hazardous">Hazardous</string>
+    <string name="scan_cancel">Cancel</string>
+    <string name="scan_hazardous_title">Hazardous item</string>
+    <string name="scan_hazardous_message">Batteries and e-waste must go to a specialized collection point, not regular recycling.</string>
+    <string name="scan_continue">Continue</string>
+    <string name="scan_result_message">You\'ve scanned a %1$s</string>
+    <string name="scan_result_points">%1$d coins earned</string>
+
+    <string name="shop_title">Shop</string>
+    <string name="shop_product_review">Product Review</string>
+    <string name="shop_load_failed">Failed to load shop</string>
+    <string name="shop_redemption_failed">Redemption failed</string>
+    <string name="shop_description">Description</string>
+    <string name="shop_description_fallback">Eco-friendly reward made from recycled materials to support sustainable living.</string>
+    <string name="shop_confirmation_title">Confirmation</string>
+    <string name="shop_confirmation_message">Product redeemed!</string>
+    <string name="shop_ok">OK</string>
     <string name="redeem">Redeem</string>
+    <string name="coins">coins</string>
+
+    <string name="profile_title">Profile</string>
+    <string name="profile_guest_name">Guest</string>
+    <string name="profile_sample_name">John Doe</string>
+    <string name="profile_trees_saved">You saved %1$d tree</string>
+    <string name="profile_menu_address">My address</string>
+    <string name="profile_menu_personal_info">Personal information</string>
+    <string name="profile_menu_exchange_points">Exchange points</string>
+    <string name="profile_menu_notifications">Notifications</string>
+    <string name="profile_email">E-mail: %1$s</string>
+    <string name="profile_sample_email">example@gmail.com</string>
+
+    <string name="results_title">Scan results</string>
+    <string name="results_scanned">You\'ve scanned a %1$s</string>
+    <string name="results_points">%1$d coins earned</string>
+    <string name="results_co2">CO₂ saved: %1$s g</string>
+    <string name="results_destination">Destination: %1$s</string>
+    <string name="results_recycle_again">Recycle again</string>
+    <string name="results_view_rewards">View rewards</string>
+
+    <string name="auth_title_sign_in">Sign in</string>
+    <string name="auth_subtitle_sign_in">Access your points, scans, and rewards.</string>
+    <string name="auth_title_sign_up">Create account</string>
+    <string name="auth_subtitle_sign_up">Join Recyclr and start earning rewards.</string>
+    <string name="auth_title_forgot_password">Reset password</string>
+    <string name="auth_subtitle_forgot_password">We will send a reset link to your email.</string>
+    <string name="auth_invalid_email">Invalid email</string>
+    <string name="auth_invalid_password">Password must be at least 6 characters</string>
+    <string name="auth_forgot_password">Forgot password?</string>
+    <string name="auth_sign_in">Sign in</string>
+    <string name="auth_continue_guest">Continue as guest</string>
+    <string name="auth_or_sign_in_with">Or sign in with</string>
+    <string name="auth_phone_number">Phone number</string>
+    <string name="auth_phone_hint">+243… (include country code)</string>
+    <string name="auth_send_sms">Receive SMS code</string>
+    <string name="auth_sms_code">SMS code</string>
+    <string name="auth_verify_code">Verify code</string>
+    <string name="auth_no_account">Don\'t have an account yet?</string>
+    <string name="auth_sign_up">Sign up</string>
+    <string name="auth_name">Name</string>
+    <string name="auth_invalid_name">Enter your name</string>
+    <string name="auth_sign_up_action">Sign up</string>
+    <string name="auth_have_account">Already have an account?</string>
+    <string name="auth_submit">Submit</string>
+    <string name="auth_google_unavailable">Google sign-in is unavailable on this device.</string>
 </resources>

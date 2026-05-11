@@ -1,12 +1,19 @@
 package com.gdsc.recyclr.screens.auths.sign_up.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -17,33 +24,29 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gdsc.recyclr.R
-import com.gdsc.recyclr.components.composable.PasswordField
 import com.gdsc.recyclr.components.composable.ButtonAuth
 import com.gdsc.recyclr.components.composable.EmailField
 import com.gdsc.recyclr.components.composable.NameField
+import com.gdsc.recyclr.components.composable.PasswordField
+import com.gdsc.recyclr.components.design.AuthShell
 
 @ExperimentalMaterialApi
 @Composable
 @ExperimentalComposeUiApi
 fun SignUpContent(
-    signUp: (name:String, email: String, password: String) -> Unit,
-    navigateBack: () -> Unit
+    signUp: (name: String, email: String, password: String) -> Unit,
+    navigateBack: () -> Unit,
 ) {
-    var name by rememberSaveable(
-        stateSaver = TextFieldValue.Saver
-    ) { mutableStateOf(TextFieldValue("")) }
-    var email by rememberSaveable(
-        stateSaver = TextFieldValue.Saver
-    ) { mutableStateOf(TextFieldValue("")) }
-    var password by rememberSaveable(
-        stateSaver = TextFieldValue.Saver
-    ) { mutableStateOf(TextFieldValue("")) }
+    var name by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue("")) }
+    var email by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue("")) }
+    var password by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue("")) }
     val keyboard = LocalSoftwareKeyboardController.current
     val nameText = name.text.trim()
     val emailText = email.text.trim()
@@ -53,95 +56,74 @@ fun SignUpContent(
     val passwordValid = passwordText.length >= 6
     val canSubmit = nameValid && emailValid && passwordValid
 
-    Column(
-        Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colors.background)
-            .padding(20.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
+    AuthShell(
+        title = stringResource(R.string.auth_title_sign_up),
+        subtitle = stringResource(R.string.auth_subtitle_sign_up),
     ) {
-        Spacer(modifier = Modifier.height(10.dp))
-        SignUpDetail()
-        Spacer(modifier = Modifier.size(60.dp))
-
         NameField(
             name = name,
-            onNameValueChange = { newValue -> name = newValue },
+            onNameValueChange = { name = it },
             isError = nameText.isNotBlank() && !nameValid,
-            errorText = "Enter your name"
+            errorText = stringResource(R.string.auth_invalid_name),
         )
         Spacer(modifier = Modifier.height(10.dp))
 
         EmailField(
             email = email,
-            onEmailValueChange = { newValue -> email = newValue },
+            onEmailValueChange = { email = it },
             isError = emailText.isNotBlank() && !emailValid,
-            errorText = "Enter a valid email"
+            errorText = stringResource(R.string.auth_invalid_email),
         )
         Spacer(modifier = Modifier.height(10.dp))
 
         PasswordField(
             password = password,
-            onPasswordValueChange = { newValue -> password = newValue },
+            onPasswordValueChange = { password = it },
             isError = passwordText.isNotBlank() && !passwordValid,
-            errorText = "Password must be at least 6 characters"
+            errorText = stringResource(R.string.auth_invalid_password),
         )
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
-        Spacer(modifier = Modifier.size(20.dp))
         Button(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(10.dp)),
-            colors = ButtonDefaults.buttonColors( backgroundColor = MaterialTheme.colors.secondary ),
+            colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
             enabled = canSubmit,
             onClick = {
                 keyboard?.hide()
                 signUp(nameText, emailText, passwordText)
             },
-
-            ) {
+        ) {
             Text(
-                text = "SIGN UP",
+                text = stringResource(R.string.auth_sign_up_action),
                 fontSize = 20.sp,
-                color = MaterialTheme.colors.surface,
+                color = MaterialTheme.colors.onPrimary,
             )
         }
 
-        Spacer(modifier = Modifier.height(30.dp))
-        Row {
-
+        Spacer(modifier = Modifier.height(24.dp))
+        Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
             ButtonAuth(
                 icon = R.drawable.ic_google_icon,
                 contentDescription = "Google Button",
-                onClicked = {}
+                onClicked = {},
             )
             Spacer(modifier = Modifier.width(30.dp))
         }
 
-        Spacer(modifier = Modifier.height(30.dp))
-
+        Spacer(modifier = Modifier.height(24.dp))
         Row(
-            modifier = Modifier
-                .padding(10.dp),
-
+            modifier = Modifier.padding(10.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.Center,
         ) {
-            Text(
-                text = "Already have an account?",
-            )
+            Text(text = stringResource(R.string.auth_have_account))
             Spacer(modifier = Modifier.padding(3.dp))
             Text(
-                modifier = Modifier.clickable {
-                    navigateBack()
-                },
-                text = "Sign in ",
-                style = TextStyle(
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colors.primary,
-                )
+                modifier = Modifier.clickable { navigateBack() },
+                text = stringResource(R.string.auth_sign_in),
+                style = TextStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colors.primary),
             )
         }
     }

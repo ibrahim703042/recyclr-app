@@ -1,8 +1,10 @@
 package com.gdsc.recyclr.navigation
 
+import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.gdsc.recyclr.R
 
 sealed class Screen(val route: String) {
     // Root graph
@@ -21,33 +23,33 @@ sealed class Screen(val route: String) {
 
 sealed class BottomBarPage(
     val route: String,
-    val title: String,
+    @StringRes val titleRes: Int,
     val icon: ImageVector,
 )
 {
     object Home: BottomBarPage(
         route = "home",
-        title = "Home",
+        titleRes = R.string.nav_home,
         icon = Icons.Default.Home
     )
     object Scan: BottomBarPage(
         route = "scan",
-        title = "Scan",
+        titleRes = R.string.nav_scan,
         icon = Icons.Default.PhotoCamera
     )
     object Map: BottomBarPage(
         route = "map",
-        title = "Map",
+        titleRes = R.string.nav_map,
         icon = Icons.Default.Place
     )
     object Shop: BottomBarPage(
         route = "shop",
-        title = "Shop",
+        titleRes = R.string.nav_shop,
         icon = Icons.Default.ShoppingBag
     )
     object Profile: BottomBarPage(
         route = "profile",
-        title = "Profile",
+        titleRes = R.string.nav_profile,
         icon = Icons.Default.Person
     )
 }

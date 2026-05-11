@@ -1,21 +1,15 @@
 package com.gdsc.recyclr.screens.auths.sign_in.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
@@ -34,6 +28,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -43,6 +38,7 @@ import com.gdsc.recyclr.R
 import com.gdsc.recyclr.components.composable.ButtonAuth
 import com.gdsc.recyclr.components.composable.EmailField
 import com.gdsc.recyclr.components.composable.PasswordField
+import com.gdsc.recyclr.components.design.AuthShell
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -74,164 +70,134 @@ fun SignInContent(
     val passwordValid = passwordText.length >= 6
     val canSubmitEmail = emailValid && passwordValid
 
-    BoxWithConstraints(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colors.background)
+    AuthShell(
+        title = stringResource(R.string.auth_title_sign_in),
+        subtitle = stringResource(R.string.auth_subtitle_sign_in),
     ) {
-        val contentMax = minOf(maxWidth, 520.dp)
-        Column(
-            Modifier
-                .widthIn(max = contentMax)
+        EmailField(
+            email = email,
+            onEmailValueChange = { email = it },
+            isError = emailText.isNotBlank() && !emailValid,
+            errorText = stringResource(R.string.auth_invalid_email),
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+
+        PasswordField(
+            password = password,
+            onPasswordValueChange = { password = it },
+            isError = passwordText.isNotBlank() && !passwordValid,
+            errorText = stringResource(R.string.auth_invalid_password),
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            modifier = Modifier.clickable { navigateToForgotPasswordScreen() },
+            text = stringResource(R.string.auth_forgot_password),
+            style = TextStyle(color = MaterialTheme.colors.primary, fontSize = 15.sp),
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(
+            modifier = Modifier
                 .fillMaxWidth()
-                .align(Alignment.TopCenter)
-                .padding(horizontal = 20.dp, vertical = 12.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
+                .clip(RoundedCornerShape(10.dp)),
+            colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
+            enabled = canSubmitEmail,
+            onClick = {
+                keyboard?.hide()
+                signIn(emailText, passwordText)
+            },
         ) {
-            Spacer(modifier = Modifier.height(10.dp))
-            SignDetail()
-            Spacer(modifier = Modifier.size(40.dp))
-
-            EmailField(
-                email = email,
-                onEmailValueChange = { email = it },
-                isError = emailText.isNotBlank() && !emailValid,
-                errorText = "E-mail invalide"
+            Text(
+                text = stringResource(R.string.auth_sign_in),
+                fontSize = 18.sp,
+                color = MaterialTheme.colors.onPrimary,
             )
-            Spacer(modifier = Modifier.height(10.dp))
+        }
+        Spacer(modifier = Modifier.height(10.dp))
+        OutlinedButton(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(10.dp)),
+            onClick = { continueAsGuest() },
+        ) {
+            Text(text = stringResource(R.string.auth_continue_guest))
+        }
 
-            PasswordField(
-                password = password,
-                onPasswordValueChange = { password = it },
-                isError = passwordText.isNotBlank() && !passwordValid,
-                errorText = "Mot de passe (6 caractères min.)"
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    modifier = Modifier.clickable { navigateToForgotPasswordScreen() },
-                    text = "Mot de passe oublié ?",
-                    style = TextStyle(
-                        color = MaterialTheme.colors.primary,
-                        fontSize = 15.sp
-                    )
-                )
-            }
-
-            Spacer(modifier = Modifier.size(16.dp))
-            Button(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp)),
-                colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.secondary),
-                enabled = canSubmitEmail,
-                onClick = {
+        Spacer(modifier = Modifier.height(24.dp))
+        Divider()
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(text = stringResource(R.string.auth_or_sign_in_with), fontWeight = FontWeight.Normal)
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+            ButtonAuth(
+                icon = R.drawable.ic_google_icon,
+                contentDescription = "Google",
+                onClicked = {
                     keyboard?.hide()
-                    signIn(emailText, passwordText)
+                    onGoogleClick()
                 },
-            ) {
-                Text(
-                    text = "CONNEXION",
-                    fontSize = 18.sp,
-                    color = MaterialTheme.colors.surface,
-                )
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            OutlinedButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp)),
-                onClick = { continueAsGuest() }
-            ) {
-                Text(text = "CONTINUER EN INVITÉ")
-            }
+            )
+        }
 
-            Spacer(modifier = Modifier.height(28.dp))
-            Divider()
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(text = "Ou connexion avec", fontWeight = FontWeight.W400)
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(horizontalArrangement = Arrangement.Center) {
-                ButtonAuth(
-                    icon = R.drawable.ic_google_icon,
-                    contentDescription = "Google",
-                    onClicked = {
-                        keyboard?.hide()
-                        onGoogleClick()
-                    }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-            Text(text = "Numéro de téléphone", fontWeight = FontWeight.SemiBold)
-            Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(text = stringResource(R.string.auth_phone_number), fontWeight = FontWeight.SemiBold)
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            value = phone,
+            onValueChange = { phone = it },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text(stringResource(R.string.auth_phone_hint)) },
+            singleLine = true,
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedButton(
+            onClick = {
+                keyboard?.hide()
+                onSendPhoneCode(phone)
+            },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(stringResource(R.string.auth_send_sms))
+        }
+        if (!phoneVerificationId.isNullOrBlank()) {
+            Spacer(modifier = Modifier.height(12.dp))
             OutlinedTextField(
-                value = phone,
-                onValueChange = { phone = it },
+                value = smsCode,
+                onValueChange = { smsCode = it },
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("+243… (indicatif pays inclus)") },
-                singleLine = true
+                label = { Text(stringResource(R.string.auth_sms_code)) },
+                singleLine = true,
             )
             Spacer(modifier = Modifier.height(8.dp))
-            OutlinedButton(
+            Button(
                 onClick = {
                     keyboard?.hide()
-                    onSendPhoneCode(phone)
+                    onVerifyPhoneCode(smsCode)
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("Recevoir le code SMS")
+                Text(stringResource(R.string.auth_verify_code))
             }
-            if (!phoneVerificationId.isNullOrBlank()) {
-                Spacer(modifier = Modifier.height(12.dp))
-                OutlinedTextField(
-                    value = smsCode,
-                    onValueChange = { smsCode = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Code SMS") },
-                    singleLine = true
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = {
-                        keyboard?.hide()
-                        onVerifyPhoneCode(smsCode)
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Vérifier le code")
-                }
-            }
-            phoneHint?.let {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = it, style = MaterialTheme.typography.caption, color = MaterialTheme.colors.primary)
-            }
+        }
+        phoneHint?.let {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = it, style = MaterialTheme.typography.caption, color = MaterialTheme.colors.primary)
+        }
 
-            Spacer(modifier = Modifier.height(32.dp))
-            Row(
-                modifier = Modifier.padding(10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text(text = "Pas encore de compte ?")
-                Spacer(modifier = Modifier.padding(4.dp))
-                Text(
-                    modifier = Modifier.clickable { navigateToSignUpScreen() },
-                    text = "S'inscrire",
-                    style = TextStyle(
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colors.primary,
-                    )
-                )
-            }
-            Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(24.dp))
+        Row(
+            modifier = Modifier.padding(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+        ) {
+            Text(text = stringResource(R.string.auth_no_account))
+            Spacer(modifier = Modifier.padding(4.dp))
+            Text(
+                modifier = Modifier.clickable { navigateToSignUpScreen() },
+                text = stringResource(R.string.auth_sign_up),
+                style = TextStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colors.primary),
+            )
         }
     }
 }

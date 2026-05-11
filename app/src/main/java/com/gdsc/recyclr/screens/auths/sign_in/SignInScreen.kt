@@ -67,7 +67,7 @@ fun SignInScreen(
                 googleLauncher.launch(client.signInIntent)
             }.onFailure { e ->
                 AppLogger.e("GoogleSignIn non disponible", e)
-                showMessage(context, "Connexion Google indisponible sur cet appareil.")
+                showMessage(context, context.getString(R.string.auth_google_unavailable))
             }
         },
         onSendPhoneCode = { phone -> vm.startPhoneVerification(activity, phone) },
