@@ -22,13 +22,12 @@ fun SignIn(
             .distinctUntilChanged()
             .collect { resp ->
                 when (resp) {
-                    is Loading -> Unit
-                    is Success -> Unit
                     is Failure -> {
                         AppLogger.w("Sign-in error", resp.e)
                         showErrorMessage(resp.e.localizedMessage ?: resp.e.message)
                         viewModel.resetSignInResponse()
                     }
+                    else -> Unit
                 }
             }
     }

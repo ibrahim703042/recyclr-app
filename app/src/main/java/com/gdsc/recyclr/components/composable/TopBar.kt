@@ -1,88 +1,68 @@
 package com.gdsc.recyclr.components.composable
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(
+fun RecyclrTopBar(
     title: String,
-    signOut: () -> Unit,
-    revokeAccess: () -> Unit
+    onSignOut: () -> Unit = {},
+    onDeleteAccount: () -> Unit = {},
+    showMenu: Boolean = true
 ) {
-    var openMenu by remember { mutableStateOf(false) }
+    var menuExpanded by remember { mutableStateOf(false) }
 
-    TopAppBar (
+    CenterAlignedTopAppBar(
         title = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = title
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge
+            )
+        },
+        actions = {
+            if (showMenu) {
+                IconButton(onClick = { menuExpanded = true }) {
+                    Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = "Menu")
+                }
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = { menuExpanded = false }
                 ) {
-                    IconButton(
+                    DropdownMenuItem(
+                        text = { Text("Sign out") },
                         onClick = {
-                            openMenu = !openMenu
+                            menuExpanded = false
+                            onSignOut()
                         }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.MoreVert,
-                            contentDescription = null,
-                        )
-                    }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Delete account") },
+                        onClick = {
+                            menuExpanded = false
+                            onDeleteAccount()
+                        }
+                    )
                 }
             }
         },
-        actions = {
-            DropdownMenu(
-                expanded = openMenu,
-                onDismissRequest = {
-                    openMenu = !openMenu
-                }
-            ) {
-                DropdownMenuItem(
-                    onClick = {
-                        signOut()
-                        openMenu = !openMenu
-                    }
-                ) {
-                    Text(
-                        text = "Sign out"
-                    )
-                }
-                DropdownMenuItem(
-                    onClick = {
-                        revokeAccess()
-                        openMenu = !openMenu
-                    }
-                ) {
-                    Text(
-                        text = "Delete account"
-                    )
-                }
-            }
-        }
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface
+        )
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BasicTopBar(title: String) {
-    TopAppBar (
+    TopAppBar(
         title = {
             Text(
-                text = title
+                text = title,
+                style = MaterialTheme.typography.titleLarge
             )
         }
     )

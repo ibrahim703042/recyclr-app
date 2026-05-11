@@ -1,74 +1,57 @@
 package com.gdsc.recyclr.components.composable
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.input.*
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 
 @Composable
 fun PasswordField(
-    password: TextFieldValue,
-    onPasswordValueChange: (newValue: TextFieldValue) -> Unit,
+    password: String,
+    onPasswordChange: (String) -> Unit,
+    label: String = "Password",
+    placeholder: String = "Enter password",
     isError: Boolean = false,
     errorText: String? = null,
+    imeAction: ImeAction = ImeAction.Done
 ) {
     val focusManager = LocalFocusManager.current
-    var passwordIsVisible by remember { mutableStateOf(false) }
+    var passwordVisible by remember { mutableStateOf(false) }
 
-    Column {
-        OutlinedTextField(
-            value = password,
-            modifier = Modifier.fillMaxWidth(),
-            onValueChange = { newValue -> onPasswordValueChange(newValue)},
-            label = {Text(text = "Password" )},
-            singleLine = true,
-            visualTransformation = if (passwordIsVisible) {
-                VisualTransformation.None
-            } else {
-                PasswordVisualTransformation()
-            },
-            placeholder = { Text("Enter password") },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Lock,
-                    contentDescription = "Password"
-                )
-            },
-            trailingIcon = {
-                val icon = if (passwordIsVisible) {
-                    Icons.Filled.Visibility
-                } else {
-                    Icons.Filled.VisibilityOff
-                }
-                IconButton(
-                    onClick = {
-                        passwordIsVisible = !passwordIsVisible
-                    }
-                ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null
-                    )
-                }
-            },
-            keyboardOptions = KeyboardOptions (keyboardType = KeyboardType.Password ,imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = {focusManager.clearFocus() }),
-            isError = isError,
+    RecyclrTextField(
+        value = password,
+        onValueChange = onPasswordChange,
+        label = label,
+        placeholder = placeholder,
+        leadingIcon = { Icon(imageVector = Icons.Default.Lock, contentDescription = null) },
+        trailingIcon = {
+            val icon = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                Icon(imageVector = icon, contentDescription = if (passwordVisible) "Hide password" else "Show password")
+            }
+        },
+        isError = isError,
+        errorText = errorText,
+        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Password,
+            imeAction = imeAction
+        ),
+        keyboardActions = KeyboardActions(
+            onDone = { focusManager.clearFocus() }
         )
-        if (isError && !errorText.isNullOrBlank()) {
-            Text(text = errorText, modifier = Modifier.fillMaxWidth())
-        }
-    }
+    )
 }
+
+// Add visualTransformation to RecyclrTextField in NameField.kt since I missed it

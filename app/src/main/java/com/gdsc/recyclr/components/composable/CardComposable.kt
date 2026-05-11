@@ -1,5 +1,3 @@
-@file:Suppress("UNUSED_EXPRESSION")
-
 package com.gdsc.recyclr.components.composable
 
 import androidx.compose.foundation.background
@@ -7,7 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.runtime.*
@@ -19,158 +17,121 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.gdsc.recyclr.R
-import com.gdsc.recyclr.ui.theme.Shapes
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryCard(
     title: String,
     description: String,
-    shape: Shape = Shapes.medium,
-    padding: Dp = 5.dp,
+    shape: Shape = CardDefaults.shape,
     onClick: () -> Unit
 ) {
-
     Card(
-        modifier = Modifier
-            .fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         shape = shape,
-    )  {
-
+        onClick = onClick,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        )
+    ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth(6f)
-                .padding(all = padding),
-            verticalAlignment = Alignment.CenterVertically
-        )  {
-
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
             ) {
-
                 ImageComponent(
                     modifier = Modifier
-                        .size(50.dp)
-                        .clip(RoundedCornerShape(4.dp)),
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(8.dp)),
                     painter = painterResource(id = R.drawable.profile),
-                    contentDescription = "Product image"
+                    contentDescription = null
                 )
 
-                Spacer(modifier = Modifier.width(20.dp))
+                Spacer(modifier = Modifier.width(16.dp))
 
-                Column(
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    ProductText(
-                        title = title,
-                        description = description )
+                Column {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
 
-            ButtonIcon(
+            Icon(
                 imageVector = Icons.Default.KeyboardArrowRight,
-                contentDescription = "Keyboard Arrow Right"
-
-            ) { onClick }
-
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
+            )
         }
     }
-}
-
-@Composable
-fun ProductText(
-    title: String,
-    titleFontSize: TextUnit = MaterialTheme.typography.h6.fontSize,
-    titleFontWeight: FontWeight = FontWeight.Bold,
-    description: String,
-    descriptionFontSize: TextUnit = MaterialTheme.typography.subtitle2.fontSize,
-    descriptionFontWeight: FontWeight = FontWeight.Normal,
-    descriptionMaxLines: Int = 1
-){
-    Text(
-        modifier = Modifier.fillMaxWidth(fraction = 0.7f),
-        text = title,
-        fontSize = titleFontSize,
-        fontWeight = titleFontWeight,
-        maxLines = 1,
-    )
-    //Spacer(modifier = Modifier.padding(1.dp))
-    Text(
-        modifier = Modifier
-            .fillMaxWidth(fraction = 0.9f),
-        text = description,
-        fontSize = descriptionFontSize,
-        fontWeight = descriptionFontWeight,
-        maxLines = descriptionMaxLines,
-    )
 }
 
 @Composable
 fun RewardCard() {
-
-    Column(
+    Card(
         modifier = Modifier
-            .padding(20.dp)
-            .fillMaxSize(),
+            .fillMaxWidth()
+            .padding(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        )
     ) {
-        Card(
+        Row(
             modifier = Modifier
-                .padding(10.dp).clip(RoundedCornerShape(8.dp))
-                .width(236.dp).height(160.dp).background(color = MaterialTheme.colors.onSecondary),
+                .padding(20.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-
-            Row(
+            ImageComponent(
                 modifier = Modifier
-                    .padding(10.dp)
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+                    .size(80.dp)
+                    .clip(CircleShape)
+                    .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape),
+                painter = painterResource(id = R.drawable.profile),
+                contentDescription = null
+            )
 
-                ImageComponent(
-                    modifier = Modifier
-                        .background(color = Color.Yellow)
-                        .size(100.dp)
-                        .clip(CircleShape)
-                        .border(
-                            width = 5.dp,
-                            color = Color.Green,
-                            shape = CircleShape
-                        ),
-                    painter = painterResource(id = R.drawable.profile),
-                    contentDescription = "profile image"
+            Spacer(modifier = Modifier.width(20.dp))
+
+            Column {
+                Text(
+                    text = "You've earned",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
-
-                Spacer(modifier = Modifier.width(20.dp))
-
-                Column(
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "You've earned"
-                    )
-                    Text(
-                        text = "106"
-                    )
-                    Text(
-                        text = "Points"
-                    )
-                    Text(
-                        text = "12 points last week"
-                    )
-                }
+                Text(
+                    text = "106",
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Black,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "Points",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Text(
+                    text = "12 points last week",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                )
             }
-
         }
     }
-}
-
-@Preview(name = "Reward")
-@Composable
-private fun PreviewReward() {
-    RewardCard()
 }
 
 @Preview(showBackground = true)
@@ -178,7 +139,7 @@ private fun PreviewReward() {
 private fun PreviewCategoryCard() {
     CategoryCard(
         title = "Plastic",
-        description = "Discover paper recyclability ",
+        description = "Discover paper recyclability",
         onClick = {}
     )
 }
