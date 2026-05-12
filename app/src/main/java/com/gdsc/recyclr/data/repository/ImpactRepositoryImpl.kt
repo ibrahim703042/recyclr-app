@@ -7,6 +7,9 @@ import com.gdsc.recyclr.data.service.ImpactService
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.UserImpact
 import com.gdsc.recyclr.domain.repository.ImpactRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -15,6 +18,19 @@ class ImpactRepositoryImpl @Inject constructor(
     private val service: ImpactService,
     private val dao: UserImpactDao
 ) : ImpactRepository {
+
+    override fun observeUserImpact(userId: String): Flow<Response<UserImpact>> {
+        return dao.observe(userId)
+            .map { entity ->
+                if (entity != null) Response.Success(entity.toDomain())
+                else Response.Loading
+            }
+            .onStart {
+                // Trigger a refresh from network when we start observing
+                runCatching { getUserImpact(userId) }
+            }
+    }
+
     override suspend fun getUserImpact(userId: String): Response<UserImpact> {
         if (userId == "guest") {
             val cached = dao.get(userId)?.toDomain() ?: defaultImpact(userId).toDomain()

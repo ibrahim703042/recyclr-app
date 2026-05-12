@@ -86,4 +86,10 @@ class MainViewModel @Inject constructor(
             settingsRepository.setAppLanguage(language)
         }
     }
+
+    fun signOut() = repo.signOut()
+
+    fun revokeAccess() = viewModelScope.launch {
+        repo.revokeAccess()
+    }
 }

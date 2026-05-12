@@ -1,6 +1,5 @@
 package com.gdsc.recyclr.components.composable
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -20,6 +19,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.gdsc.recyclr.R
 
+@Composable
+fun RecyclrDivider(
+    modifier: Modifier = Modifier,
+    thickness: androidx.compose.ui.unit.Dp = 1.dp,
+    color: Color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+) {
+    HorizontalDivider(
+        modifier = modifier,
+        thickness = thickness,
+        color = color
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryCard(
@@ -33,7 +45,7 @@ fun CategoryCard(
         shape = shape,
         onClick = onClick,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
         )
     ) {
         Row(
@@ -50,7 +62,7 @@ fun CategoryCard(
                 ImageComponent(
                     modifier = Modifier
                         .size(48.dp)
-                        .clip(RoundedCornerShape(8.dp)),
+                        .clip(RoundedCornerShape(12.dp)),
                     painter = painterResource(id = R.drawable.profile),
                     contentDescription = null
                 )
@@ -74,7 +86,7 @@ fun CategoryCard(
             Icon(
                 imageVector = Icons.Default.KeyboardArrowRight,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
+                tint = MaterialTheme.colorScheme.outline
             )
         }
     }
@@ -87,7 +99,7 @@ fun RewardCard() {
             .fillMaxWidth()
             .padding(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
         )
     ) {
         Row(

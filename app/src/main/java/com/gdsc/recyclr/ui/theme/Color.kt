@@ -68,13 +68,21 @@ val LeafGreen = Color(0xFF76A376)
 val ScreenBackground = Color(0xFFF5F5F5)
 val CardWhite = Color(0xFFFFFFFF)
 val ScanIconRed = Color(0xFFEA5B5E)
+val PointsCardGreen = Color(0xFFE8F5E9)
+val ScanCardPink = Color(0xFFFCE4EC)
 
-// Legacy UI Colors
-val PointsCardGreen = Color(0xFFD7EBD6)
-val ScanCardPink = Color(0xFFF8DDE4)
-val CategoryPlastic = Color(0xFFD7EBD6)
-val CategoryPaper = Color(0xFFD6E8F8)
-val CategoryGlass = Color(0xFFF8E4D6)
-val CategoryMetal = Color(0xFFF8DDE4)
-val CategoryTextile = Color(0xFFF8F0D6)
+// Legacy UI Colors - Backgrounds
+val CategoryPlastic = Color(0xFFE8F5E9)
+val CategoryPaper = Color(0xFFE3F2FD)
+val CategoryGlass = Color(0xFFFFF3E0)
+val CategoryMetal = Color(0xFFFCE4EC)
+val CategoryTextile = Color(0xFFFFFDE7)
+
+// Legacy UI Colors - Icons/Text
+val CategoryPlasticDark = Color(0xFF2E7D32)
+val CategoryPaperDark = Color(0xFF1565C0)
+val CategoryGlassDark = Color(0xFFEF6C00)
+val CategoryMetalDark = Color(0xFFC2185B)
+val CategoryTextileDark = Color(0xFFFBC02D)
+
 

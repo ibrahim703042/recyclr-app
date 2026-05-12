@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.gdsc.recyclr.R
 import com.gdsc.recyclr.components.composable.RecyclrTopBar
+import com.gdsc.recyclr.components.composable.SectionHeader
 import com.gdsc.recyclr.components.design.RecyclrCategoryRow
 import com.gdsc.recyclr.components.home.*
 import com.gdsc.recyclr.domain.model.Response
@@ -30,11 +31,11 @@ import com.gdsc.recyclr.ui.theme.RecyclrThemeColors
 
 @Composable
 private fun homeCategories(): List<HomeCategory> = listOf(
-    HomeCategory("plastic", stringResource(R.string.category_plastic), stringResource(R.string.category_plastic_subtitle), RecyclrThemeColors.categoryPlastic, Icons.Default.LocalDrink),
-    HomeCategory("paper", stringResource(R.string.category_paper), stringResource(R.string.category_paper_subtitle), RecyclrThemeColors.categoryPaper, Icons.Default.Newspaper),
-    HomeCategory("glass", stringResource(R.string.category_glass), stringResource(R.string.category_glass_subtitle), RecyclrThemeColors.categoryGlass, Icons.Default.WineBar),
-    HomeCategory("metal", stringResource(R.string.category_metal), stringResource(R.string.category_metal_subtitle), RecyclrThemeColors.categoryMetal, Icons.Default.LocalDrink),
-    HomeCategory("textile", stringResource(R.string.category_textile), stringResource(R.string.category_textile_subtitle), RecyclrThemeColors.categoryTextile, Icons.Default.Checkroom),
+    HomeCategory("plastic", stringResource(R.string.category_plastic), stringResource(R.string.category_plastic_subtitle), RecyclrThemeColors.categoryPlastic, RecyclrThemeColors.categoryPlasticIcon, Icons.Default.LocalDrink),
+    HomeCategory("paper", stringResource(R.string.category_paper), stringResource(R.string.category_paper_subtitle), RecyclrThemeColors.categoryPaper, RecyclrThemeColors.categoryPaperIcon, Icons.Default.Newspaper),
+    HomeCategory("glass", stringResource(R.string.category_glass), stringResource(R.string.category_glass_subtitle), RecyclrThemeColors.categoryGlass, RecyclrThemeColors.categoryGlassIcon, Icons.Default.WineBar),
+    HomeCategory("metal", stringResource(R.string.category_metal), stringResource(R.string.category_metal_subtitle), RecyclrThemeColors.categoryMetal, RecyclrThemeColors.categoryMetalIcon, Icons.Default.LocalDrink),
+    HomeCategory("textile", stringResource(R.string.category_textile), stringResource(R.string.category_textile_subtitle), RecyclrThemeColors.categoryTextile, RecyclrThemeColors.categoryTextileIcon, Icons.Default.Checkroom),
 )
 
 private data class HomeCategory(
@@ -42,6 +43,7 @@ private data class HomeCategory(
     val title: String,
     val subtitle: String,
     val iconBackground: Color,
+    val iconColor: Color,
     val icon: ImageVector,
 )
 
@@ -79,13 +81,12 @@ fun HomeContent(
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp, vertical = 12.dp)
         ) {
-            Text(
-                text = stringResource(R.string.home_welcome_back),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
+            SectionHeader(
+                title = stringResource(R.string.home_welcome_back),
+                subtitle = "Let's make the world cleaner today."
             )
             
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -130,12 +131,8 @@ fun HomeContent(
                 is Response.Failure -> Unit
             }
 
-            Text(
-                text = stringResource(R.string.home_categories),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(12.dp))
+            SectionHeader(title = stringResource(R.string.home_categories))
+            Spacer(modifier = Modifier.height(4.dp))
 
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 categories.forEach { category ->
@@ -143,6 +140,7 @@ fun HomeContent(
                         title = category.title,
                         subtitle = category.subtitle,
                         iconBackground = category.iconBackground,
+                        iconColor = category.iconColor,
                         icon = category.icon,
                         onClick = { onOpenCategory(category.routeKey) },
                     )

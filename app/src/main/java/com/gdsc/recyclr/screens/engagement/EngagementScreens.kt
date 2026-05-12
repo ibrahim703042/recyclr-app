@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.VolunteerActivism
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -150,7 +152,7 @@ private fun CommunityCard(post: CommunityPost) {
             Spacer(modifier = Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = androidx.compose.material.icons.Icons.Default.Favorite,
+                    imageVector = Icons.Default.Favorite,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.error,
                     modifier = Modifier.size(16.dp)
@@ -323,28 +325,76 @@ fun DonationHubSection(viewModel: EngagementViewModel = hiltViewModel()) {
 
 @Composable
 private fun DonationCard(cause: DonationCause) {
-    Card(
+    ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large
+        shape = MaterialTheme.shapes.extraLarge,
+        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
-        Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(cause.title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Text(cause.description, style = MaterialTheme.typography.bodyMedium)
-            
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-            
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = stringResource(R.string.donation_cost, cause.pointsCost),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+        Column {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(160.dp)
+                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.VolunteerActivism,
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp),
+                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
                 )
-                Button(
-                    onClick = { /* TODO */ },
+                
+                Surface(
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(12.dp),
+                    color = MaterialTheme.colorScheme.primary,
                     shape = MaterialTheme.shapes.medium
                 ) {
-                    Text(stringResource(R.string.donation_redeem))
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = cause.pointsCost.toString(),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontWeight = FontWeight.Black
+                        )
+                        Icon(
+                            painter = androidx.compose.ui.res.painterResource(R.drawable.coins),
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = Color.Unspecified
+                        )
+                    }
+                }
+            }
+            
+            Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = cause.title, 
+                    style = MaterialTheme.typography.titleLarge, 
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = cause.description, 
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                Button(
+                    onClick = { /* TODO */ },
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    shape = MaterialTheme.shapes.large
+                ) {
+                    Text(
+                        text = "Support this cause",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }

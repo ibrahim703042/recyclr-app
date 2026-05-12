@@ -140,11 +140,11 @@ fun ShopScreen(
                                 is Response.Success -> {
                                     val shopItems = shopItemsResponse.data.orEmpty()
                                     LazyVerticalGrid(
-                                        columns = GridCells.Adaptive(minSize = 180.dp),
+                                        columns = GridCells.Fixed(2),
                                         modifier = Modifier.fillMaxSize().widthIn(max = 1200.dp).align(Alignment.TopCenter),
-                                        contentPadding = PaddingValues(20.dp),
-                                        verticalArrangement = Arrangement.spacedBy(20.dp),
-                                        horizontalArrangement = Arrangement.spacedBy(20.dp)
+                                        contentPadding = PaddingValues(16.dp),
+                                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(16.dp)
                                     ) {
                                         items(shopItems) { item ->
                                             ShopItemCard(

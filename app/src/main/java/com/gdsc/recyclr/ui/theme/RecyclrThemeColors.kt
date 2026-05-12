@@ -30,6 +30,21 @@ object RecyclrThemeColors {
   val categoryTextile: Color
     @Composable get() = if (!isSystemInDarkTheme()) CategoryTextile else Color(0xFF4A4634)
 
+  val categoryPlasticIcon: Color
+    @Composable get() = if (!isSystemInDarkTheme()) CategoryPlasticDark else Color(0xFF81C784)
+
+  val categoryPaperIcon: Color
+    @Composable get() = if (!isSystemInDarkTheme()) CategoryPaperDark else Color(0xFF64B5F6)
+
+  val categoryGlassIcon: Color
+    @Composable get() = if (!isSystemInDarkTheme()) CategoryGlassDark else Color(0xFFFFB74D)
+
+  val categoryMetalIcon: Color
+    @Composable get() = if (!isSystemInDarkTheme()) CategoryMetalDark else Color(0xFFF06292)
+
+  val categoryTextileIcon: Color
+    @Composable get() = if (!isSystemInDarkTheme()) CategoryTextileDark else Color(0xFFFFF176)
+
   val onboardingCard: Color
     @Composable get() = if (!isSystemInDarkTheme()) MintBackground else Color(0xFF2A3D33)
 

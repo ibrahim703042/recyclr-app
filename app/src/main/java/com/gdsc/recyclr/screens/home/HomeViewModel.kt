@@ -1,5 +1,8 @@
 package com.gdsc.recyclr.screens.home
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gdsc.recyclr.domain.model.Response
@@ -10,6 +13,10 @@ import com.gdsc.recyclr.domain.repository.AuthRepository
 import com.gdsc.recyclr.domain.repository.EngagementRepository
 import com.gdsc.recyclr.domain.repository.ImpactRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,24 +29,36 @@ class HomeViewModel @Inject constructor(
 
     val currentUser get() = authRepository.currentUser
 
-    var impactResponse: Response<UserImpact> = Loading
+    var impactResponse: Response<UserImpact> by mutableStateOf(Loading)
         private set
 
-    var dashboardResponse: Response<HomeDashboard> = Loading
+    var dashboardResponse: Response<HomeDashboard> by mutableStateOf(Loading)
         private set
 
     init {
-        refresh()
+        observeImpact()
+        refreshDashboard()
     }
 
-    fun refresh() {
+    private fun observeImpact() {
         val uid = authRepository.currentUser?.uid ?: "guest"
         viewModelScope.launch {
-            impactResponse = Loading
+            impactRepository.observeUserImpact(uid).collectLatest {
+                impactResponse = it
+                // Refresh dashboard when points change
+                if (it is Response.Success) {
+                    refreshDashboard(it.data?.pointsBalance ?: 0)
+                }
+            }
+        }
+    }
+
+    fun refreshDashboard(points: Int? = null) {
+        val uid = authRepository.currentUser?.uid ?: "guest"
+        val currentPoints = points ?: (impactResponse as? Response.Success)?.data?.pointsBalance ?: 0
+        viewModelScope.launch {
             dashboardResponse = Loading
-            impactResponse = impactRepository.getUserImpact(uid)
-            val points = (impactResponse as? Response.Success)?.data?.pointsBalance ?: 0
-            dashboardResponse = engagementRepository.getHomeDashboard(uid, points)
+            dashboardResponse = engagementRepository.getHomeDashboard(uid, currentPoints)
         }
     }
 }

@@ -106,7 +106,7 @@ fun SettingsScreen(
                 Column(modifier = Modifier.widthIn(max = 600.dp)) {
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
-                        onClick = { /* TODO: Sign out logic */ },
+                        onClick = { viewModel.signOut() },
                         modifier = Modifier.fillMaxWidth().height(56.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.errorContainer,
@@ -120,7 +120,7 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                     
                     TextButton(
-                        onClick = { /* TODO: Delete Account */ },
+                        onClick = { viewModel.revokeAccess() },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                     ) {

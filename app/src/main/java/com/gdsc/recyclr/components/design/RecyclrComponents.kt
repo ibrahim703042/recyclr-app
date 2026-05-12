@@ -2,24 +2,12 @@ package com.gdsc.recyclr.components.design
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,60 +16,62 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.gdsc.recyclr.ui.theme.LeafGreen
-import com.gdsc.recyclr.ui.theme.recyclrCardBackground
 
 @Composable
 fun RecyclrCategoryRow(
     title: String,
     subtitle: String,
     iconBackground: Color,
+    iconColor: Color,
     icon: ImageVector,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Card(
+    Surface(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
-        elevation = 0.dp,
-        backgroundColor = recyclrCardBackground(),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 1.dp
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 14.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(iconBackground),
-                contentAlignment = Alignment.Center,
+            Surface(
+                modifier = Modifier.size(52.dp),
+                shape = RoundedCornerShape(16.dp),
+                color = iconBackground
             ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = Color(0xFF4A4A4A),
-                    modifier = Modifier.size(24.dp),
-                )
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = iconColor,
+                        modifier = Modifier.size(24.dp),
+                    )
+                }
             }
-            Spacer(modifier = Modifier.width(14.dp))
+            Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = title, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text(
+                    text = title, 
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
                 Text(
                     text = subtitle,
-                    fontSize = 13.sp,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.65f),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             Icon(
-                imageVector = Icons.Default.KeyboardArrowRight,
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
-                tint = Color(0xFFB0B0B0),
+                tint = MaterialTheme.colorScheme.outlineVariant,
             )
         }
     }
@@ -93,15 +83,14 @@ fun RecyclrPrimaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(
+    Button(
+        onClick = onClick,
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(LeafGreen)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 28.dp, vertical = 12.dp),
-        contentAlignment = Alignment.Center,
+            .fillMaxWidth()
+            .height(56.dp),
+        shape = MaterialTheme.shapes.large
     ) {
-        Text(text = text, color = Color.White, fontWeight = FontWeight.SemiBold)
+        Text(text = text, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -121,9 +110,12 @@ fun OnboardingPageIndicator(
             Box(
                 modifier = Modifier
                     .height(8.dp)
-                    .width(if (active) 28.dp else 8.dp)
+                    .width(if (active) 24.dp else 8.dp)
                     .clip(CircleShape)
-                    .background(if (active) LeafGreen else Color(0xFFD0D0D0)),
+                    .background(
+                        if (active) MaterialTheme.colorScheme.primary 
+                        else MaterialTheme.colorScheme.primaryContainer
+                    ),
             )
         }
     }

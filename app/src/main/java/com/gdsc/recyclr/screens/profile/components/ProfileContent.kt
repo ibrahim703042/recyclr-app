@@ -1,5 +1,6 @@
 package com.gdsc.recyclr.screens.profile.components
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -11,16 +12,19 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.gdsc.recyclr.R
 import com.gdsc.recyclr.components.composable.RecyclrTopBar
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.User
@@ -28,6 +32,7 @@ import com.gdsc.recyclr.domain.model.UserImpact
 import com.gdsc.recyclr.domain.model.engagement.UserBadge
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileContent(
     padding: PaddingValues,
@@ -45,155 +50,231 @@ fun ProfileContent(
     val trees = impact?.treesEquivalent ?: 0
     val co2Saved = impact?.co2SavedKg ?: 0f
 
-    Column(
+    val scrollState = rememberScrollState()
+    
+    // Threshold for when the profile header "collapses" into the TopBar
+    val collapseThreshold = 180.dp
+    val showCollapsedInfo by remember {
+        derivedStateOf { scrollState.value > 400 } // Rough estimate in pixels
+    }
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(padding)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        RecyclrTopBar(
-            title = "Profile",
-            onSettingsClick = onOpenSettings
-        )
-
         Column(
             modifier = Modifier
-                .widthIn(max = 600.dp)
-                .fillMaxWidth()
+                .fillMaxSize()
+                .verticalScroll(scrollState),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // User Header Section
+            Spacer(modifier = Modifier.height(64.dp)) // Space for TopBar
+
             Column(
                 modifier = Modifier
+                    .widthIn(max = 600.dp)
                     .fillMaxWidth()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Box(
+                // User Header Section
+                Column(
                     modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primaryContainer),
-                    contentAlignment = Alignment.Center
+                        .fillMaxWidth()
+                        .padding(24.dp)
+                        .alpha(if (showCollapsedInfo) 0f else 1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    if (!user?.photoUrl.isNullOrBlank()) {
-                        AsyncImage(
-                            model = user!!.photoUrl,
-                            contentDescription = "Profile Picture",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = null,
-                            modifier = Modifier.size(64.dp),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
+                    Box(
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primaryContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (!user?.photoUrl.isNullOrBlank()) {
+                            AsyncImage(
+                                model = user!!.photoUrl,
+                                contentDescription = "Profile Picture",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = null,
+                                modifier = Modifier.size(64.dp),
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
                     }
-                }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                Text(
-                    text = displayName,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = email,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            // Impact Statistics Grid
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                ImpactStatCard(
-                    modifier = Modifier.weight(1f),
-                    icon = Icons.Default.Eco,
-                    value = String.format(Locale.getDefault(), "%.1fkg", co2Saved),
-                    label = "CO2 Saved",
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
-                ImpactStatCard(
-                    modifier = Modifier.weight(1f),
-                    icon = Icons.Default.Stars,
-                    value = points.toString(),
-                    label = "Points",
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                )
-                ImpactStatCard(
-                    modifier = Modifier.weight(1f),
-                    icon = Icons.Default.Forest,
-                    value = trees.toString(),
-                    label = "Trees",
-                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
-                )
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Actions Section
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Text(
-                    text = "My Activity",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                
-                ProfileActionItem(
-                    icon = Icons.Outlined.AccountBalanceWallet,
-                    title = "My Wallet",
-                    subtitle = "View your rewards and tokens",
-                    onClick = onOpenWallet
-                )
-                
-                ProfileActionItem(
-                    icon = Icons.Outlined.History,
-                    title = "Recycling History",
-                    subtitle = "See what you've recycled so far",
-                    onClick = { /* TODO */ }
-                )
-
-                if (badges.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(24.dp))
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
                     Text(
-                        text = "Achievements",
+                        text = displayName,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = email,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                // Impact Statistics Grid
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    ImpactStatCard(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.Eco,
+                        value = String.format(Locale.getDefault(), "%.1fkg", co2Saved),
+                        label = "CO2 Saved",
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                    ImpactStatCard(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.Stars,
+                        value = points.toString(),
+                        label = "Points",
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    )
+                    ImpactStatCard(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.Forest,
+                        value = trees.toString(),
+                        label = "Trees",
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Actions Section
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "My Activity",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = MaterialTheme.shapes.large,
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .horizontalScroll(rememberScrollState()),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    
+                    ProfileActionItem(
+                        icon = Icons.Outlined.AccountBalanceWallet,
+                        title = "My Wallet",
+                        subtitle = "View your rewards and tokens",
+                        onClick = onOpenWallet
+                    )
+                    
+                    ProfileActionItem(
+                        icon = Icons.Outlined.History,
+                        title = "Recycling History",
+                        subtitle = "See what you've recycled so far",
+                        onClick = { /* TODO */ }
+                    )
+
+                    if (badges.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text(
+                            text = "Achievements",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = MaterialTheme.shapes.large,
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                         ) {
-                            badges.take(5).forEach { badge ->
-                                BadgeIcon(badge)
+                            Row(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .horizontalScroll(rememberScrollState()),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                badges.take(5).forEach { badge ->
+                                    BadgeIcon(badge)
+                                }
                             }
                         }
                     }
                 }
+                Spacer(modifier = Modifier.height(32.dp))
             }
-            Spacer(modifier = Modifier.height(32.dp))
         }
+
+        // Animated TopBar with Collapsed User Info
+        CenterAlignedTopAppBar(
+            modifier = Modifier.fillMaxWidth(),
+            title = {
+                AnimatedVisibility(
+                    visible = showCollapsedInfo,
+                    enter = fadeIn() + slideInVertically { it / 2 },
+                    exit = fadeOut() + slideOutVertically { it / 2 }
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        if (!user?.photoUrl.isNullOrBlank()) {
+                            AsyncImage(
+                                model = user!!.photoUrl,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(CircleShape),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            Surface(
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = null,
+                                    modifier = Modifier.padding(4.dp),
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = displayName,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+                if (!showCollapsedInfo) {
+                    Text(
+                        text = "Profile",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            actions = {
+                IconButton(onClick = onOpenSettings) {
+                    Icon(
+                        imageVector = Icons.Outlined.Settings,
+                        contentDescription = "Settings"
+                    )
+                }
+            },
+            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                containerColor = if (showCollapsedInfo) MaterialTheme.colorScheme.surface else Color.Transparent
+            )
+        )
     }
 }
 
