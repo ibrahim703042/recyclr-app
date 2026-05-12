@@ -2,22 +2,25 @@ package com.gdsc.recyclr.screens.auths.sign_in.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.gdsc.recyclr.R
 import com.gdsc.recyclr.components.composable.*
 import com.gdsc.recyclr.components.design.AuthShell
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignInContent(
     signIn: (email: String, password: String) -> Unit,
@@ -33,7 +36,10 @@ fun SignInContent(
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var phone by rememberSaveable { mutableStateOf("") }
+    var countryCode by rememberSaveable { mutableStateOf("+1") }
     var smsCode by rememberSaveable { mutableStateOf("") }
+    
+    var showPhoneModal by remember { mutableStateOf(false) }
 
     val keyboard = LocalSoftwareKeyboardController.current
     val emailValid = android.util.Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()
@@ -107,68 +113,38 @@ fun SignInContent(
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        RecyclrAuthButton(
-            icon = R.drawable.ic_google_icon,
-            text = "Continue with Google",
-            onClick = {
-                keyboard?.hide()
-                onGoogleClick()
-            }
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-        
-        // Phone Sign In Section
-        Text(
-            text = stringResource(R.string.auth_phone_number),
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.align(Alignment.Start)
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        
-        RecyclrTextField(
-            value = phone,
-            onValueChange = { phone = it },
-            label = stringResource(R.string.auth_phone_hint),
-            placeholder = "+1 234 567 890"
-        )
-        
-        Spacer(modifier = Modifier.height(12.dp))
-        
-        RecyclrButton(
-            text = R.string.auth_send_sms,
-            onClick = {
-                keyboard?.hide()
-                onSendPhoneCode(phone)
-            }
-        )
-        
-        if (!phoneVerificationId.isNullOrBlank()) {
-            Spacer(modifier = Modifier.height(16.dp))
-            RecyclrTextField(
-                value = smsCode,
-                onValueChange = { smsCode = it },
-                label = stringResource(R.string.auth_sms_code),
-                placeholder = "123456"
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            RecyclrButton(
-                text = R.string.auth_verify_code,
-                onClick = {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            OutlinedButton(
+                onClick = { 
                     keyboard?.hide()
-                    onVerifyPhoneCode(smsCode)
-                }
-            )
-        }
-        
-        phoneHint?.let {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = it,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary
-            )
+                    onGoogleClick() 
+                },
+                modifier = Modifier.weight(1f).height(56.dp),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Icon(
+                    painter = androidx.compose.ui.res.painterResource(id = R.drawable.ic_google_icon),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text("Google")
+            }
+            
+            OutlinedButton(
+                onClick = { showPhoneModal = true },
+                modifier = Modifier.weight(1f).height(56.dp),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Phone,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text("Phone")
+            }
         }
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -189,6 +165,104 @@ fun SignInContent(
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.ExtraBold),
                 color = MaterialTheme.colorScheme.primary
             )
+        }
+    }
+
+    if (showPhoneModal) {
+        ModalBottomSheet(
+            onDismissRequest = { showPhoneModal = false },
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = MaterialTheme.shapes.extraLarge
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Sign in with Phone",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Enter your phone number to receive a verification code.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                
+                Spacer(modifier = Modifier.height(32.dp))
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedTextField(
+                        value = countryCode,
+                        onValueChange = { countryCode = it },
+                        modifier = Modifier.width(80.dp),
+                        label = { Text("Code") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                        shape = MaterialTheme.shapes.medium
+                    )
+                    
+                    RecyclrTextField(
+                        value = phone,
+                        onValueChange = { phone = it },
+                        label = "Phone Number",
+                        placeholder = "123 456 789",
+                        modifier = Modifier.weight(1f),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                RecyclrButton(
+                    text = R.string.auth_send_sms,
+                    onClick = {
+                        onSendPhoneCode(countryCode + phone)
+                    },
+                    enabled = phone.isNotBlank()
+                )
+                
+                if (!phoneVerificationId.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(24.dp))
+                    HorizontalDivider()
+                    Spacer(modifier = Modifier.height(24.dp))
+                    
+                    RecyclrTextField(
+                        value = smsCode,
+                        onValueChange = { smsCode = it },
+                        label = stringResource(R.string.auth_sms_code),
+                        placeholder = "123456",
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    )
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    RecyclrButton(
+                        text = R.string.auth_verify_code,
+                        onClick = {
+                            onVerifyPhoneCode(smsCode)
+                        },
+                        enabled = smsCode.length >= 6
+                    )
+                }
+                
+                phoneHint?.let {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(32.dp))
+            }
         }
     }
 }

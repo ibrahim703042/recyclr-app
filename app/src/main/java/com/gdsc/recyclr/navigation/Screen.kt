@@ -19,6 +19,7 @@ sealed class Screen(val route: String) {
 
     // App-level destinations (outside bottom nav)
     object Results: Screen("results")
+    object Settings: Screen("settings")
 }
 
 sealed class BottomBarPage(

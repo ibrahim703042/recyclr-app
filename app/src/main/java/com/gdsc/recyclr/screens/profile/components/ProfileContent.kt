@@ -1,58 +1,32 @@
 package com.gdsc.recyclr.screens.profile.components
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Card
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.gdsc.recyclr.R
-import com.gdsc.recyclr.components.design.CurvedHeaderShape
-import com.gdsc.recyclr.components.preferences.LanguageSelectorRow
-import com.gdsc.recyclr.components.preferences.ThemeModeSelectorRow
-import com.gdsc.recyclr.components.preferences.ThemeToggleIconButton
+import com.gdsc.recyclr.components.composable.RecyclrTopBar
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.User
 import com.gdsc.recyclr.domain.model.UserImpact
 import com.gdsc.recyclr.domain.model.engagement.UserBadge
-import com.gdsc.recyclr.ui.theme.ForestGreen
-import com.gdsc.recyclr.ui.theme.LeafGreen
-import com.gdsc.recyclr.ui.theme.RecyclrThemeColors
-import com.gdsc.recyclr.ui.theme.recyclrMutedText
-import com.gdsc.recyclr.ui.theme.recyclrScreenBackground
+import java.util.Locale
 
 @Composable
 fun ProfileContent(
@@ -61,238 +35,263 @@ fun ProfileContent(
     impactResponse: Response<UserImpact>,
     badges: List<UserBadge>,
     onOpenWallet: () -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
-    val displayName = user?.displayName?.takeIf { it.isNotBlank() }
-        ?: stringResource(R.string.profile_sample_name)
-    val email = user?.email?.takeIf { it.isNotBlank() }
-        ?: stringResource(R.string.profile_sample_email)
-    val points = when (impactResponse) {
-        is Response.Success -> impactResponse.data?.pointsBalance ?: 120
-        else -> 120
-    }
-    val trees = when (impactResponse) {
-        is Response.Success -> impactResponse.data?.treesEquivalent ?: 1
-        else -> 1
-    }
+    val displayName = user?.displayName?.takeIf { it.isNotBlank() } ?: "Green Hero"
+    val email = user?.email?.takeIf { it.isNotBlank() } ?: "nature.lover@example.com"
+    
+    val impact = (impactResponse as? Response.Success)?.data
+    val points = impact?.pointsBalance ?: 0
+    val trees = impact?.treesEquivalent ?: 0
+    val co2Saved = impact?.co2SavedKg ?: 0f
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(recyclrScreenBackground())
-            .padding(padding),
+            .background(MaterialTheme.colorScheme.background)
+            .padding(padding)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            CurvedHeaderShape(color = RecyclrThemeColors.headerBackground, height = 170.dp)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = stringResource(R.string.profile_title),
-                    modifier = Modifier.padding(start = 8.dp, top = 8.dp),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                )
-                ThemeToggleIconButton()
-            }
-        }
+        RecyclrTopBar(
+            title = "Profile",
+            onSettingsClick = onOpenSettings
+        )
 
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+                .widthIn(max = 600.dp)
+                .fillMaxWidth()
         ) {
-            Spacer(modifier = Modifier.height(88.dp))
-            if (!user?.photoUrl.isNullOrBlank()) {
-                AsyncImage(
-                    model = user!!.photoUrl,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(108.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colors.surface, CircleShape)
-                        .padding(4.dp),
-                    contentScale = ContentScale.Crop,
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(108.dp)
-                        .clip(CircleShape)
-                        .background(ForestGreen)
-                        .padding(4.dp)
-                        .background(MaterialTheme.colors.surface, CircleShape),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.AccountCircle,
-                        contentDescription = null,
-                        modifier = Modifier.size(88.dp),
-                        tint = Color(0xFFB0B0B0),
-                    )
-                }
-            }
-
-            Card(
+            // User Header Section
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .offset(y = (-18).dp),
-                shape = RoundedCornerShape(16.dp),
-                backgroundColor = MaterialTheme.colors.surface,
-                elevation = 0.dp,
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                        .size(120.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(text = displayName, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "$points", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                        Image(
-                            painter = painterResource(R.drawable.coins),
+                    if (!user?.photoUrl.isNullOrBlank()) {
+                        AsyncImage(
+                            model = user!!.photoUrl,
+                            contentDescription = "Profile Picture",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Person,
                             contentDescription = null,
-                            modifier = Modifier
-                                .padding(start = 6.dp)
-                                .size(16.dp),
+                            modifier = Modifier.size(64.dp),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                Text(
+                    text = displayName,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = email,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
 
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                backgroundColor = MaterialTheme.colors.surface,
-                elevation = 0.dp,
+            // Impact Statistics Grid
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.people_planting_a_tree),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(120.dp),
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = stringResource(R.string.profile_trees_saved, trees),
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                }
+                ImpactStatCard(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Default.Eco,
+                    value = String.format(Locale.getDefault(), "%.1fkg", co2Saved),
+                    label = "CO2 Saved",
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+                ImpactStatCard(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Default.Stars,
+                    value = points.toString(),
+                    label = "Points",
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                )
+                ImpactStatCard(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Default.Forest,
+                    value = trees.toString(),
+                    label = "Trees",
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-            if (badges.isNotEmpty()) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    backgroundColor = MaterialTheme.colors.surface,
-                    elevation = 0.dp,
-                ) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(text = stringResource(R.string.profile_badges), fontWeight = FontWeight.Bold)
-                        badges.forEach { badge ->
-                            Text(
-                                text = if (badge.earned) "✓ ${badge.title}" else "○ ${badge.title}",
-                                color = if (badge.earned) LeafGreen else recyclrMutedText(),
-                            )
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Actions Section
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "My Activity",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                
+                ProfileActionItem(
+                    icon = Icons.Outlined.AccountBalanceWallet,
+                    title = "My Wallet",
+                    subtitle = "View your rewards and tokens",
+                    onClick = onOpenWallet
+                )
+                
+                ProfileActionItem(
+                    icon = Icons.Outlined.History,
+                    title = "Recycling History",
+                    subtitle = "See what you've recycled so far",
+                    onClick = { /* TODO */ }
+                )
+
+                if (badges.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Text(
+                        text = "Achievements",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.large,
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            badges.take(5).forEach { badge ->
+                                BadgeIcon(badge)
+                            }
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(12.dp))
             }
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = onOpenWallet),
-                shape = RoundedCornerShape(16.dp),
-                backgroundColor = MaterialTheme.colors.surface,
-                elevation = 0.dp,
-            ) {
-                Text(
-                    text = stringResource(R.string.profile_open_wallet),
-                    modifier = Modifier.padding(16.dp),
-                    fontWeight = FontWeight.SemiBold,
-                )
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                backgroundColor = MaterialTheme.colors.surface,
-                elevation = 0.dp,
-            ) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    ThemeModeSelectorRow()
-                    LanguageSelectorRow()
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-            ProfileMenuItem(title = stringResource(R.string.profile_menu_address))
-            ProfileMenuItem(title = stringResource(R.string.profile_menu_personal_info))
-            ProfileMenuItem(title = stringResource(R.string.profile_menu_exchange_points))
-            ProfileMenuItem(title = stringResource(R.string.profile_menu_notifications))
-
-            Spacer(modifier = Modifier.height(12.dp))
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                backgroundColor = MaterialTheme.colors.surface,
-                elevation = 0.dp,
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(text = stringResource(R.string.profile_email, email), fontSize = 14.sp)
-                }
-            }
-
-            if (impactResponse is Response.Loading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.padding(vertical = 16.dp),
-                    color = MaterialTheme.colors.primary,
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
 
 @Composable
-private fun ProfileMenuItem(title: String) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 10.dp),
-        shape = RoundedCornerShape(16.dp),
-        backgroundColor = MaterialTheme.colors.surface,
-        elevation = 0.dp,
+fun ImpactStatCard(
+    modifier: Modifier = Modifier,
+    icon: ImageVector,
+    value: String,
+    label: String,
+    containerColor: Color
+) {
+    Surface(
+        modifier = modifier,
+        shape = MaterialTheme.shapes.large,
+        color = containerColor.copy(alpha = 0.7f)
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(24.dp))
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.ExtraBold)
+            Text(text = label, style = MaterialTheme.typography.labelSmall)
+        }
+    }
+}
+
+@Composable
+fun ProfileActionItem(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 1.dp,
+        onClick = onClick
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 18.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = title, fontSize = 15.sp)
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                modifier = Modifier.size(48.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
-                tint = Color(0xFFB0B0B0),
+                tint = MaterialTheme.colorScheme.outline
             )
         }
+    }
+}
+
+@Composable
+fun BadgeIcon(badge: UserBadge) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            modifier = Modifier
+                .size(56.dp)
+                .clip(CircleShape)
+                .background(
+                    if (badge.earned) MaterialTheme.colorScheme.primary 
+                    else MaterialTheme.colorScheme.surfaceVariant
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.EmojiEvents,
+                contentDescription = null,
+                tint = if (badge.earned) Color.White else MaterialTheme.colorScheme.outline
+            )
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = badge.title.split(" ").first(),
+            style = MaterialTheme.typography.labelSmall,
+            color = if (badge.earned) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.outline
+        )
     }
 }

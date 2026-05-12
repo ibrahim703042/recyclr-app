@@ -29,6 +29,7 @@ import com.gdsc.recyclr.navigation.BottomNavGraph
 @Composable
 fun MainScreen(
     navigateToResults: (itemType: String, points: Int, co2SavedGrams: Float, destination: String) -> Unit = { _, _, _, _ -> },
+    navigateToSettings: () -> Unit = {},
 ) {
     val navController = rememberNavController()
     val activity = LocalContext.current as ComponentActivity
@@ -54,6 +55,7 @@ fun MainScreen(
             BottomNavGraph(
                 navController = navController,
                 navigateToResults = navigateToResults,
+                navigateToSettings = navigateToSettings
             )
         }
     }

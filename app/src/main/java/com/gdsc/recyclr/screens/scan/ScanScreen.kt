@@ -35,7 +35,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.gdsc.recyclr.R
-import com.gdsc.recyclr.components.preferences.ThemeToggleIconButton
+import com.gdsc.recyclr.components.composable.RecyclrTopBar
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.ui.theme.CategoryPlastic
 import java.io.File
@@ -178,24 +178,11 @@ fun ScanScreen(
                 )
             }
 
-            // Header
-            Row(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Spacer(modifier = Modifier.size(48.dp))
-                Text(
-                    text = stringResource(R.string.scan_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                ThemeToggleIconButton()
-            }
+            // Standardized Top Bar
+            RecyclrTopBar(
+                title = stringResource(R.string.scan_title),
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
 
             inlineResult?.let { result ->
                 ScanResultBanner(

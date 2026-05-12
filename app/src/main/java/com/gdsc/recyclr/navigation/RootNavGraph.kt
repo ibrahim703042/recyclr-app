@@ -18,6 +18,7 @@ import com.gdsc.recyclr.screens.auths.sign_up.SignUpScreen
 import com.gdsc.recyclr.screens.dashboard.MainScreen
 import com.gdsc.recyclr.screens.onboarding.OnboardingScreen
 import com.gdsc.recyclr.screens.results.ResultsScreen
+import com.gdsc.recyclr.screens.settings.SettingsScreen
 
 @ExperimentalMaterialApi
 @ExperimentalAnimationApi
@@ -84,8 +85,15 @@ fun RootNavGraph(
                     val safeItemType = android.net.Uri.encode(itemType)
                     val safeDestination = android.net.Uri.encode(destination)
                     navController.navigate("${Screen.Results.route}/$safeItemType/$points/$co2SavedGrams/$safeDestination")
+                },
+                navigateToSettings = {
+                    navController.navigate(Screen.Settings.route)
                 }
             )
+        }
+
+        composable(Screen.Settings.route) {
+            SettingsScreen(onBack = { navController.popBackStack() })
         }
 
         composable("${Screen.Results.route}/{itemType}/{points}/{co2SavedGrams}/{destination}") { entry ->

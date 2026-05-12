@@ -13,6 +13,7 @@ import com.gdsc.recyclr.screens.profile.components.RevokeAccess
 @Composable
 fun ProfileScreen(
     onOpenWallet: () -> Unit = {},
+    onOpenSettings: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val scaffoldState = rememberScaffoldState()
@@ -28,6 +29,7 @@ fun ProfileScreen(
             impactResponse = viewModel.impactResponse,
             badges = viewModel.badges,
             onOpenWallet = onOpenWallet,
+            onOpenSettings = onOpenSettings,
         )
     }
 

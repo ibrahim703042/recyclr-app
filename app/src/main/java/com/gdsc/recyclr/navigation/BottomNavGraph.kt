@@ -23,6 +23,7 @@ import com.gdsc.recyclr.screens.shop.ShopScreen
 fun BottomNavGraph(
     navController: NavHostController,
     navigateToResults: (itemType: String, points: Int, co2SavedGrams: Float, destination: String) -> Unit,
+    navigateToSettings: () -> Unit = {},
 ) {
     NavHost(
         navController = navController,
@@ -66,6 +67,7 @@ fun BottomNavGraph(
         composable(route = BottomBarPage.Profile.route) {
             ProfileScreen(
                 onOpenWallet = { navController.navigate(FeatureRoute.Wallet) },
+                onOpenSettings = navigateToSettings,
             )
         }
         composable(

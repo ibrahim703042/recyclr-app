@@ -1,56 +1,32 @@
 package com.gdsc.recyclr.screens.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Card
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Checkroom
 import androidx.compose.material.icons.filled.LocalDrink
 import androidx.compose.material.icons.filled.Newspaper
 import androidx.compose.material.icons.filled.WineBar
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.gdsc.recyclr.R
+import com.gdsc.recyclr.components.composable.RecyclrTopBar
 import com.gdsc.recyclr.components.design.RecyclrCategoryRow
-import com.gdsc.recyclr.components.home.HomeChallengeBanner
-import com.gdsc.recyclr.components.home.HomeCommunityPreview
-import com.gdsc.recyclr.components.home.HomeLeaderboardPreview
-import com.gdsc.recyclr.components.home.HomeQuickActionsRow
-import com.gdsc.recyclr.components.home.HomeStreakAndWalletRow
-import com.gdsc.recyclr.components.preferences.ThemeToggleIconButton
+import com.gdsc.recyclr.components.home.*
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.UserImpact
 import com.gdsc.recyclr.domain.model.engagement.HomeDashboard
-import com.gdsc.recyclr.ui.theme.LeafGreen
 import com.gdsc.recyclr.ui.theme.RecyclrThemeColors
-import com.gdsc.recyclr.ui.theme.recyclrMutedText
-import com.gdsc.recyclr.ui.theme.recyclrScreenBackground
 
 @Composable
 private fun homeCategories(): List<HomeCategory> = listOf(
@@ -88,87 +64,92 @@ fun HomeContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(recyclrScreenBackground())
+            .background(MaterialTheme.colorScheme.background)
             .padding(padding)
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 12.dp),
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
+        RecyclrTopBar(
+            title = stringResource(R.string.app_name)
+        )
+
+        Column(
+            modifier = Modifier
+                .widthIn(max = 600.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 12.dp)
         ) {
             Text(
-                text = stringResource(R.string.app_name),
-                color = LeafGreen,
-                fontWeight = FontWeight.Bold,
-                fontSize = 24.sp,
+                text = stringResource(R.string.home_welcome_back),
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold
             )
-            ThemeToggleIconButton()
-        }
+            
+            Spacer(modifier = Modifier.height(24.dp))
 
-        Spacer(modifier = Modifier.height(18.dp))
-        Text(text = stringResource(R.string.home_welcome_back), fontWeight = FontWeight.Bold, fontSize = 22.sp)
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            PointsCard(impactResponse = impactResponse, modifier = Modifier.weight(1f))
-            ScanShortcutCard(
-                onClick = onOpenScan,
-                modifier = Modifier
-                    .width(110.dp)
-                    .height(150.dp),
-            )
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-        when (val dashboard = dashboardResponse) {
-            is Response.Success -> {
-                val data = dashboard.data
-                if (data != null) {
-                HomeStreakAndWalletRow(
-                    streak = data.streak,
-                    wallet = data.wallet,
-                    onOpenWallet = onOpenWallet,
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                HomeChallengeBanner(challenge = data.challenge, onClick = onOpenChallenge)
-                Spacer(modifier = Modifier.height(16.dp))
-                HomeLeaderboardPreview(entries = data.leaderboard, onOpenLeaderboard = onOpenLeaderboard)
-                Spacer(modifier = Modifier.height(16.dp))
-                data.communityPreview?.let { post ->
-                    HomeCommunityPreview(post = post, onOpenCommunity = onOpenCommunity)
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-                HomeQuickActionsRow(onOpenPickup = onOpenPickup, onOpenMap = onOpenMap)
-                Spacer(modifier = Modifier.height(20.dp))
-                }
-            }
-            is Response.Loading -> {
-                CircularProgressIndicator(modifier = Modifier.padding(vertical = 8.dp))
-                Spacer(modifier = Modifier.height(20.dp))
-            }
-            is Response.Failure -> Unit
-        }
-
-        Text(text = stringResource(R.string.home_categories), fontWeight = FontWeight.Bold, fontSize = 18.sp)
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            categories.forEach { category ->
-                RecyclrCategoryRow(
-                    title = category.title,
-                    subtitle = category.subtitle,
-                    iconBackground = category.iconBackground,
-                    icon = category.icon,
-                    onClick = { onOpenCategory(category.routeKey) },
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                PointsCard(impactResponse = impactResponse, modifier = Modifier.weight(1f))
+                ScanShortcutCard(
+                    onClick = onOpenScan,
+                    modifier = Modifier.weight(0.6f)
                 )
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            when (val dashboard = dashboardResponse) {
+                is Response.Success -> {
+                    val data = dashboard.data
+                    if (data != null) {
+                        HomeStreakAndWalletRow(
+                            streak = data.streak,
+                            wallet = data.wallet,
+                            onOpenWallet = onOpenWallet,
+                        )
+                        Spacer(modifier = Modifier.height(20.dp))
+                        HomeChallengeBanner(challenge = data.challenge, onClick = onOpenChallenge)
+                        Spacer(modifier = Modifier.height(20.dp))
+                        HomeLeaderboardPreview(entries = data.leaderboard, onOpenLeaderboard = onOpenLeaderboard)
+                        Spacer(modifier = Modifier.height(20.dp))
+                        data.communityPreview?.let { post ->
+                            HomeCommunityPreview(post = post, onOpenCommunity = onOpenCommunity)
+                            Spacer(modifier = Modifier.height(20.dp))
+                        }
+                        HomeQuickActionsRow(onOpenPickup = onOpenPickup, onOpenMap = onOpenMap)
+                        Spacer(modifier = Modifier.height(24.dp))
+                    }
+                }
+                is Response.Loading -> {
+                    Box(modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                }
+                is Response.Failure -> Unit
+            }
+
+            Text(
+                text = stringResource(R.string.home_categories),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                categories.forEach { category ->
+                    RecyclrCategoryRow(
+                        title = category.title,
+                        subtitle = category.subtitle,
+                        iconBackground = category.iconBackground,
+                        icon = category.icon,
+                        onClick = { onOpenCategory(category.routeKey) },
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(32.dp))
         }
-        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
@@ -177,39 +158,46 @@ private fun PointsCard(
     impactResponse: Response<UserImpact>,
     modifier: Modifier = Modifier,
 ) {
-    Card(
-        modifier = modifier.height(150.dp),
-        shape = RoundedCornerShape(18.dp),
-        backgroundColor = RecyclrThemeColors.pointsCard,
-        elevation = 0.dp,
+    ElevatedCard(
+        modifier = modifier.height(160.dp),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        )
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically,
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.reward),
                 contentDescription = null,
                 tint = Color.Unspecified,
-                modifier = Modifier.size(52.dp),
+                modifier = Modifier.size(48.dp),
             )
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             Column {
-                Text(text = stringResource(R.string.home_points_earned), fontSize = 13.sp)
+                Text(
+                    text = stringResource(R.string.home_points_earned),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                )
                 when (impactResponse) {
-                    is Response.Loading -> CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                    is Response.Failure -> Text(text = "106", fontWeight = FontWeight.Bold, fontSize = 28.sp)
+                    is Response.Loading -> CircularProgressIndicator(modifier = Modifier.size(20.dp))
+                    is Response.Failure -> Text(
+                        text = "106",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Black
+                    )
                     is Response.Success -> Text(
                         text = "${impactResponse.data?.pointsBalance ?: 0}",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 28.sp,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Black,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
-                Text(text = stringResource(R.string.home_points_label), fontSize = 14.sp)
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(text = stringResource(R.string.home_points_last_week), fontSize = 11.sp, color = recyclrMutedText())
             }
         }
     }
@@ -220,16 +208,18 @@ private fun ScanShortcutCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Card(
-        modifier = modifier.clickable(onClick = onClick),
-        shape = RoundedCornerShape(18.dp),
-        backgroundColor = RecyclrThemeColors.scanCard,
-        elevation = 0.dp,
+    ElevatedCard(
+        onClick = onClick,
+        modifier = modifier.height(160.dp),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp),
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
@@ -237,10 +227,15 @@ private fun ScanShortcutCard(
                 painter = painterResource(id = R.drawable.scan),
                 contentDescription = null,
                 tint = Color.Unspecified,
-                modifier = Modifier.size(42.dp),
+                modifier = Modifier.size(56.dp),
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = stringResource(R.string.home_scan), fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = stringResource(R.string.home_scan),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
         }
     }
 }
