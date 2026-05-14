@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gdsc.recyclr.data.local.dao.ChatMessageDao
 import com.gdsc.recyclr.data.local.entities.CachedChatMessageEntity
+import com.gdsc.recyclr.data.local.preferences.BadgePreferencesStore
 import com.gdsc.recyclr.domain.model.ChatMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -13,14 +14,13 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
 
-const val SUPPORT_THREAD_ID = "support"
-
 @HiltViewModel
 class SupportChatViewModel @Inject constructor(
     private val chatMessageDao: ChatMessageDao,
+    private val badgePreferencesStore: BadgePreferencesStore,
 ) : ViewModel() {
 
-    val messages = chatMessageDao.observeThread(SUPPORT_THREAD_ID)
+    val messages = chatMessageDao.observeThread(SUPPORT_CHAT_THREAD_ID)
         .map { rows ->
             rows.map { r ->
                 ChatMessage(
@@ -42,7 +42,7 @@ class SupportChatViewModel @Inject constructor(
         chatMessageDao.insert(
             CachedChatMessageEntity(
                 id = "welcome_seed",
-                threadId = SUPPORT_THREAD_ID,
+                threadId = SUPPORT_CHAT_THREAD_ID,
                 body = "Hello! Ask us about recycling, pickups, or rewards.",
                 fromUser = false,
                 sentAtMillis = System.currentTimeMillis(),
@@ -56,7 +56,7 @@ class SupportChatViewModel @Inject constructor(
             chatMessageDao.insert(
                 CachedChatMessageEntity(
                     id = UUID.randomUUID().toString(),
-                    threadId = SUPPORT_THREAD_ID,
+                    threadId = SUPPORT_CHAT_THREAD_ID,
                     body = text.trim(),
                     fromUser = true,
                     sentAtMillis = System.currentTimeMillis(),
@@ -66,12 +66,18 @@ class SupportChatViewModel @Inject constructor(
             chatMessageDao.insert(
                 CachedChatMessageEntity(
                     id = UUID.randomUUID().toString(),
-                    threadId = SUPPORT_THREAD_ID,
+                    threadId = SUPPORT_CHAT_THREAD_ID,
                     body = "Thanks for your message. A teammate will follow up soon.",
                     fromUser = false,
                     sentAtMillis = System.currentTimeMillis() + 1,
                 ),
             )
+        }
+    }
+
+    fun markSupportThreadSeenOnLeave() {
+        viewModelScope.launch {
+            badgePreferencesStore.markSupportThreadSeenNow()
         }
     }
 }

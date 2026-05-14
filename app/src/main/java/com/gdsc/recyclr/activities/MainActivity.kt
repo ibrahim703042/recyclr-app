@@ -2,6 +2,7 @@
 
 package com.gdsc.recyclr.activities
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import com.gdsc.recyclr.navigation.RootNavGraph
+import com.gdsc.recyclr.push.RecyclrFirebaseMessagingService
 import com.gdsc.recyclr.ui.preferences.AppAppearanceState
 import com.gdsc.recyclr.ui.preferences.LocalAppAppearance
 import com.gdsc.recyclr.ui.preferences.resolveIsDarkTheme
@@ -37,9 +39,22 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
+        handleNotificationIntent(intent)
         enableEdgeToEdge()
         setContent {
             RecyclrAppRoot(viewModel = viewModel)
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleNotificationIntent(intent)
+    }
+
+    private fun handleNotificationIntent(intent: Intent?) {
+        if (intent?.getBooleanExtra(RecyclrFirebaseMessagingService.EXTRA_OPEN_NOTIFICATIONS, false) == true) {
+            viewModel.requestOpenNotificationsFeature()
         }
     }
 }

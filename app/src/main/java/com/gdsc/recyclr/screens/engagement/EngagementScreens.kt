@@ -3,6 +3,7 @@ package com.gdsc.recyclr.screens.engagement
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -430,7 +431,6 @@ private fun WalletInfoRow(label: String, value: String) {
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PickupScreen(onBack: () -> Unit, viewModel: EngagementViewModel = hiltViewModel()) {
     val scope = rememberCoroutineScope()
@@ -453,8 +453,13 @@ fun PickupScreen(onBack: () -> Unit, viewModel: EngagementViewModel = hiltViewMo
             )
             
             Text("What are we picking up?", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-            
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                 FilterChip(selected = plastic, onClick = { plastic = !plastic }, label = { Text("Plastic") })
                 FilterChip(selected = paper, onClick = { paper = !paper }, label = { Text("Paper") })
                 FilterChip(selected = glass, onClick = { glass = !glass }, label = { Text("Glass") })
@@ -479,14 +484,18 @@ fun PickupScreen(onBack: () -> Unit, viewModel: EngagementViewModel = hiltViewMo
                             if (paper) add("Paper")
                             if (glass) add("Glass")
                         }
-                        submitted = viewModel.submitPickup(
-                            PickupRequestDraft(
-                                address = address,
-                                itemTypes = types,
-                                estimatedKg = weight,
-                                repeatEveryWeeks = if (repeatWeeks) 2 else null,
-                            ),
-                        )
+                        submitted = try {
+                            viewModel.submitPickup(
+                                PickupRequestDraft(
+                                    address = address,
+                                    itemTypes = types,
+                                    estimatedKg = weight,
+                                    repeatEveryWeeks = if (repeatWeeks) 2 else null,
+                                ),
+                            )
+                        } catch (_: Exception) {
+                            false
+                        }
                     }
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),

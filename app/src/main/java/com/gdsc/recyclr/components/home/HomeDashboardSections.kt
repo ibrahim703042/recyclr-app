@@ -4,7 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -12,8 +14,11 @@ import androidx.compose.material.icons.filled.Park
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.EnergySavingsLeaf
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Stars
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -26,16 +31,25 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -44,23 +58,69 @@ import com.gdsc.recyclr.domain.model.engagement.CommunityPost
 import com.gdsc.recyclr.domain.model.engagement.EcoStreak
 import com.gdsc.recyclr.domain.model.engagement.LeaderboardEntry
 import com.gdsc.recyclr.domain.model.engagement.RecWallet
+import com.gdsc.recyclr.domain.model.engagement.UserBadge
 import com.gdsc.recyclr.domain.model.engagement.WeeklyChallenge
 import java.util.concurrent.TimeUnit
 
-object HomeRedesignColors {
-    val PrimaryGreen = Color(0xFF2E7D32)
-    val LightGreenCard = Color(0xFFE8F5E9)
-    val PageBackground = Color(0xFFF5F7F0)
-    val TextDark = Color(0xFF1F2A1B)
-    val TextMuted = Color(0xFF6B7B66)
-    val GreetingMuted = Color(0xFF5D6B53)
-    val Divider = Color(0xFFEEEEEE)
-    val PointsStar = Color(0xFFFFB300)
-    val StreakAmberBg = Color(0xFFFFF8E1)
-    val ProgressTrack = Color(0xFFE0E0E0)
-    val NavBorder = Color(0xFFE0E0E0)
-    val NavInactive = Color(0xFF9E9E9E)
-    val CommunityBody = Color(0xFF333333)
+data class HomeRedesignPalette(
+    val primary: Color,
+    val onPrimary: Color,
+    val pageBackground: Color,
+    val card: Color,
+    val onCard: Color,
+    val muted: Color,
+    val greeting: Color,
+    val divider: Color,
+    val highlightRow: Color,
+    val softAccent: Color,
+    val streakBanner: Color,
+    val progressTrack: Color,
+    val chipStroke: Color,
+    val chipSurface: Color,
+    val walletGradientStart: Color,
+    val walletGradientEnd: Color,
+    val pointsStar: Color,
+)
+
+private fun ColorScheme.homePaletteIsDark(): Boolean = background.luminance() < 0.5f
+
+private fun buildHomePalette(cs: ColorScheme): HomeRedesignPalette {
+    val dark = cs.homePaletteIsDark()
+    return HomeRedesignPalette(
+        primary = cs.primary,
+        onPrimary = cs.onPrimary,
+        pageBackground = cs.background,
+        card = cs.surface,
+        onCard = cs.onSurface,
+        muted = cs.onSurfaceVariant,
+        greeting = cs.onSurfaceVariant,
+        divider = cs.outline.copy(alpha = if (dark) 0.28f else 0.4f),
+        highlightRow = cs.primaryContainer.copy(alpha = if (dark) 0.42f else 0.88f),
+        softAccent = cs.primaryContainer.copy(alpha = if (dark) 0.5f else 1f),
+        streakBanner = if (dark) Color(0xFF2F2818) else Color(0xFFFFF8E1),
+        progressTrack = cs.surfaceVariant,
+        chipStroke = cs.outline.copy(alpha = if (dark) 0.45f else 0.5f),
+        chipSurface = cs.surface,
+        walletGradientStart = cs.primaryContainer.copy(alpha = if (dark) 0.55f else 1f),
+        walletGradientEnd = cs.surface,
+        pointsStar = Color(0xFFFFB300),
+    )
+}
+
+val LocalHomeRedesignPalette = compositionLocalOf<HomeRedesignPalette> {
+    error("Provide LocalHomeRedesignPalette with HomeRedesignThemeProvider")
+}
+
+@Composable
+fun rememberHomeRedesignPalette(): HomeRedesignPalette {
+    val cs = MaterialTheme.colorScheme
+    return remember(cs) { buildHomePalette(cs) }
+}
+
+@Composable
+fun HomeRedesignThemeProvider(content: @Composable () -> Unit) {
+    val palette = rememberHomeRedesignPalette()
+    CompositionLocalProvider(LocalHomeRedesignPalette provides palette, content = content)
 }
 
 @Composable
@@ -96,7 +156,7 @@ fun HomeGreetingHeader(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .background(HomeRedesignColors.LightGreenCard),
+                    .background(LocalHomeRedesignPalette.current.softAccent),
                 contentAlignment = Alignment.Center,
             ) {
                 if (!photoUrl.isNullOrBlank()) {
@@ -110,7 +170,7 @@ fun HomeGreetingHeader(
                     Icon(
                         Icons.Outlined.EnergySavingsLeaf,
                         contentDescription = null,
-                        tint = HomeRedesignColors.PrimaryGreen,
+                        tint = LocalHomeRedesignPalette.current.primary,
                         modifier = Modifier.size(24.dp),
                     )
                 }
@@ -121,13 +181,13 @@ fun HomeGreetingHeader(
                 text = stringResource(R.string.home_welcome_back_comma),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color = HomeRedesignColors.GreetingMuted,
+                color = LocalHomeRedesignPalette.current.greeting,
             )
             Text(
                 text = userName,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = HomeRedesignColors.TextDark,
+                color = LocalHomeRedesignPalette.current.onCard,
             )
         }
         IconButton(onClick = onNotificationClick, modifier = Modifier.size(48.dp)) {
@@ -145,7 +205,7 @@ fun HomeGreetingHeader(
                     Icon(
                         imageVector = Icons.Outlined.Notifications,
                         contentDescription = null,
-                        tint = HomeRedesignColors.TextDark,
+                        tint = LocalHomeRedesignPalette.current.onCard,
                         modifier = Modifier.size(24.dp),
                     )
                 }
@@ -153,7 +213,7 @@ fun HomeGreetingHeader(
                 Icon(
                     imageVector = Icons.Outlined.Notifications,
                     contentDescription = null,
-                    tint = HomeRedesignColors.TextDark,
+                    tint = LocalHomeRedesignPalette.current.onCard,
                     modifier = Modifier.size(24.dp),
                 )
             }
@@ -178,7 +238,7 @@ fun HomeStatsRow(
                 Icon(
                     Icons.Outlined.EnergySavingsLeaf,
                     null,
-                    tint = HomeRedesignColors.PrimaryGreen,
+                    tint = LocalHomeRedesignPalette.current.primary,
                     modifier = Modifier.size(24.dp),
                 )
             },
@@ -191,7 +251,7 @@ fun HomeStatsRow(
                 Icon(
                     Icons.Filled.Star,
                     null,
-                    tint = HomeRedesignColors.PointsStar,
+                    tint = LocalHomeRedesignPalette.current.pointsStar,
                     modifier = Modifier.size(24.dp),
                 )
             },
@@ -204,7 +264,7 @@ fun HomeStatsRow(
                 Icon(
                     Icons.Filled.Park,
                     null,
-                    tint = HomeRedesignColors.PrimaryGreen,
+                    tint = LocalHomeRedesignPalette.current.primary,
                     modifier = Modifier.size(24.dp),
                 )
             },
@@ -224,7 +284,7 @@ private fun HomeStatCard(
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = LocalHomeRedesignPalette.current.card),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(
@@ -240,12 +300,12 @@ private fun HomeStatCard(
                 text = value,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = HomeRedesignColors.TextDark,
+                color = LocalHomeRedesignPalette.current.onCard,
             )
             Text(
                 text = label,
                 fontSize = 12.sp,
-                color = HomeRedesignColors.TextMuted,
+                color = LocalHomeRedesignPalette.current.muted,
             )
         }
     }
@@ -262,6 +322,7 @@ fun HomeWalletSummaryCard(
             .fillMaxWidth()
             .clickable(onClick = onOpenWallet),
         shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = LocalHomeRedesignPalette.current.card),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Row(
@@ -269,7 +330,10 @@ fun HomeWalletSummaryCard(
                 .fillMaxWidth()
                 .background(
                     Brush.horizontalGradient(
-                        colors = listOf(Color(0xFFE8F5E9), Color.White),
+                        colors = listOf(
+                            LocalHomeRedesignPalette.current.walletGradientStart,
+                            LocalHomeRedesignPalette.current.walletGradientEnd,
+                        ),
                     ),
                 )
                 .padding(12.dp),
@@ -280,24 +344,24 @@ fun HomeWalletSummaryCard(
                     text = stringResource(R.string.home_wallet_rec_title),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = HomeRedesignColors.TextDark,
+                    color = LocalHomeRedesignPalette.current.onCard,
                 )
                 Text(
                     text = stringResource(R.string.home_wallet_rec_balance, wallet.recBalance),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = HomeRedesignColors.TextDark,
+                    color = LocalHomeRedesignPalette.current.onCard,
                 )
                 Text(
                     text = stringResource(R.string.home_wallet_co2_credits, wallet.carbonCreditsTonnes),
                     fontSize = 12.sp,
-                    color = HomeRedesignColors.TextMuted,
+                    color = LocalHomeRedesignPalette.current.muted,
                 )
             }
             Text(
                 text = stringResource(R.string.home_wallet_view_details_chevron),
                 fontSize = 12.sp,
-                color = HomeRedesignColors.PrimaryGreen,
+                color = LocalHomeRedesignPalette.current.primary,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.clickable(onClick = onOpenWallet),
             )
@@ -314,7 +378,7 @@ fun HomeEcoStreakBanner(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .background(HomeRedesignColors.StreakAmberBg)
+            .background(LocalHomeRedesignPalette.current.streakBanner)
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -323,12 +387,12 @@ fun HomeEcoStreakBanner(
             text = stringResource(R.string.home_eco_streak_inline, streak.currentDays),
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
-            color = HomeRedesignColors.TextDark,
+            color = LocalHomeRedesignPalette.current.onCard,
         )
         Text(
             text = stringResource(R.string.home_streak_multiplier, streak.multiplier),
             fontSize = 12.sp,
-            color = HomeRedesignColors.TextMuted,
+            color = LocalHomeRedesignPalette.current.muted,
         )
     }
 }
@@ -345,7 +409,7 @@ fun HomeWeeklyChallengeCard(
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = LocalHomeRedesignPalette.current.card),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -358,13 +422,13 @@ fun HomeWeeklyChallengeCard(
                     text = stringResource(R.string.home_weekly_challenge_title),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = HomeRedesignColors.TextDark,
+                    color = LocalHomeRedesignPalette.current.onCard,
                 )
                 Text(
                     text = stringResource(R.string.home_challenge_pts, challenge.rewardPoints),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = HomeRedesignColors.PrimaryGreen,
+                    color = LocalHomeRedesignPalette.current.primary,
                 )
             }
             Spacer(Modifier.height(8.dp))
@@ -372,13 +436,13 @@ fun HomeWeeklyChallengeCard(
                 text = challenge.title,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color = HomeRedesignColors.TextDark,
+                color = LocalHomeRedesignPalette.current.onCard,
             )
             Spacer(Modifier.height(4.dp))
             Text(
                 text = challenge.description,
                 fontSize = 12.sp,
-                color = HomeRedesignColors.TextMuted,
+                color = LocalHomeRedesignPalette.current.muted,
             )
             Spacer(Modifier.height(12.dp))
             LinearProgressIndicator(
@@ -387,8 +451,8 @@ fun HomeWeeklyChallengeCard(
                     .fillMaxWidth()
                     .height(8.dp)
                     .clip(RoundedCornerShape(4.dp)),
-                color = HomeRedesignColors.PrimaryGreen,
-                trackColor = HomeRedesignColors.ProgressTrack,
+                color = LocalHomeRedesignPalette.current.primary,
+                trackColor = LocalHomeRedesignPalette.current.progressTrack,
             )
             Spacer(Modifier.height(8.dp))
             Text(
@@ -399,9 +463,36 @@ fun HomeWeeklyChallengeCard(
                     challenge.endsInDays,
                 ),
                 fontSize = 12.sp,
-                color = HomeRedesignColors.TextMuted,
+                color = LocalHomeRedesignPalette.current.muted,
             )
         }
+    }
+}
+
+private data class HomeLeaderboardLayoutMetrics(
+    val cardPaddingH: Dp,
+    val cardPaddingV: Dp,
+    val rowVerticalPadding: Dp,
+    val headerBottomSpacer: Dp,
+    val titleFontSp: TextUnit,
+    val rowFontSp: TextUnit,
+    val linkFontSp: TextUnit,
+)
+
+@Composable
+private fun rememberHomeLeaderboardLayoutMetrics(): HomeLeaderboardLayoutMetrics {
+    val widthDp = LocalConfiguration.current.screenWidthDp.coerceIn(280, 900)
+    return remember(widthDp) {
+        val t = ((widthDp - 280f) / 620f).coerceIn(0f, 1f)
+        HomeLeaderboardLayoutMetrics(
+            cardPaddingH = (12f + 10f * t).dp,
+            cardPaddingV = (12f + 6f * t).dp,
+            rowVerticalPadding = (8f + 6f * t).dp,
+            headerBottomSpacer = (4f + 4f * t).dp,
+            titleFontSp = (15f + 3f * t).sp,
+            rowFontSp = (13f + 2.5f * t).sp,
+            linkFontSp = (11.5f + 1.5f * t).sp,
+        )
     }
 }
 
@@ -411,59 +502,79 @@ fun HomeLeaderboardPreviewCard(
     onOpenLeaderboard: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
+    val m = rememberHomeLeaderboardLayoutMetrics()
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = LocalHomeRedesignPalette.current.card),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = m.cardPaddingH, vertical = m.cardPaddingV),
         ) {
-            Text(
-                text = stringResource(R.string.home_leaderboard),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = HomeRedesignColors.TextDark,
-            )
-            TextButton(onClick = onOpenLeaderboard) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Text(
-                    text = stringResource(R.string.home_view_all),
-                    fontSize = 12.sp,
-                    color = HomeRedesignColors.PrimaryGreen,
+                    text = stringResource(R.string.home_leaderboard),
+                    fontSize = m.titleFontSp,
+                    fontWeight = FontWeight.Bold,
+                    color = LocalHomeRedesignPalette.current.onCard,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
-            }
-        }
-        Spacer(Modifier.height(4.dp))
-        val preview = entries.take(3)
-        preview.forEachIndexed { index, entry ->
-            val isYou = entry.isCurrentUser
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(if (isYou) 8.dp else 0.dp))
-                        .background(if (isYou) HomeRedesignColors.LightGreenCard else Color.Transparent)
-                        .padding(vertical = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
+                TextButton(onClick = onOpenLeaderboard) {
                     Text(
-                        text = stringResource(
-                            R.string.home_leaderboard_row,
-                            entry.rank,
-                            if (isYou) stringResource(R.string.home_leaderboard_you) else entry.name,
-                        ),
-                        fontSize = 14.sp,
-                        color = HomeRedesignColors.TextDark,
-                        fontWeight = if (isYou) FontWeight.Bold else FontWeight.Normal,
-                    )
-                    Text(
-                        text = stringResource(R.string.home_leaderboard_pts, entry.points),
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = HomeRedesignColors.TextDark,
+                        text = stringResource(R.string.home_view_all),
+                        fontSize = m.linkFontSp,
+                        color = LocalHomeRedesignPalette.current.primary,
+                        maxLines = 1,
                     )
                 }
-                if (index < preview.lastIndex) {
-                    HorizontalDivider(thickness = 0.5.dp, color = HomeRedesignColors.Divider)
+            }
+            Spacer(Modifier.height(m.headerBottomSpacer))
+            val preview = entries.take(3)
+            preview.forEachIndexed { index, entry ->
+                val isYou = entry.isCurrentUser
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(if (isYou) 8.dp else 0.dp))
+                            .background(if (isYou) LocalHomeRedesignPalette.current.highlightRow else Color.Transparent)
+                            .padding(vertical = m.rowVerticalPadding),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = stringResource(
+                                R.string.home_leaderboard_row,
+                                entry.rank,
+                                if (isYou) stringResource(R.string.home_leaderboard_you) else entry.name,
+                            ),
+                            fontSize = m.rowFontSp,
+                            color = LocalHomeRedesignPalette.current.onCard,
+                            fontWeight = if (isYou) FontWeight.Bold else FontWeight.Normal,
+                            modifier = Modifier.weight(1f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Text(
+                            text = stringResource(R.string.home_leaderboard_pts, entry.points),
+                            fontSize = m.rowFontSp,
+                            fontWeight = FontWeight.Medium,
+                            color = LocalHomeRedesignPalette.current.onCard,
+                            maxLines = 1,
+                        )
+                    }
+                    if (index < preview.lastIndex) {
+                        HorizontalDivider(thickness = 0.5.dp, color = LocalHomeRedesignPalette.current.divider)
+                    }
                 }
             }
         }
@@ -473,6 +584,7 @@ fun HomeLeaderboardPreviewCard(
 @Composable
 fun HomeCommunityHighlightCard(
     post: CommunityPost,
+    badges: List<UserBadge> = emptyList(),
     onOpenCommunity: () -> Unit,
     onOpenPickup: () -> Unit,
     onOpenMap: () -> Unit,
@@ -481,7 +593,7 @@ fun HomeCommunityHighlightCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = LocalHomeRedesignPalette.current.card),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
@@ -490,13 +602,13 @@ fun HomeCommunityHighlightCard(
                     modifier = Modifier
                         .size(32.dp)
                         .clip(CircleShape)
-                        .background(HomeRedesignColors.LightGreenCard),
+                        .background(LocalHomeRedesignPalette.current.softAccent),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         Icons.Outlined.EnergySavingsLeaf,
                         contentDescription = null,
-                        tint = HomeRedesignColors.PrimaryGreen,
+                        tint = LocalHomeRedesignPalette.current.primary,
                         modifier = Modifier.size(18.dp),
                     )
                 }
@@ -506,12 +618,12 @@ fun HomeCommunityHighlightCard(
                         text = post.groupName.ifBlank { post.author },
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = HomeRedesignColors.TextDark,
+                        color = LocalHomeRedesignPalette.current.onCard,
                     )
                     Text(
                         text = formatRelativePostTime(post.createdAtMillis),
                         fontSize = 12.sp,
-                        color = HomeRedesignColors.TextMuted,
+                        color = LocalHomeRedesignPalette.current.muted,
                     )
                 }
             }
@@ -519,13 +631,47 @@ fun HomeCommunityHighlightCard(
             Text(
                 text = post.message,
                 fontSize = 14.sp,
-                color = HomeRedesignColors.CommunityBody,
+                color = LocalHomeRedesignPalette.current.onCard,
             )
+            if (badges.isNotEmpty()) {
+                Spacer(Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    badges.forEach { badge ->
+                        AssistChip(
+                            onClick = onOpenCommunity,
+                            label = {
+                                Text(
+                                    badge.title,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    style = MaterialTheme.typography.labelMedium,
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Outlined.Stars,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            },
+                            colors = AssistChipDefaults.assistChipColors(
+                                containerColor = LocalHomeRedesignPalette.current.softAccent,
+                                labelColor = LocalHomeRedesignPalette.current.onCard,
+                            ),
+                        )
+                    }
+                }
+            }
             Spacer(Modifier.height(8.dp))
             Text(
                 text = stringResource(R.string.home_community_likes, post.likes),
                 fontSize = 12.sp,
-                color = HomeRedesignColors.TextMuted,
+                color = LocalHomeRedesignPalette.current.muted,
                 modifier = Modifier.clickable { onOpenCommunity() },
             )
             Spacer(Modifier.height(12.dp))
@@ -539,8 +685,8 @@ fun HomeCommunityHighlightCard(
                         .weight(1f)
                         .height(40.dp),
                     shape = RoundedCornerShape(24.dp),
-                    border = BorderStroke(1.dp, HomeRedesignColors.PrimaryGreen),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = HomeRedesignColors.PrimaryGreen),
+                    border = BorderStroke(1.dp, LocalHomeRedesignPalette.current.primary),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = LocalHomeRedesignPalette.current.primary),
                 ) {
                     Text(
                         text = stringResource(R.string.home_request_pickup_capitalized),
@@ -555,8 +701,8 @@ fun HomeCommunityHighlightCard(
                         .height(40.dp),
                     shape = RoundedCornerShape(24.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = HomeRedesignColors.PrimaryGreen,
-                        contentColor = Color.White,
+                        containerColor = LocalHomeRedesignPalette.current.primary,
+                        contentColor = LocalHomeRedesignPalette.current.onPrimary,
                     ),
                 ) {
                     Text(
@@ -583,8 +729,8 @@ fun HomeCategoryChip(
         modifier = modifier
             .height(56.dp)
             .clip(RoundedCornerShape(32.dp))
-            .background(Color.White)
-            .border(1.dp, HomeRedesignColors.ProgressTrack, RoundedCornerShape(32.dp))
+            .background(LocalHomeRedesignPalette.current.chipSurface)
+            .border(1.dp, LocalHomeRedesignPalette.current.chipStroke, RoundedCornerShape(32.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -600,6 +746,6 @@ fun HomeCategoryChip(
             Icon(icon, null, tint = iconTint, modifier = Modifier.size(24.dp))
         }
         Spacer(Modifier.width(8.dp))
-        Text(text = title, fontSize = 14.sp, color = HomeRedesignColors.TextDark)
+        Text(text = title, fontSize = 14.sp, color = LocalHomeRedesignPalette.current.onCard)
     }
 }

@@ -61,6 +61,7 @@
     <string name="category_title_glass">Glass</string>
     <string name="category_title_metal">Metal</string>
     <string name="category_title_textile">Textile</string>
+    <string name="cd_navigate_up">Back</string>
 
     <string name="scan_title">Scan</string>
     <string name="scan_permission_required">Camera permission is required to scan.</string>
@@ -268,4 +269,22 @@
     <string name="support_chat_hint">Message Recyclr support…</string>
     <string name="support_chat_send">Send</string>
     <string name="support_chat_welcome">Hello! Ask us about recycling, pickups, or rewards.</string>
+    <string name="support_chat_subtitle">We usually reply within 24 hours.</string>
+    <string name="support_chat_you">You</string>
+    <string name="support_chat_team">Recyclr team</string>
+    <string name="support_chat_online">Online</string>
+    <string name="help_center_title">Help center</string>
+    <string name="help_center_url" translatable="false">https://www.epa.gov/recycle</string>
+    <string name="notifications_mark_all_read">Mark all as read</string>
+    <string name="notifications_push_section_title">Push alerts</string>
+    <string name="notifications_push_section_body">Allow notifications to get tips when you earn points, when a pickup is confirmed, or when support replies.</string>
+    <string name="notifications_push_allow">Allow notifications</string>
+    <string name="notifications_push_open_settings">Open app settings</string>
+    <string name="notifications_push_granted">Notifications enabled for this device.</string>
+    <string name="notifications_push_denied">Notifications are off. You can turn them on in system settings.</string>
+    <string name="notifications_open_help">Recycling guide (web)</string>
+    <string name="notifications_types_hint">Firebase data keys: title, body, type (challenge, pickup, support, promo, community).</string>
+    <string name="push_default_title">Recyclr</string>
+    <string name="push_default_body">You have a new update.</string>
+    <string name="home_badge_community">Community</string>
 </resources>

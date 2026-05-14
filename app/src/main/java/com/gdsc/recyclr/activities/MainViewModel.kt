@@ -7,6 +7,7 @@ import com.gdsc.recyclr.domain.model.AppThemeMode
 import com.gdsc.recyclr.domain.repository.AuthRepository
 import com.gdsc.recyclr.domain.repository.SettingsRepository
 import com.gdsc.recyclr.navigation.BottomBarPage
+import com.gdsc.recyclr.navigation.FeatureRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -52,6 +53,17 @@ class MainViewModel @Inject constructor(
 
     fun requestOpenMapTab() {
         _pendingMainBottomTabRoute.value = BottomBarPage.Map.route
+    }
+
+    private val _pendingFeatureRoute = MutableStateFlow<String?>(null)
+    val pendingFeatureRoute: StateFlow<String?> = _pendingFeatureRoute.asStateFlow()
+
+    fun requestOpenNotificationsFeature() {
+        _pendingFeatureRoute.value = FeatureRoute.Notifications
+    }
+
+    fun consumePendingFeatureRoute() {
+        _pendingFeatureRoute.value = null
     }
 
     fun consumePendingMainBottomTab() {

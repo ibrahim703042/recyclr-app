@@ -32,6 +32,8 @@ import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -60,6 +62,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gdsc.recyclr.R
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.ShopItem
@@ -73,6 +76,7 @@ fun ShopScreen(
     viewModel: ShopViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
+    val supportUnread by viewModel.supportUnreadCount.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val shopItemsResponse = viewModel.shopItemsResponse
     val redeemResponse = viewModel.redeemResponse
@@ -154,7 +158,28 @@ fun ShopScreen(
                 actions = {
                     if (selectedItem == null) {
                         IconButton(onClick = onOpenSupportChat) {
-                            Icon(Icons.Outlined.Chat, contentDescription = stringResource(R.string.shop_support_chat))
+                            if (supportUnread > 0) {
+                                BadgedBox(
+                                    badge = {
+                                        Badge {
+                                            Text(
+                                                text = if (supportUnread > 9) "9+" else supportUnread.toString(),
+                                                style = MaterialTheme.typography.labelSmall,
+                                            )
+                                        }
+                                    },
+                                ) {
+                                    Icon(
+                                        Icons.Outlined.Chat,
+                                        contentDescription = stringResource(R.string.shop_support_chat),
+                                    )
+                                }
+                            } else {
+                                Icon(
+                                    Icons.Outlined.Chat,
+                                    contentDescription = stringResource(R.string.shop_support_chat),
+                                )
+                            }
                         }
                     }
                 },

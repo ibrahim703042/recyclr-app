@@ -2,6 +2,8 @@ package com.gdsc.recyclr.screens.dashboard
 
 import android.annotation.SuppressLint
 import androidx.activity.ComponentActivity
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween as animTween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
@@ -12,9 +14,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -22,13 +24,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.gdsc.recyclr.activities.MainViewModel
 import com.gdsc.recyclr.navigation.BottomBarPage
 import com.gdsc.recyclr.navigation.BottomNavGraph
+import com.gdsc.recyclr.navigation.navigateToFeature
+import com.gdsc.recyclr.navigation.navigateToMainTab
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -40,23 +43,27 @@ fun MainScreen(
     val activity = LocalContext.current as ComponentActivity
     val mainViewModel = hiltViewModel<MainViewModel>(viewModelStoreOwner = activity)
     val pendingBottomTab by mainViewModel.pendingMainBottomTabRoute.collectAsStateWithLifecycle()
+    val pendingFeature by mainViewModel.pendingFeatureRoute.collectAsStateWithLifecycle()
 
     LaunchedEffect(pendingBottomTab) {
         val route = pendingBottomTab ?: return@LaunchedEffect
-        navController.navigate(route) {
-            popUpTo(navController.graph.findStartDestination().id) {
-                saveState = true
-            }
-            launchSingleTop = true
-            restoreState = true
-        }
+        navController.navigateToMainTab(route)
         mainViewModel.consumePendingMainBottomTab()
+    }
+
+    LaunchedEffect(pendingFeature) {
+        val route = pendingFeature ?: return@LaunchedEffect
+        navController.navigateToFeature(route)
+        mainViewModel.consumePendingFeatureRoute()
     }
 
     Scaffold(
         bottomBar = { BottomBar(navController = navController) },
     ) { innerPadding ->
-        Surface(modifier = Modifier.padding(innerPadding)) {
+        Surface(
+            modifier = Modifier.padding(innerPadding),
+            color = MaterialTheme.colorScheme.background,
+        ) {
             BottomNavGraph(
                 navController = navController,
                 navigateToResults = navigateToResults,
@@ -68,6 +75,7 @@ fun MainScreen(
 
 @Composable
 fun BottomBar(navController: NavHostController) {
+    val scheme = MaterialTheme.colorScheme
     val screens = listOf(
         BottomBarPage.Home,
         BottomBarPage.Scan,
@@ -78,10 +86,10 @@ fun BottomBar(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    Column(modifier = Modifier.background(Color.White)) {
-        HorizontalDivider(thickness = 0.5.dp, color = Color(0xFFE0E0E0))
+    Column(modifier = Modifier.background(scheme.surface)) {
+        HorizontalDivider(thickness = 0.5.dp, color = scheme.outline.copy(alpha = 0.35f))
         NavigationBar(
-            containerColor = Color.White,
+            containerColor = scheme.surface,
             tonalElevation = 0.dp,
         ) {
             screens.forEach { screen ->
@@ -101,8 +109,14 @@ fun RowScope.AddItem(
     currentDestination: NavDestination?,
     navController: NavHostController,
 ) {
+    val scheme = MaterialTheme.colorScheme
     val selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
-    
+    val iconScale by animateFloatAsState(
+        targetValue = if (selected) 1.08f else 1f,
+        animationSpec = animTween(durationMillis = 220),
+        label = "navIconScale",
+    )
+
     NavigationBarItem(
         label = {
             Text(
@@ -116,25 +130,24 @@ fun RowScope.AddItem(
             Icon(
                 imageVector = screen.icon,
                 contentDescription = screen.route,
-                modifier = Modifier.size(24.dp),
+                modifier = Modifier
+                    .size(24.dp)
+                    .graphicsLayer {
+                        scaleX = iconScale
+                        scaleY = iconScale
+                    },
             )
         },
         selected = selected,
         onClick = {
-            navController.navigate(screen.route) {
-                popUpTo(navController.graph.findStartDestination().id) {
-                    saveState = true
-                }
-                launchSingleTop = true
-                restoreState = true
-            }
+            navController.navigateToMainTab(screen.route)
         },
         colors = NavigationBarItemDefaults.colors(
-            selectedIconColor = Color(0xFF2E7D32),
-            selectedTextColor = Color(0xFF2E7D32),
-            unselectedIconColor = Color(0xFF9E9E9E),
-            unselectedTextColor = Color(0xFF9E9E9E),
-            indicatorColor = Color.Transparent,
+            selectedIconColor = scheme.primary,
+            selectedTextColor = scheme.primary,
+            unselectedIconColor = scheme.onSurfaceVariant,
+            unselectedTextColor = scheme.onSurfaceVariant,
+            indicatorColor = scheme.primaryContainer.copy(alpha = 0.42f),
         ),
     )
 }

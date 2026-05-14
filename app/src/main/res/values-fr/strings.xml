@@ -59,6 +59,7 @@
     <string name="category_title_glass">Verre</string>
     <string name="category_title_metal">Métal</string>
     <string name="category_title_textile">Textile</string>
+    <string name="cd_navigate_up">Retour</string>
 
     <string name="scan_title">Scanner</string>
     <string name="scan_permission_required">L\'autorisation caméra est nécessaire pour scanner.</string>
@@ -267,4 +268,21 @@
     <string name="support_chat_hint">Écrire au support Recyclr…</string>
     <string name="support_chat_send">Envoyer</string>
     <string name="support_chat_welcome">Bonjour ! Posez vos questions sur le recyclage, les collectes ou les récompenses.</string>
+    <string name="support_chat_subtitle">Réponse en général sous 24 h.</string>
+    <string name="support_chat_you">Vous</string>
+    <string name="support_chat_team">Équipe Recyclr</string>
+    <string name="support_chat_online">En ligne</string>
+    <string name="help_center_title">Centre d’aide</string>
+    <string name="notifications_mark_all_read">Tout marquer comme lu</string>
+    <string name="notifications_push_section_title">Alertes push</string>
+    <string name="notifications_push_section_body">Activez les notifications pour les points, les confirmations de collecte ou les réponses du support.</string>
+    <string name="notifications_push_allow">Autoriser les notifications</string>
+    <string name="notifications_push_open_settings">Ouvrir les paramètres de l’app</string>
+    <string name="notifications_push_granted">Notifications activées sur cet appareil.</string>
+    <string name="notifications_push_denied">Notifications désactivées. Vous pouvez les activer dans les réglages système.</string>
+    <string name="notifications_open_help">Guide recyclage (web)</string>
+    <string name="notifications_types_hint">Payload Firebase : title, body, type (challenge, pickup, support, promo, community).</string>
+    <string name="push_default_title">Recyclr</string>
+    <string name="push_default_body">Nouvelle mise à jour.</string>
+    <string name="home_badge_community">Communauté</string>
 </resources>

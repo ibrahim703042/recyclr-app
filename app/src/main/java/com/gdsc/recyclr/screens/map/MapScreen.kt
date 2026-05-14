@@ -36,7 +36,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.gdsc.recyclr.R
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.gdsc.recyclr.domain.model.CollectionPoint
@@ -58,7 +60,8 @@ import kotlinx.coroutines.tasks.await
 @Composable
 @OptIn(ExperimentalMaterialApi::class)
 fun MapScreen(
-    viewModel: MapViewModel = hiltViewModel()
+    viewModel: MapViewModel = hiltViewModel(),
+    onRequestPickup: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
@@ -149,11 +152,18 @@ fun MapScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     
                     Button(
-                        onClick = { /* TODO: Navigate to Pickup */ },
+                        onClick = {
+                            scope.launch {
+                                runCatching { sheetState.hide() }.onFailure {
+                                    AppLogger.w("Fermeture fiche point avant collecte", it)
+                                }
+                                onRequestPickup()
+                            }
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         shape = MaterialTheme.shapes.large
                     ) {
-                        Text("Request Pickup from here")
+                        Text(stringResource(R.string.home_request_pickup_capitalized))
                     }
 
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {

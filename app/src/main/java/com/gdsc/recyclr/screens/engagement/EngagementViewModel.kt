@@ -13,7 +13,9 @@ import com.gdsc.recyclr.domain.repository.AuthRepository
 import com.gdsc.recyclr.domain.repository.EngagementRepository
 import com.gdsc.recyclr.domain.repository.ImpactRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -51,11 +53,15 @@ class EngagementViewModel @Inject constructor(
         }
     }
 
-    suspend fun submitPickup(draft: PickupRequestDraft): Boolean {
+    suspend fun submitPickup(draft: PickupRequestDraft): Boolean = try {
         val uid = authRepository.currentUser?.uid ?: "guest"
-        return when (val result = engagementRepository.submitPickupRequest(uid, draft)) {
-            is Response.Success -> result.data == true
-            else -> false
+        withContext(Dispatchers.IO) {
+            when (val result = engagementRepository.submitPickupRequest(uid, draft)) {
+                is Response.Success -> result.data == true
+                else -> false
+            }
         }
+    } catch (_: Exception) {
+        false
     }
 }

@@ -3,10 +3,8 @@ package com.gdsc.recyclr.screens.home
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun HomeScreen(
@@ -22,7 +20,7 @@ fun HomeScreen(
     onOpenNotifications: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
-    var unreadNotificationCount by remember { mutableIntStateOf(2) }
+    val unreadNotificationCount by viewModel.unreadNotificationCount.collectAsStateWithLifecycle()
     val photoUrl = viewModel.currentUser?.photoUrl?.takeIf { !it.isNullOrBlank() }
 
     HomeContent(
@@ -42,9 +40,6 @@ fun HomeScreen(
         onOpenPickup = onOpenPickup,
         onOpenMap = onOpenMap,
         onOpenProfile = onOpenProfile,
-        onOpenNotifications = {
-            unreadNotificationCount = 0
-            onOpenNotifications()
-        },
+        onOpenNotifications = onOpenNotifications,
     )
 }

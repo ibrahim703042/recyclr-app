@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.gdsc.recyclr.data.local.dao.NotificationDao
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.Response.Loading
 import com.gdsc.recyclr.domain.model.UserImpact
@@ -25,6 +26,7 @@ class HomeViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val impactRepository: ImpactRepository,
     private val engagementRepository: EngagementRepository,
+    private val notificationDao: NotificationDao,
 ) : ViewModel() {
 
     val currentUser get() = authRepository.currentUser
@@ -40,6 +42,9 @@ class HomeViewModel @Inject constructor(
 
     var dashboardResponse: Response<HomeDashboard> by mutableStateOf(Loading)
         private set
+
+    val unreadNotificationCount: StateFlow<Int> = notificationDao.observeUnreadCount()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
 
     init {
         observeImpact()

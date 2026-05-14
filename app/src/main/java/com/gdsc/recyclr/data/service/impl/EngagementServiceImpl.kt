@@ -86,16 +86,15 @@ class EngagementServiceImpl @Inject constructor(
 
     override suspend fun submitPickupRequest(userId: String, draft: PickupRequestDraft): Result<String> {
         return try {
-            val ref = firestore.collection(COL_PICKUPS).add(
-                mapOf(
-                    "userId" to userId,
-                    "address" to draft.address,
-                    "itemTypes" to draft.itemTypes,
-                    "estimatedKg" to draft.estimatedKg,
-                    "repeatEveryWeeks" to draft.repeatEveryWeeks,
-                    "createdAt" to FieldValue.serverTimestamp(),
-                ),
-            ).await()
+            val payload = buildMap<String, Any> {
+                put("userId", userId)
+                put("address", draft.address)
+                put("itemTypes", draft.itemTypes)
+                put("estimatedKg", draft.estimatedKg)
+                draft.repeatEveryWeeks?.let { put("repeatEveryWeeks", it) }
+                put("createdAt", FieldValue.serverTimestamp())
+            }
+            val ref = firestore.collection(COL_PICKUPS).add(payload).await()
             Result.success(ref.id)
         } catch (e: Exception) {
             Result.failure(e)

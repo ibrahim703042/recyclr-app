@@ -16,6 +16,12 @@ interface NotificationDao {
     @Query("SELECT COUNT(*) FROM app_notifications")
     suspend fun count(): Int
 
+    @Query("SELECT COUNT(*) FROM app_notifications WHERE isRead = 0")
+    fun observeUnreadCount(): Flow<Int>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(item: CachedNotificationEntity)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(items: List<CachedNotificationEntity>)
 
@@ -24,4 +30,7 @@ interface NotificationDao {
 
     @Query("UPDATE app_notifications SET isRead = 1 WHERE id = :id")
     suspend fun markRead(id: String)
+
+    @Query("UPDATE app_notifications SET isRead = 1")
+    suspend fun markAllRead()
 }

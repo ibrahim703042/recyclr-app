@@ -47,13 +47,15 @@ import com.gdsc.recyclr.components.home.HomeCommunityHighlightCard
 import com.gdsc.recyclr.components.home.HomeEcoStreakBanner
 import com.gdsc.recyclr.components.home.HomeGreetingHeader
 import com.gdsc.recyclr.components.home.HomeLeaderboardPreviewCard
-import com.gdsc.recyclr.components.home.HomeRedesignColors
+import com.gdsc.recyclr.components.home.HomeRedesignThemeProvider
+import com.gdsc.recyclr.components.home.LocalHomeRedesignPalette
 import com.gdsc.recyclr.components.home.HomeStatsRow
 import com.gdsc.recyclr.components.home.HomeWalletSummaryCard
 import com.gdsc.recyclr.components.home.HomeWeeklyChallengeCard
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.UserImpact
 import com.gdsc.recyclr.domain.model.engagement.HomeDashboard
+import com.gdsc.recyclr.domain.model.engagement.UserBadge
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -114,10 +116,11 @@ fun HomeContent(
     val points = impact?.pointsBalance ?: 0
     val trees = impact?.treesEquivalent ?: 0
 
+    HomeRedesignThemeProvider {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(HomeRedesignColors.PageBackground)
+            .background(LocalHomeRedesignPalette.current.pageBackground)
             .padding(padding)
             .pullRefresh(pullRefreshState),
     ) {
@@ -173,6 +176,7 @@ fun HomeContent(
                             item(key = "community") {
                                 HomeCommunityHighlightCard(
                                     post = post,
+                                    badges = data.badges.filter { it.earned }.take(5),
                                     onOpenCommunity = onOpenCommunity,
                                     onOpenPickup = onOpenPickup,
                                     onOpenMap = onOpenMap,
@@ -189,7 +193,7 @@ fun HomeContent(
                                 .padding(vertical = 24.dp),
                             contentAlignment = Alignment.Center,
                         ) {
-                            CircularProgressIndicator(color = HomeRedesignColors.PrimaryGreen)
+                            CircularProgressIndicator(color = LocalHomeRedesignPalette.current.primary)
                         }
                     }
                 }
@@ -201,7 +205,7 @@ fun HomeContent(
                     text = stringResource(R.string.home_recycling_categories),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = HomeRedesignColors.TextDark,
+                    color = LocalHomeRedesignPalette.current.onCard,
                     modifier = Modifier.padding(top = 4.dp),
                 )
             }
@@ -236,7 +240,8 @@ fun HomeContent(
             refreshing = pullRefreshing,
             state = pullRefreshState,
             modifier = Modifier.align(Alignment.TopCenter),
-            contentColor = HomeRedesignColors.PrimaryGreen,
+            contentColor = LocalHomeRedesignPalette.current.primary,
         )
+    }
     }
 }

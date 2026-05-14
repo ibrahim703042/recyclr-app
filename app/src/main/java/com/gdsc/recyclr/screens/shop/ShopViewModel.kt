@@ -6,8 +6,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.gdsc.recyclr.data.local.entities.CachedWishlistEntity
+import com.gdsc.recyclr.data.local.dao.ChatMessageDao
 import com.gdsc.recyclr.data.local.dao.WishlistDao
+import com.gdsc.recyclr.data.local.entities.CachedWishlistEntity
+import com.gdsc.recyclr.data.local.preferences.BadgePreferencesStore
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.Response.Loading
 import com.gdsc.recyclr.domain.model.Response.Success
@@ -17,8 +19,13 @@ import com.gdsc.recyclr.domain.repository.AuthRepository
 import com.gdsc.recyclr.domain.repository.ImpactRepository
 import com.gdsc.recyclr.domain.repository.RedemptionRepository
 import com.gdsc.recyclr.domain.repository.ShopRepository
+import com.gdsc.recyclr.screens.support.SUPPORT_CHAT_THREAD_ID
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -29,6 +36,8 @@ class ShopViewModel @Inject constructor(
     private val redemptionRepository: RedemptionRepository,
     private val impactRepository: ImpactRepository,
     private val wishlistDao: WishlistDao,
+    private val chatMessageDao: ChatMessageDao,
+    private val badgePreferencesStore: BadgePreferencesStore,
 ) : ViewModel() {
 
     var shopItemsResponse by mutableStateOf<Response<List<ShopItem>>>(Loading)
@@ -45,6 +54,13 @@ class ShopViewModel @Inject constructor(
 
     var wishlistProductIds by mutableStateOf<Set<String>>(emptySet())
         private set
+
+    val supportUnreadCount: StateFlow<Int> = combine(
+        chatMessageDao.observeThread(SUPPORT_CHAT_THREAD_ID),
+        badgePreferencesStore.lastSupportThreadSeenMillis,
+    ) { rows, lastSeen ->
+        rows.count { !it.fromUser && it.sentAtMillis > lastSeen }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
 
     private val uid: String get() = authRepository.currentUser?.uid ?: "guest"
 

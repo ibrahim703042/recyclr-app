@@ -61,4 +61,8 @@ class NotificationsViewModel @Inject constructor(
     fun markRead(id: String) {
         viewModelScope.launch { notificationDao.markRead(id) }
     }
+
+    fun markAllRead() {
+        viewModelScope.launch { notificationDao.markAllRead() }
+    }
 }
