@@ -37,6 +37,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.luminance
@@ -64,6 +65,7 @@ import com.gdsc.recyclr.domain.model.engagement.RecWallet
 import com.gdsc.recyclr.domain.model.engagement.UserBadge
 import com.gdsc.recyclr.domain.model.engagement.WeeklyChallenge
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.delay
 
 data class HomeRedesignPalette(
     val primary: Color,
@@ -98,7 +100,11 @@ private fun buildHomePalette(cs: ColorScheme): HomeRedesignPalette {
         muted = cs.onSurfaceVariant,
         greeting = cs.onSurfaceVariant,
         divider = cs.outline.copy(alpha = if (dark) 0.28f else 0.4f),
-        highlightRow = cs.primaryContainer.copy(alpha = if (dark) 0.42f else 0.88f),
+        highlightRow = if (dark) {
+            cs.surfaceVariant.copy(alpha = 0.58f)
+        } else {
+            cs.primaryContainer.copy(alpha = 0.88f)
+        },
         softAccent = cs.primaryContainer.copy(alpha = if (dark) 0.5f else 1f),
         streakBanner = if (dark) Color(0xFF2F2818) else Color(0xFFFFF8E1),
         progressTrack = cs.surfaceVariant,
@@ -472,6 +478,69 @@ fun HomeWeeklyChallengeCard(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun HomeChallengeLeaderboardCarousel(
+    challenge: WeeklyChallenge,
+    entries: List<LeaderboardEntry>,
+    onOpenChallenge: () -> Unit,
+    onOpenLeaderboard: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val pagerState = rememberPagerState(pageCount = { 2 })
+
+    LaunchedEffect(pagerState) {
+        while (true) {
+            delay(5_000L)
+            val next = (pagerState.settledPage + 1) % 2
+            pagerState.animateScrollToPage(next)
+        }
+    }
+
+    Column(modifier.fillMaxWidth()) {
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxWidth(),
+            userScrollEnabled = true,
+        ) { page ->
+            when (page) {
+                0 -> HomeWeeklyChallengeCard(
+                    challenge = challenge,
+                    onClick = onOpenChallenge,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                else -> HomeLeaderboardPreviewCard(
+                    entries = entries,
+                    onOpenLeaderboard = onOpenLeaderboard,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 2.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            repeat(2) { i ->
+                val selected = i == pagerState.currentPage
+                Spacer(
+                    Modifier
+                        .padding(horizontal = 4.dp)
+                        .size(if (selected) 8.dp else 6.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (selected) LocalHomeRedesignPalette.current.primary
+                            else LocalHomeRedesignPalette.current.muted.copy(alpha = 0.35f),
+                        ),
+                )
+            }
+        }
+    }
+}
+
 private data class HomeLeaderboardLayoutMetrics(
     val cardPaddingH: Dp,
     val cardPaddingV: Dp,
@@ -548,8 +617,23 @@ fun HomeLeaderboardPreviewCard(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(if (isYou) 8.dp else 0.dp))
-                            .background(if (isYou) LocalHomeRedesignPalette.current.highlightRow else Color.Transparent)
+                            .then(
+                                if (isYou) {
+                                    Modifier
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(
+                                            LocalHomeRedesignPalette.current.highlightRow,
+                                            RoundedCornerShape(10.dp),
+                                        )
+                                        .border(
+                                            width = 1.dp,
+                                            color = LocalHomeRedesignPalette.current.primary.copy(alpha = 0.42f),
+                                            shape = RoundedCornerShape(10.dp),
+                                        )
+                                } else {
+                                    Modifier
+                                },
+                            )
                             .padding(vertical = m.rowVerticalPadding),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically,

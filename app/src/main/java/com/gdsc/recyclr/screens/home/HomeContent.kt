@@ -46,12 +46,11 @@ import com.gdsc.recyclr.components.home.HomeCategoryChip
 import com.gdsc.recyclr.components.home.HomeCommunityHighlightsCarousel
 import com.gdsc.recyclr.components.home.HomeEcoStreakBanner
 import com.gdsc.recyclr.components.home.HomeGreetingHeader
-import com.gdsc.recyclr.components.home.HomeLeaderboardPreviewCard
+import com.gdsc.recyclr.components.home.HomeChallengeLeaderboardCarousel
 import com.gdsc.recyclr.components.home.HomeRedesignThemeProvider
 import com.gdsc.recyclr.components.home.LocalHomeRedesignPalette
 import com.gdsc.recyclr.components.home.HomeStatsRow
 import com.gdsc.recyclr.components.home.HomeWalletSummaryCard
-import com.gdsc.recyclr.components.home.HomeWeeklyChallengeCard
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.UserImpact
 import com.gdsc.recyclr.domain.model.engagement.HomeDashboard
@@ -159,15 +158,11 @@ fun HomeContent(
                         item(key = "streak") {
                             HomeEcoStreakBanner(streak = data.streak)
                         }
-                        item(key = "challenge") {
-                            HomeWeeklyChallengeCard(
+                        item(key = "challenge_leaderboard") {
+                            HomeChallengeLeaderboardCarousel(
                                 challenge = data.challenge,
-                                onClick = onOpenChallenge,
-                            )
-                        }
-                        item(key = "leaderboard") {
-                            HomeLeaderboardPreviewCard(
                                 entries = data.leaderboard,
+                                onOpenChallenge = onOpenChallenge,
                                 onOpenLeaderboard = onOpenLeaderboard,
                             )
                         }

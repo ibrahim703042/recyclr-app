@@ -141,8 +141,13 @@ fun OnboardingScreen(
 private fun OnboardingPageContent(page: OnboardingPage) {
     val cfg = LocalConfiguration.current
     val cardPadH = if (cfg.screenWidthDp < 360) 16.dp else 24.dp
-    val cardPadV = if (cfg.screenHeightDp < 640) 20.dp else 32.dp
-    val waveHeight = max(140.dp, min(260.dp, (cfg.screenHeightDp * 0.34f).dp))
+    val cardPadV = if (cfg.screenHeightDp < 640) 16.dp else 24.dp
+    val compactH = cfg.screenHeightDp < 700
+    // Bande vague plus basse et bornée : évite une « carte » visuelle trop haute sur grands écrans
+    val waveHeight = max(96.dp, min(176.dp, (cfg.screenHeightDp * 0.19f).dp))
+    val titleStyle =
+        if (compactH) MaterialTheme.typography.headlineSmall
+        else MaterialTheme.typography.headlineMedium
 
     Card(
         modifier = Modifier.fillMaxSize(),
@@ -157,85 +162,92 @@ private fun OnboardingPageContent(page: OnboardingPage) {
         ) {
             Text(
                 text = page.title,
-                style = MaterialTheme.typography.headlineMedium,
+                style = titleStyle,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(if (compactH) 8.dp else 12.dp))
             Text(
                 text = page.subtitle,
-                style = MaterialTheme.typography.bodyLarge,
+                style = if (compactH) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(if (compactH) 12.dp else 16.dp))
+            // Bloc illustration dimensionné au contenu, collé sous le texte ; l’espace libre reste en bas
             Box(
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center,
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                contentAlignment = Alignment.TopCenter,
             ) {
                 Box(
                     modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center,
+                    contentAlignment = Alignment.TopCenter,
                 ) {
                     WaveBand(
-                        modifier = Modifier.align(Alignment.Center),
+                        modifier = Modifier.align(Alignment.TopCenter),
                         color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
                         height = waveHeight,
                     )
                     when (page.kind) {
                         OnboardingPageKind.Intro -> IntroIllustration(
-                            modifier = Modifier.align(Alignment.Center),
+                            modifier = Modifier.align(Alignment.TopCenter),
+                            compact = compactH,
                         )
                         OnboardingPageKind.Scan -> ScanPreview(
                             modifier = Modifier
-                                .align(Alignment.Center)
-                                .padding(horizontal = 4.dp),
+                                .align(Alignment.TopCenter)
+                                .padding(horizontal = 4.dp, vertical = 8.dp),
                         )
                         OnboardingPageKind.Rewards -> RewardPreview(
-                            modifier = Modifier.align(Alignment.Center),
+                            modifier = Modifier.align(Alignment.TopCenter),
                         )
                     }
                 }
             }
+            Spacer(modifier = Modifier.weight(1f))
         }
     }
 }
 
 @Composable
-private fun IntroIllustration(modifier: Modifier = Modifier) {
+private fun IntroIllustration(modifier: Modifier = Modifier, compact: Boolean = false) {
+    val gap = if (compact) 10.dp else 14.dp
+    val padH = if (compact) 8.dp else 12.dp
     Column(
-        modifier = modifier.padding(horizontal = 12.dp),
+        modifier = modifier.padding(horizontal = padH),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(gap),
     ) {
         Row(
             modifier = Modifier.horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(if (compact) 8.dp else 12.dp),
         ) {
-            BinChip(label = "PLASTIC", color = Color(0xFF81C784))
-            BinChip(label = "GLASS", color = Color(0xFF66BB6A))
-            BinChip(label = "METAL", color = Color(0xFFFFD54F))
-            BinChip(label = "PAPER", color = Color(0xFF64B5F6))
+            BinChip(label = "PLASTIC", color = Color(0xFF81C784), compact = compact)
+            BinChip(label = "GLASS", color = Color(0xFF66BB6A), compact = compact)
+            BinChip(label = "METAL", color = Color(0xFFFFD54F), compact = compact)
+            BinChip(label = "PAPER", color = Color(0xFF64B5F6), compact = compact)
         }
         Text(
             text = stringResource(R.string.onboarding_intro_body),
             textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.bodyMedium,
+            style = if (compact) MaterialTheme.typography.bodySmall else MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
 
 @Composable
-private fun BinChip(label: String, color: Color) {
+private fun BinChip(label: String, color: Color, compact: Boolean = false) {
+    val w = if (compact) 44.dp else 50.dp
+    val h = if (compact) 52.dp else 58.dp
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(if (compact) 2.dp else 4.dp),
     ) {
         Box(
             modifier = Modifier
-                .size(width = 54.dp, height = 64.dp)
+                .size(width = w, height = h)
                 .clip(RoundedCornerShape(8.dp))
                 .background(color),
         )
