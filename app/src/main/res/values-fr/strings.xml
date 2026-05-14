@@ -117,6 +117,18 @@
     <string name="results_view_rewards">Voir les récompenses</string>
     <string name="results_share_title">Partager l\'impact</string>
     <string name="results_share_text">J\'ai recyclé %1$s avec Recyclr — +%2$d pts, %3$.2f kg CO₂ évités. Rejoignez-nous !</string>
+    <string name="results_success_title">Réussi !</string>
+    <string name="results_identified_label">%1$s identifié</string>
+    <string name="results_stat_points_label">Points</string>
+    <string name="results_stat_co2_label">CO₂ évité</string>
+    <string name="results_disposal_title">Conseils de tri</string>
+    <string name="results_disposal_body">Rincez, compressez et déposez dans la filière adaptée pour %1$s.</string>
+    <string name="results_nearest_point">Point de collecte le plus proche</string>
+    <string name="results_map_subtitle">%1$s • %2$s</string>
+    <string name="results_distance_approx">≈ 200 m</string>
+    <string name="results_verify_double">Vérifier pour doubler les points</string>
+    <string name="results_done">Terminé</string>
+    <string name="results_share">Partager</string>
 
     <string name="notifications_sheet_title">Notifications</string>
     <string name="notifications_empty">Vous êtes à jour.</string>
@@ -154,6 +166,14 @@
     <string name="auth_have_account">Vous avez déjà un compte ?</string>
     <string name="auth_submit">Envoyer</string>
     <string name="auth_google_unavailable">Connexion Google indisponible sur cet appareil.</string>
+    <string name="auth_provider_google">Google</string>
+    <string name="auth_provider_phone">Téléphone</string>
+    <string name="auth_or_register_with">Ou s’inscrire avec</string>
+    <string name="auth_phone_sheet_title_sign_in">Connexion par téléphone</string>
+    <string name="auth_phone_sheet_title_sign_up">Inscription par téléphone</string>
+    <string name="auth_phone_sheet_body">Saisissez votre numéro pour recevoir un code de vérification par SMS.</string>
+    <string name="auth_country_code_label">Indicatif</string>
+    <string name="auth_reset_email_sent">Si un compte existe pour cet e-mail, vous recevrez un lien de réinitialisation.</string>
 
     <string name="loading">Chargement…</string>
     <string name="error_generic">Une erreur est survenue.</string>
@@ -220,6 +240,10 @@
     <string name="profile_open_wallet">Ouvrir le portefeuille $REC</string>
     <string name="scan_barcode">Code-barres</string>
     <string name="scan_barcode_hint">Saisir le code-barres</string>
+    <string name="scan_action_capture">Scanner l’objet</string>
+    <string name="scan_action_barcode">Scanner le code-barres</string>
+    <string name="scan_enter_manual">Saisir le type d’objet manuellement</string>
+    <string name="scan_recent_scans">Scans récents</string>
 
     <string name="action_confirm">Confirmer</string>
     <string name="read_more">Lire la suite</string>
@@ -297,6 +321,17 @@
     <string name="settings_about_app">À propos de Recyclr</string>
     <string name="settings_log_out">Se déconnecter</string>
     <string name="settings_delete_account">Supprimer le compte</string>
+    <string name="settings_section_session">Session</string>
+    <string name="settings_sign_in_create_account">Se connecter / Créer un compte</string>
+    <string name="profile_guest_email_hint">Non connecté</string>
+    <string name="profile_guest_sign_in_banner">Connectez-vous pour synchroniser votre profil et vos récompenses sur tous vos appareils.</string>
+    <string name="profile_section_session">Session</string>
+    <string name="dialog_guest_logout_title">Quitter le mode invité ?</string>
+    <string name="dialog_guest_logout_body">Vous naviguez sans compte. Poursuivez vers l’écran de connexion pour vous identifier ou créer un compte. Votre activité en invité reste sur cet appareil tant que vous ne vous connectez pas.</string>
+    <string name="dialog_guest_delete_title">Compte requis</string>
+    <string name="dialog_guest_delete_body">La suppression de compte n’est possible qu’avec une connexion (e-mail ou Google). Poursuivez pour vous connecter ou créer un compte.</string>
+    <string name="action_continue_to_sign_in">Aller à la connexion</string>
+    <string name="action_cancel">Annuler</string>
     <string name="settings_version_line">Version %1$s</string>
     <string name="about_title">À propos de Recyclr</string>
     <string name="about_body">Recyclr vous aide à scanner vos déchets, à gagner des points et à soutenir des actions pour l’environnement.</string>

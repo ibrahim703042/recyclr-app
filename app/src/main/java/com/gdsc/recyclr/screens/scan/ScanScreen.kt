@@ -11,13 +11,16 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.Image
@@ -42,7 +45,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.gdsc.recyclr.R
 import com.gdsc.recyclr.components.composable.BasicTopBar
 import com.gdsc.recyclr.domain.model.Response
-import com.gdsc.recyclr.ui.theme.CategoryPlastic
 import java.io.File
 import java.util.concurrent.Executor
 import kotlin.coroutines.resume
@@ -74,7 +76,6 @@ fun ScanScreen(
     }
 
     var showManualEntry by remember { mutableStateOf(false) }
-    var pendingHazardousResult by remember { mutableStateOf<ScanResult?>(null) }
     var capturing by remember { mutableStateOf(false) }
     var showBarcodeEntry by remember { mutableStateOf(false) }
     var barcodeValue by remember { mutableStateOf("") }
@@ -124,16 +125,21 @@ fun ScanScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
+        val controlsScroll = rememberScrollState()
+        val outlineColors = ButtonDefaults.outlinedButtonColors(
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        )
+        val outlineBorder = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
         ) {
-            // Top half: Camera
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
+                    .fillMaxHeight(0.5f)
                     .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
                     .background(Color.Black),
             ) {
@@ -173,57 +179,78 @@ fun ScanScreen(
                 }
             }
 
-            // Bottom half: Controls
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+                    .fillMaxHeight(0.5f)
+                    .background(MaterialTheme.colorScheme.background),
             ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(controlsScroll)
+                        .navigationBarsPadding()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Button(
                         onClick = { captureAndScan() },
-                        modifier = Modifier.weight(1f).height(56.dp),
+                        modifier = Modifier.weight(1f).heightIn(min = 48.dp, max = 56.dp),
                         shape = MaterialTheme.shapes.large,
-                        enabled = !capturing
+                        enabled = !capturing,
                     ) {
                         Icon(imageVector = Icons.Default.PhotoCamera, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
-                        Text("Scan Item")
+                        Text(
+                            stringResource(R.string.scan_action_capture),
+                            maxLines = 2,
+                        )
                     }
                     OutlinedButton(
                         onClick = { showBarcodeEntry = true },
-                        modifier = Modifier.weight(1f).height(56.dp),
-                        shape = MaterialTheme.shapes.large
+                        modifier = Modifier.weight(1f).heightIn(min = 48.dp, max = 56.dp),
+                        shape = MaterialTheme.shapes.large,
+                        colors = outlineColors,
+                        border = outlineBorder,
                     ) {
                         Icon(imageVector = Icons.Default.QrCodeScanner, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
-                        Text("Scan Barcode")
+                        Text(
+                            stringResource(R.string.scan_action_barcode),
+                            maxLines = 2,
+                        )
                     }
                 }
 
                 TextButton(onClick = { showManualEntry = true }) {
-                    Text("Enter item name manually", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        stringResource(R.string.scan_enter_manual),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                 }
 
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "Recent scans",
+                        text = stringResource(R.string.scan_recent_scans),
                         style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         items(listOf("Plastic Bottle", "Newspaper", "Glass Jar")) { item ->
                             RecentScanChip(item)
                         }
                     }
+                }
                 }
             }
         }
@@ -261,11 +288,17 @@ fun ScanScreen(
     }
 
     if (showManualEntry) {
+        val manualScroll = rememberScrollState()
         AlertDialog(
             onDismissRequest = { showManualEntry = false },
             title = { Text(stringResource(R.string.scan_manual_title)) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(
+                    modifier = Modifier
+                        .heightIn(max = 360.dp)
+                        .verticalScroll(manualScroll),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
                     val types = listOf(
                         "Plastic" to R.string.scan_manual_plastic,
                         "Paper" to R.string.scan_manual_paper,
@@ -324,9 +357,18 @@ private fun RecentScanChip(label: String) {
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(imageVector = Icons.Default.LocalDrink, contentDescription = null, modifier = Modifier.size(16.dp))
+            Icon(
+                imageVector = Icons.Default.LocalDrink,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+                tint = MaterialTheme.colorScheme.primary,
+            )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = label, style = MaterialTheme.typography.labelMedium)
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
         }
     }
 }

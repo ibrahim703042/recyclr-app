@@ -1,5 +1,6 @@
 package com.gdsc.recyclr.screens.auths.sign_in.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -42,6 +43,11 @@ fun SignInContent(
     var showPhoneModal by remember { mutableStateOf(false) }
 
     val keyboard = LocalSoftwareKeyboardController.current
+    val outlineColors = ButtonDefaults.outlinedButtonColors(
+        contentColor = MaterialTheme.colorScheme.onSurface,
+    )
+    val outlineBorder = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+
     val emailValid = android.util.Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()
     val passwordValid = password.length >= 6
     val canSubmitEmail = emailValid && passwordValid
@@ -93,7 +99,9 @@ fun SignInContent(
         OutlinedButton(
             modifier = Modifier.fillMaxWidth().height(56.dp),
             onClick = { continueAsGuest() },
-            shape = MaterialTheme.shapes.medium
+            shape = MaterialTheme.shapes.medium,
+            colors = outlineColors,
+            border = outlineBorder,
         ) {
             Text(text = stringResource(R.string.auth_continue_guest))
         }
@@ -115,35 +123,39 @@ fun SignInContent(
         
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             OutlinedButton(
-                onClick = { 
+                onClick = {
                     keyboard?.hide()
-                    onGoogleClick() 
+                    onGoogleClick()
                 },
                 modifier = Modifier.weight(1f).height(56.dp),
-                shape = MaterialTheme.shapes.medium
+                shape = MaterialTheme.shapes.medium,
+                colors = outlineColors,
+                border = outlineBorder,
             ) {
                 Icon(
                     painter = androidx.compose.ui.res.painterResource(id = R.drawable.ic_google_icon),
                     contentDescription = null,
                     tint = Color.Unspecified,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(24.dp),
                 )
                 Spacer(Modifier.width(8.dp))
-                Text("Google")
+                Text(stringResource(R.string.auth_provider_google))
             }
-            
+
             OutlinedButton(
                 onClick = { showPhoneModal = true },
                 modifier = Modifier.weight(1f).height(56.dp),
-                shape = MaterialTheme.shapes.medium
+                shape = MaterialTheme.shapes.medium,
+                colors = outlineColors,
+                border = outlineBorder,
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Phone,
                     contentDescription = null,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(24.dp),
                 )
                 Spacer(Modifier.width(8.dp))
-                Text("Phone")
+                Text(stringResource(R.string.auth_provider_phone))
             }
         }
 
@@ -156,7 +168,8 @@ fun SignInContent(
         ) {
             Text(
                 text = stringResource(R.string.auth_no_account),
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
@@ -181,15 +194,16 @@ fun SignInContent(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Sign in with Phone",
+                    text = stringResource(R.string.auth_phone_sheet_title_sign_in),
                     style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Enter your phone number to receive a verification code.",
+                    text = stringResource(R.string.auth_phone_sheet_body),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -203,18 +217,22 @@ fun SignInContent(
                         value = countryCode,
                         onValueChange = { countryCode = it },
                         modifier = Modifier.width(80.dp),
-                        label = { Text("Code") },
+                        label = { Text(stringResource(R.string.auth_country_code_label)) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                        shape = MaterialTheme.shapes.medium
+                        shape = MaterialTheme.shapes.medium,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        ),
                     )
-                    
+
                     RecyclrTextField(
                         value = phone,
                         onValueChange = { phone = it },
-                        label = "Phone Number",
-                        placeholder = "123 456 789",
+                        label = stringResource(R.string.auth_phone_number),
+                        placeholder = stringResource(R.string.auth_phone_hint),
                         modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     )
                 }
                 
@@ -230,7 +248,7 @@ fun SignInContent(
                 
                 if (!phoneVerificationId.isNullOrBlank()) {
                     Spacer(modifier = Modifier.height(24.dp))
-                    HorizontalDivider()
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     Spacer(modifier = Modifier.height(24.dp))
                     
                     RecyclrTextField(

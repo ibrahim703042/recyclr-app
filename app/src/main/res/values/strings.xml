@@ -119,6 +119,18 @@
     <string name="results_view_rewards">View rewards</string>
     <string name="results_share_title">Share impact</string>
     <string name="results_share_text">I recycled %1$s with Recyclr — +%2$d pts, %3$.2f kg CO₂ saved. Join us!</string>
+    <string name="results_success_title">Success!</string>
+    <string name="results_identified_label">%1$s identified</string>
+    <string name="results_stat_points_label">Points</string>
+    <string name="results_stat_co2_label">CO₂ saved</string>
+    <string name="results_disposal_title">Disposal tips</string>
+    <string name="results_disposal_body">Rinse, crush, and place in the designated collection bin for %1$s.</string>
+    <string name="results_nearest_point">Nearest collection point</string>
+    <string name="results_map_subtitle">%1$s • %2$s</string>
+    <string name="results_distance_approx">~200 m</string>
+    <string name="results_verify_double">Verify for double points</string>
+    <string name="results_done">Done</string>
+    <string name="results_share">Share</string>
 
     <string name="notifications_sheet_title">Notifications</string>
     <string name="notifications_empty">You\'re all caught up.</string>
@@ -155,6 +167,14 @@
     <string name="auth_have_account">Already have an account?</string>
     <string name="auth_submit">Submit</string>
     <string name="auth_google_unavailable">Google sign-in is unavailable on this device.</string>
+    <string name="auth_provider_google">Google</string>
+    <string name="auth_provider_phone">Phone</string>
+    <string name="auth_or_register_with">Or register with</string>
+    <string name="auth_phone_sheet_title_sign_in">Sign in with phone</string>
+    <string name="auth_phone_sheet_title_sign_up">Sign up with phone</string>
+    <string name="auth_phone_sheet_body">Enter your phone number to receive a verification code.</string>
+    <string name="auth_country_code_label">Code</string>
+    <string name="auth_reset_email_sent">If an account exists for this email, you will receive a reset link.</string>
 
     <string name="loading">Loading…</string>
     <string name="error_generic">Something went wrong.</string>
@@ -221,6 +241,10 @@
     <string name="profile_open_wallet">Open $REC wallet</string>
     <string name="scan_barcode">Barcode</string>
     <string name="scan_barcode_hint">Enter barcode number</string>
+    <string name="scan_action_capture">Scan item</string>
+    <string name="scan_action_barcode">Scan barcode</string>
+    <string name="scan_enter_manual">Enter item type manually</string>
+    <string name="scan_recent_scans">Recent scans</string>
 
     <string name="action_confirm">Confirm</string>
     <string name="read_more">Read more</string>
@@ -299,6 +323,17 @@
     <string name="settings_about_app">About Recyclr</string>
     <string name="settings_log_out">Log out</string>
     <string name="settings_delete_account">Delete account</string>
+    <string name="settings_section_session">Session</string>
+    <string name="settings_sign_in_create_account">Sign in / Create account</string>
+    <string name="profile_guest_email_hint">Not signed in</string>
+    <string name="profile_guest_sign_in_banner">Sign in to sync your profile and rewards across devices.</string>
+    <string name="profile_section_session">Session</string>
+    <string name="dialog_guest_logout_title">Leave guest mode?</string>
+    <string name="dialog_guest_logout_body">You are browsing without an account. Continue to the sign-in screen to log in or create an account. Your guest activity stays on this device until you connect.</string>
+    <string name="dialog_guest_delete_title">Account required</string>
+    <string name="dialog_guest_delete_body">Deleting an account is only available when you are signed in with email or Google. Continue to sign in or create an account.</string>
+    <string name="action_continue_to_sign_in">Continue to sign-in</string>
+    <string name="action_cancel">Cancel</string>
     <string name="settings_version_line">Version %1$s</string>
     <string name="about_title">About Recyclr</string>
     <string name="about_body">Recyclr helps you scan waste, earn points, and support environmental projects.</string>

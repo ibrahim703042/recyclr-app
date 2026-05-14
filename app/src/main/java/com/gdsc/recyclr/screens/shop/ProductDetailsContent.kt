@@ -55,11 +55,6 @@ import com.gdsc.recyclr.R
 import com.gdsc.recyclr.domain.model.ProductReview
 import com.gdsc.recyclr.domain.model.ShopItem
 
-private val TitleColor = Color(0xFF1F2A1B)
-private val BrandGreen = Color(0xFF2E7D32)
-private val GalleryBg = Color(0xFFE8F5E9)
-private val ChipBg = Color(0xFFEEEEEE)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductDetailsContent(
@@ -86,6 +81,11 @@ fun ProductDetailsContent(
     val insufficientPoints = userPoints < totalPoints
     val balanceAfter = (userPoints - totalPoints).coerceAtLeast(0)
 
+    val titleColor = MaterialTheme.colorScheme.onSurface
+    val accent = MaterialTheme.colorScheme.primary
+    val galleryBg = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.28f)
+    val chipBg = MaterialTheme.colorScheme.surfaceVariant
+
     Column(Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -96,7 +96,7 @@ fun ProductDetailsContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(250.dp)
-                    .background(GalleryBg),
+                    .background(galleryBg),
             ) {
                 when {
                     item.id == "seed_tree" && item.galleryUrls.isEmpty() -> {
@@ -131,7 +131,7 @@ fun ProductDetailsContent(
                                 painter = painterResource(R.drawable.recycle),
                                 contentDescription = null,
                                 modifier = Modifier.size(96.dp),
-                                tint = BrandGreen.copy(alpha = 0.35f),
+                                tint = accent.copy(alpha = 0.45f),
                             )
                         }
                     }
@@ -142,13 +142,13 @@ fun ProductDetailsContent(
                         .padding(8.dp),
                 ) {
                     IconButton(onClick = onShare) {
-                        Icon(Icons.Default.Share, contentDescription = null, tint = TitleColor)
+                        Icon(Icons.Default.Share, contentDescription = null, tint = titleColor)
                     }
                     IconButton(onClick = onToggleWishlist) {
                         Icon(
                             imageVector = if (wishlisted) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                             contentDescription = null,
-                            tint = if (wishlisted) Color(0xFFC62828) else TitleColor,
+                            tint = if (wishlisted) MaterialTheme.colorScheme.error else titleColor,
                         )
                     }
                 }
@@ -164,7 +164,10 @@ fun ProductDetailsContent(
                                 modifier = Modifier
                                     .size(8.dp)
                                     .clip(CircleShape)
-                                    .background(if (it == 0) BrandGreen else Color.White.copy(alpha = 0.6f)),
+                                    .background(
+                                        if (it == 0) accent
+                                        else MaterialTheme.colorScheme.outline.copy(alpha = 0.45f),
+                                    ),
                             )
                         }
                     }
@@ -180,14 +183,15 @@ fun ProductDetailsContent(
                     text = item.title,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TitleColor,
+                    color = titleColor,
                 )
                 Spacer(Modifier.height(8.dp))
-                Surface(color = ChipBg, shape = RoundedCornerShape(16.dp)) {
+                Surface(color = chipBg, shape = RoundedCornerShape(16.dp)) {
                     Text(
                         text = categoryChipLabel(item.category),
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                         fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 Spacer(Modifier.height(8.dp))
@@ -199,14 +203,14 @@ fun ProductDetailsContent(
                         text = "$totalPoints",
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Black,
-                        color = BrandGreen,
+                        color = accent,
                     )
                     Spacer(Modifier.width(4.dp))
                     Text(
                         text = stringResource(R.string.shop_points_suffix),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = BrandGreen,
+                        color = accent,
                         modifier = Modifier.padding(bottom = 2.dp),
                     )
                 }
@@ -216,7 +220,7 @@ fun ProductDetailsContent(
                             Text(
                                 text = "$mp",
                                 fontSize = 12.sp,
-                                color = Color.Gray,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textDecoration = TextDecoration.LineThrough,
                             )
                             Spacer(Modifier.width(8.dp))
@@ -224,7 +228,7 @@ fun ProductDetailsContent(
                             Text(
                                 text = stringResource(R.string.shop_you_save_pct, pct),
                                 fontSize = 12.sp,
-                                color = BrandGreen,
+                                color = accent,
                                 fontWeight = FontWeight.Medium,
                             )
                         }
@@ -246,12 +250,12 @@ fun ProductDetailsContent(
 
                 Spacer(Modifier.height(16.dp))
                 if (item.verifiedPartner) {
-                    Surface(color = GalleryBg, shape = RoundedCornerShape(12.dp)) {
+                    Surface(color = galleryBg, shape = RoundedCornerShape(12.dp)) {
                         Text(
                             text = stringResource(R.string.product_verified_partner),
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                             fontSize = 12.sp,
-                            color = BrandGreen,
+                            color = accent,
                             fontWeight = FontWeight.SemiBold,
                         )
                     }
@@ -278,6 +282,7 @@ fun ProductDetailsContent(
                     text = stringResource(R.string.shop_description_title),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
+                    color = titleColor,
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
@@ -285,6 +290,7 @@ fun ProductDetailsContent(
                     maxLines = if (descExpanded) Int.MAX_VALUE else 3,
                     overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier
                         .animateContentSize()
                         .clickable { descExpanded = !descExpanded },
@@ -294,7 +300,12 @@ fun ProductDetailsContent(
                 }
 
                 Spacer(Modifier.height(16.dp))
-                Text(stringResource(R.string.product_key_details), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text(
+                    stringResource(R.string.product_key_details),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = titleColor,
+                )
                 Spacer(Modifier.height(8.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     DetailCard(
@@ -329,7 +340,7 @@ fun ProductDetailsContent(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(stringResource(R.string.product_quantity), fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.product_quantity), fontWeight = FontWeight.Bold, color = titleColor)
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             TextButton(
                                 onClick = { quantity = (quantity - 1).coerceAtLeast(1) },
@@ -345,7 +356,7 @@ fun ProductDetailsContent(
                     Text(
                         stringResource(R.string.product_total_points, totalPoints),
                         fontWeight = FontWeight.Bold,
-                        color = BrandGreen,
+                        color = accent,
                     )
                 }
 
@@ -359,6 +370,7 @@ fun ProductDetailsContent(
                         text = stringResource(R.string.product_customer_reviews),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
+                        color = titleColor,
                     )
                     TextButton(onClick = { }) {
                         Text(stringResource(R.string.product_see_all))
@@ -381,7 +393,11 @@ fun ProductDetailsContent(
                 }
 
                 Spacer(Modifier.height(24.dp))
-                Text(stringResource(R.string.product_recently_viewed), fontWeight = FontWeight.Bold)
+                Text(
+                    stringResource(R.string.product_recently_viewed),
+                    fontWeight = FontWeight.Bold,
+                    color = titleColor,
+                )
                 Spacer(Modifier.height(8.dp))
                 Row(
                     modifier = Modifier
@@ -393,13 +409,29 @@ fun ProductDetailsContent(
                         Card(
                             modifier = Modifier
                                 .width(120.dp)
-                                .height(140.dp),
+                                .height(148.dp),
                             onClick = { onPickRelated(rel) },
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            ),
                         ) {
-                            Column(Modifier.padding(8.dp)) {
-                                Text(rel.title, maxLines = 2, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.labelMedium)
+                            Column(Modifier.fillMaxSize().padding(8.dp)) {
+                                Text(
+                                    rel.title,
+                                    maxLines = 3,
+                                    overflow = TextOverflow.Ellipsis,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    lineHeight = 16.sp,
+                                )
                                 Spacer(Modifier.weight(1f))
-                                Text("${rel.price} pts", color = BrandGreen, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                Text(
+                                    "${rel.price} pts",
+                                    color = accent,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 12.sp,
+                                )
                             }
                         }
                     }
@@ -409,7 +441,11 @@ fun ProductDetailsContent(
         }
 
         HorizontalDivider()
-        Surface(tonalElevation = 2.dp, shadowElevation = 6.dp) {
+        Surface(
+            tonalElevation = 2.dp,
+            shadowElevation = 6.dp,
+            color = MaterialTheme.colorScheme.surface,
+        ) {
             Column(Modifier.fillMaxWidth().padding(16.dp)) {
                 Button(
                     onClick = { showRedeemDialog = true },
@@ -418,15 +454,31 @@ fun ProductDetailsContent(
                         .fillMaxWidth()
                         .height(52.dp),
                     shape = RoundedCornerShape(28.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = BrandGreen, contentColor = Color.White),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = accent,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        disabledContentColor = MaterialTheme.colorScheme.onSurface,
+                    ),
                 ) {
-                    Text(stringResource(R.string.redeem), fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = stringResource(R.string.redeem),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
                 }
                 Spacer(Modifier.height(8.dp))
                 OutlinedButton(
                     onClick = onToggleWishlist,
                     modifier = Modifier.fillMaxWidth().height(48.dp),
                     shape = RoundedCornerShape(28.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.primary,
+                    ),
+                    border = androidx.compose.foundation.BorderStroke(
+                        1.dp,
+                        MaterialTheme.colorScheme.outline,
+                    ),
                 ) {
                     Text(stringResource(R.string.product_add_wishlist))
                 }
@@ -447,7 +499,13 @@ fun ProductDetailsContent(
                         showRedeemDialog = false
                         onConfirmRedeem(item, quantity)
                     },
-                ) { Text(stringResource(R.string.action_confirm), color = BrandGreen, fontWeight = FontWeight.Bold) }
+                ) {
+                    Text(
+                        stringResource(R.string.action_confirm),
+                        color = accent,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
             },
             dismissButton = {
                 TextButton(onClick = { showRedeemDialog = false }) { Text(stringResource(R.string.scan_cancel)) }
@@ -529,12 +587,17 @@ private fun StockRow(item: ShopItem) {
     val (dot, label) = when (item.stockLabel) {
         "out_of_stock" -> Color(0xFFB71C1C) to stringResource(R.string.stock_out)
         "limited" -> Color(0xFFF57C00) to stringResource(R.string.stock_limited)
-        else -> BrandGreen to stringResource(R.string.stock_in_stock)
+        else -> MaterialTheme.colorScheme.primary to stringResource(R.string.stock_in_stock)
     }
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box(Modifier.size(8.dp).clip(CircleShape).background(dot))
         Spacer(Modifier.width(6.dp))
-        Text(label, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+        Text(
+            label,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
     }
     Spacer(Modifier.height(8.dp))
 }
@@ -548,7 +611,12 @@ private fun DetailCard(modifier: Modifier, title: String, value: String) {
         Column(Modifier.padding(12.dp)) {
             Text(title, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(4.dp))
-            Text(value, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+            Text(
+                value,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
         }
     }
 }
@@ -564,6 +632,7 @@ private fun ReviewPreviewRow(review: ProductReview) {
         Text(
             "\"${review.comment}\"",
             style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(top = 4.dp),
         )
         Text(

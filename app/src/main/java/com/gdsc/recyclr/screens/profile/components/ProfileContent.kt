@@ -9,8 +9,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.AccountBalanceWallet
+import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.Settings
@@ -29,11 +31,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.gdsc.recyclr.R
-import com.gdsc.recyclr.components.composable.RecyclrTopBar
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.User
 import com.gdsc.recyclr.domain.model.UserImpact
 import com.gdsc.recyclr.domain.model.engagement.UserBadge
+import com.gdsc.recyclr.screens.settings.SettingsCard
+import com.gdsc.recyclr.screens.settings.SettingsMenuItem
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,12 +46,22 @@ fun ProfileContent(
     user: User?,
     impactResponse: Response<UserImpact>,
     badges: List<UserBadge>,
+    isGuest: Boolean,
+    onGuestSignIn: () -> Unit,
+    onLogoutClick: () -> Unit,
+    onDeleteAccountClick: () -> Unit,
     onOpenWallet: () -> Unit,
     onOpenBlockchainWallet: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
-    val displayName = user?.displayName?.takeIf { it.isNotBlank() } ?: "Green Hero"
-    val email = user?.email?.takeIf { it.isNotBlank() } ?: "nature.lover@example.com"
+    val displayName = when {
+        isGuest -> stringResource(R.string.profile_guest_name)
+        else -> user?.displayName?.takeIf { it.isNotBlank() } ?: "Green Hero"
+    }
+    val email = when {
+        isGuest -> stringResource(R.string.profile_guest_email_hint)
+        else -> user?.email?.takeIf { it.isNotBlank() } ?: "nature.lover@example.com"
+    }
     
     val impact = (impactResponse as? Response.Success)?.data
     val points = impact?.pointsBalance ?: 0
@@ -126,6 +139,27 @@ fun ProfileContent(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+
+                    if (isGuest) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = MaterialTheme.shapes.large,
+                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
+                            onClick = onGuestSignIn,
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(
+                                    text = stringResource(R.string.profile_guest_sign_in_banner),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                TextButton(onClick = onGuestSignIn) {
+                                    Text(stringResource(R.string.settings_sign_in_create_account))
+                                }
+                            }
+                        }
+                    }
                 }
 
                 // Impact Statistics Grid
@@ -193,6 +227,33 @@ fun ProfileContent(
                         subtitle = stringResource(R.string.profile_recycling_history_subtitle),
                         onClick = { /* TODO */ }
                     )
+
+                    if (!isGuest) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text(
+                            text = stringResource(R.string.profile_section_session),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        SettingsCard {
+                            Column {
+                                SettingsMenuItem(
+                                    icon = Icons.AutoMirrored.Outlined.Logout,
+                                    title = stringResource(R.string.settings_log_out),
+                                    onClick = onLogoutClick,
+                                )
+                                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                                SettingsMenuItem(
+                                    icon = Icons.Outlined.DeleteOutline,
+                                    title = stringResource(R.string.settings_delete_account),
+                                    onClick = onDeleteAccountClick,
+                                    titleColor = MaterialTheme.colorScheme.error,
+                                    iconTint = MaterialTheme.colorScheme.error,
+                                )
+                            }
+                        }
+                    }
 
                     if (badges.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(24.dp))

@@ -2,9 +2,9 @@ package com.gdsc.recyclr.screens.onboarding
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -14,19 +14,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.LocalDrink
 import androidx.compose.material.icons.filled.Newspaper
-import androidx.compose.material.icons.filled.WineBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
+import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 import com.gdsc.recyclr.R
 import com.gdsc.recyclr.components.design.OnboardingPageIndicator
@@ -70,6 +71,9 @@ fun OnboardingScreen(
     val pages = onboardingPages()
     val pagerState = rememberPagerState(pageCount = { pages.size })
     val scope = rememberCoroutineScope()
+    val cfg = LocalConfiguration.current
+    val horizontalPadding = if (cfg.screenWidthDp < 360) 12.dp else 20.dp
+    val verticalPadding = if (cfg.screenHeightDp < 640) 16.dp else 28.dp
 
     Box(
         modifier = Modifier
@@ -79,7 +83,7 @@ fun OnboardingScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 20.dp, vertical = 28.dp),
+                .padding(horizontal = horizontalPadding, vertical = verticalPadding),
         ) {
             HorizontalPager(
                 state = pagerState,
@@ -135,6 +139,11 @@ fun OnboardingScreen(
 
 @Composable
 private fun OnboardingPageContent(page: OnboardingPage) {
+    val cfg = LocalConfiguration.current
+    val cardPadH = if (cfg.screenWidthDp < 360) 16.dp else 24.dp
+    val cardPadV = if (cfg.screenHeightDp < 640) 20.dp else 32.dp
+    val waveHeight = max(140.dp, min(260.dp, (cfg.screenHeightDp * 0.34f).dp))
+
     Card(
         modifier = Modifier.fillMaxSize(),
         shape = RoundedCornerShape(32.dp),
@@ -144,12 +153,13 @@ private fun OnboardingPageContent(page: OnboardingPage) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp, vertical = 32.dp),
+                .padding(horizontal = cardPadH, vertical = cardPadV),
         ) {
             Text(
                 text = page.title,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
             )
             Spacer(modifier = Modifier.height(12.dp))
             Text(
@@ -157,29 +167,35 @@ private fun OnboardingPageContent(page: OnboardingPage) {
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center,
             ) {
-                WaveBand(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
-                    height = 240.dp,
-                )
-                when (page.kind) {
-                    OnboardingPageKind.Intro -> IntroIllustration(
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    WaveBand(
                         modifier = Modifier.align(Alignment.Center),
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                        height = waveHeight,
                     )
-                    OnboardingPageKind.Scan -> ScanPreview(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(horizontal = 8.dp),
-                    )
-                    OnboardingPageKind.Rewards -> RewardPreview(
-                        modifier = Modifier.align(Alignment.Center),
-                    )
+                    when (page.kind) {
+                        OnboardingPageKind.Intro -> IntroIllustration(
+                            modifier = Modifier.align(Alignment.Center),
+                        )
+                        OnboardingPageKind.Scan -> ScanPreview(
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .padding(horizontal = 4.dp),
+                        )
+                        OnboardingPageKind.Rewards -> RewardPreview(
+                            modifier = Modifier.align(Alignment.Center),
+                        )
+                    }
                 }
             }
         }
@@ -193,7 +209,10 @@ private fun IntroIllustration(modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
             BinChip(label = "PLASTIC", color = Color(0xFF81C784))
             BinChip(label = "GLASS", color = Color(0xFF66BB6A))
             BinChip(label = "METAL", color = Color(0xFFFFD54F))
@@ -220,7 +239,12 @@ private fun BinChip(label: String, color: Color) {
                 .clip(RoundedCornerShape(8.dp))
                 .background(color),
         )
-        Text(text = label, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
     }
 }
 
@@ -272,8 +296,9 @@ private fun RewardPreview(modifier: Modifier = Modifier) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = stringResource(R.string.onboarding_reward_earned), 
-                style = MaterialTheme.typography.labelLarge
+                text = stringResource(R.string.onboarding_reward_earned),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurface,
             )
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
@@ -287,6 +312,7 @@ private fun RewardPreview(modifier: Modifier = Modifier) {
                     text = stringResource(R.string.onboarding_points),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(bottom = 8.dp),
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
