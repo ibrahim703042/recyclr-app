@@ -1,0 +1,140 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // 1. Users Profile
+    match /users/{userId} {
+      allow read: if isSignedIn(); // Allow reading other profiles for leaderboard/community
+      allow write: if isOwner(userId);
+    }
+
+    // 2. Weekly Challenges
+    match /weekly_challenges/{challengeId} {
+      allow read: if isSignedIn();
+      allow write: if false; // Only via Admin/Cloud Functions
+    }
+
+    // 3. Scans
+    match /scans/{scanId} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && (request.resource.data.userId == request.auth.uid);
+      allow update: if isSignedIn() && (resource.data.userId == request.auth.uid) && !resource.data.verified;
+    }
+
+    // 4. Barcodes
+    match /barcodes/{barcode} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if false;
+    }
+
+    // 5. Products & Rewards
+    match /products/{productId} {
+      allow read: if isSignedIn();
+      allow write: if false; // Admin only
+    }
+
+    match /redemptions/{redemptionId} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && (request.resource.data.userId == request.auth.uid);
+    }
+
+    match /reviews/{reviewId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && (request.resource.data.userId == request.auth.uid);
+      allow update, delete: if isSignedIn() && (resource.data.userId == request.auth.uid);
+    }
+
+    // 6. Token Wallet & Transactions
+    match /token_transactions/{txId} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid);
+      allow write: if false; // System only
+    }
+
+    match /carbon_credits/{creditId} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid);
+      allow write: if false; // System only
+    }
+
+    // 7. Collection Map & Pickups
+    match /collection_points/{pointId} {
+      allow read: if isSignedIn();
+      allow write: if false; // Admin only
+    }
+
+    match /pickup_requests/{requestId} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.collectorId == request.auth.uid);
+      allow create: if isSignedIn() && (request.resource.data.userId == request.auth.uid);
+      allow update: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.collectorId == request.auth.uid);
+    }
+
+    // 9. Community
+    match /posts/{postId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && (resource.data.userId == request.auth.uid);
+    }
+
+    match /groups/{groupId} {
+      allow read: if isSignedIn();
+      allow write: if false; // Admin only
+    }
+
+    match /likes/{likeId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow delete: if isSignedIn() && (resource.data.userId == request.auth.uid);
+    }
+
+    match /comments/{commentId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && (resource.data.userId == request.auth.uid);
+    }
+
+    // 10. Leaderboard Cache
+    match /leaderboard_cache_weekly/{docId} {
+      allow read: if isSignedIn();
+      allow write: if false; // Cloud Functions only
+    }
+
+    // 11. XRPL Accounts
+    match /xrpl_accounts/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+    }
+
+    // README V4 — denormalized wallet, badges, groups, impact aggregates
+    match /user_wallet/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if false;
+    }
+
+    match /user_impact_stats/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId);
+    }
+
+    match /user_badges/{docId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    match /user_groups/{docId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && (request.resource.data.userId == request.auth.uid);
+      allow delete: if isSignedIn() && (resource.data.userId == request.auth.uid);
+      allow update: if false;
+    }
+  }
+}

@@ -1,5 +1,6 @@
 package com.gdsc.recyclr.data.repository
 
+import com.gdsc.recyclr.data.local.ShopItemPayloadCodec
 import com.gdsc.recyclr.data.local.dao.ShopItemDao
 import com.gdsc.recyclr.data.local.entities.CachedShopItemEntity
 import com.gdsc.recyclr.data.service.ShopService
@@ -16,41 +17,23 @@ import javax.inject.Singleton
 @Singleton
 class ShopRepositoryImpl @Inject constructor(
     private val shopService: ShopService,
-    private val shopItemDao: ShopItemDao
+    private val shopItemDao: ShopItemDao,
 ) : ShopRepository {
-    
+
     override suspend fun getAllShopItems(): Response<List<ShopItem>> {
         return shopService.getAllShopItems().fold(
             onSuccess = { dtos ->
                 val domain = dtos.map { it.toDomain() }.filter { it.isActive }
-                shopItemDao.upsertAll(domain.map { it.toCached() })
+                shopItemDao.upsertAll(domain.map { ShopItemPayloadCodec.toCached(it) })
                 Response.Success(domain)
             },
             onFailure = {
-                val cached = shopItemDao.all().map { it.toDomain() }.filter { it.isActive }
+                val cached = shopItemDao.all().map { it.toDomainFromCache() }.filter { it.isActive }
                 if (cached.isNotEmpty()) Response.Success(cached) else Response.Failure(it as Exception)
-            }
+            },
         )
     }
 
-    private fun ShopItem.toCached() = CachedShopItemEntity(
-        id = id,
-        title = title,
-        price = price,
-        description = description,
-        category = category,
-        imageUrl = imageUrl
-    )
-
-    private fun CachedShopItemEntity.toDomain() = ShopItem(
-        id = id,
-        title = title,
-        price = price,
-        description = description,
-        category = category,
-        imageUrl = imageUrl,
-        isActive = true,
-        stockQuantity = null,
-        termsSummary = null
-    )
+    private fun CachedShopItemEntity.toDomainFromCache(): ShopItem =
+        ShopItemPayloadCodec.mergeIntoDomain(this, payloadJson)
 }

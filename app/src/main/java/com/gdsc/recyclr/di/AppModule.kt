@@ -24,7 +24,10 @@ import com.gdsc.recyclr.data.location.GeofenceManagerImpl
 import com.gdsc.recyclr.data.local.RecyclrDatabase
 import com.gdsc.recyclr.data.local.dao.BarcodeCacheDao
 import com.gdsc.recyclr.data.local.dao.CollectionPointDao
+import com.gdsc.recyclr.data.local.dao.ChatMessageDao
+import com.gdsc.recyclr.data.local.dao.NotificationDao
 import com.gdsc.recyclr.data.local.dao.PickupQueueDao
+import com.gdsc.recyclr.data.local.dao.WishlistDao
 import com.gdsc.recyclr.data.local.dao.RedemptionDao
 import com.gdsc.recyclr.data.local.dao.ScanRecordDao
 import com.gdsc.recyclr.data.local.dao.ShopItemDao
@@ -179,6 +182,7 @@ object AppModule {
             .addMigrations(
                 RecyclrMigrations.MIGRATION_1_2,
                 RecyclrMigrations.MIGRATION_2_3,
+                RecyclrMigrations.MIGRATION_3_4,
             )
             .fallbackToDestructiveMigration()
             .build()
@@ -204,4 +208,13 @@ object AppModule {
 
     @Provides
     fun providePickupQueueDao(db: RecyclrDatabase): PickupQueueDao = db.pickupQueueDao()
+
+    @Provides
+    fun provideNotificationDao(db: RecyclrDatabase): NotificationDao = db.notificationDao()
+
+    @Provides
+    fun provideChatMessageDao(db: RecyclrDatabase): ChatMessageDao = db.chatMessageDao()
+
+    @Provides
+    fun provideWishlistDao(db: RecyclrDatabase): WishlistDao = db.wishlistDao()
 }

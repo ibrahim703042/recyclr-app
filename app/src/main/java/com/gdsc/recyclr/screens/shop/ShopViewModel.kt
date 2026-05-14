@@ -1,18 +1,24 @@
 package com.gdsc.recyclr.screens.shop
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dagger.hilt.android.lifecycle.HiltViewModel
-import com.gdsc.recyclr.domain.model.ShopItem
+import com.gdsc.recyclr.data.local.entities.CachedWishlistEntity
+import com.gdsc.recyclr.data.local.dao.WishlistDao
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.Response.Loading
+import com.gdsc.recyclr.domain.model.Response.Success
 import com.gdsc.recyclr.domain.model.Redemption
+import com.gdsc.recyclr.domain.model.ShopItem
 import com.gdsc.recyclr.domain.repository.AuthRepository
+import com.gdsc.recyclr.domain.repository.ImpactRepository
 import com.gdsc.recyclr.domain.repository.RedemptionRepository
 import com.gdsc.recyclr.domain.repository.ShopRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,9 +26,11 @@ import javax.inject.Inject
 class ShopViewModel @Inject constructor(
     private val repository: ShopRepository,
     private val authRepository: AuthRepository,
-    private val redemptionRepository: RedemptionRepository
+    private val redemptionRepository: RedemptionRepository,
+    private val impactRepository: ImpactRepository,
+    private val wishlistDao: WishlistDao,
 ) : ViewModel() {
-    
+
     var shopItemsResponse by mutableStateOf<Response<List<ShopItem>>>(Loading)
         private set
 
@@ -32,34 +40,82 @@ class ShopViewModel @Inject constructor(
     var redeemResponse by mutableStateOf<Response<Redemption>>(Response.Success(null))
         private set
 
+    var pointsBalance by mutableIntStateOf(0)
+        private set
+
+    var wishlistProductIds by mutableStateOf<Set<String>>(emptySet())
+        private set
+
+    private val uid: String get() = authRepository.currentUser?.uid ?: "guest"
+
     fun acknowledgeRedeemFeedback() {
         redeemResponse = Response.Success(null)
     }
-    
+
     init {
         loadShopItems()
         loadHistory()
+        observePoints()
+        observeWishlist()
     }
-    
+
+    private fun observePoints() {
+        viewModelScope.launch {
+            impactRepository.observeUserImpact(uid).collectLatest { resp ->
+                if (resp is Success) {
+                    pointsBalance = resp.data?.pointsBalance ?: 0
+                }
+            }
+        }
+    }
+
+    private fun observeWishlist() {
+        viewModelScope.launch {
+            wishlistDao.observeProductIds(uid).collectLatest { ids ->
+                wishlistProductIds = ids.toSet()
+            }
+        }
+    }
+
+    fun refreshShop() {
+        loadShopItems()
+    }
+
     private fun loadShopItems() {
         viewModelScope.launch {
-            shopItemsResponse = Loading
+            shopItemsResponse = Response.Loading
             shopItemsResponse = repository.getAllShopItems()
         }
     }
 
     fun loadHistory() {
-        val uid = authRepository.currentUser?.uid ?: "guest"
         viewModelScope.launch {
-            redemptionHistoryResponse = Loading
+            redemptionHistoryResponse = Response.Loading
             redemptionHistoryResponse = redemptionRepository.getHistory(uid)
         }
     }
 
-    fun redeem(item: ShopItem) {
-        val uid = authRepository.currentUser?.uid ?: "guest"
+    fun toggleWishlist(productId: String) {
         viewModelScope.launch {
-            redeemResponse = Loading
+            if (wishlistProductIds.contains(productId)) {
+                wishlistDao.remove(uid, productId)
+            } else {
+                wishlistDao.insert(
+                    CachedWishlistEntity(
+                        userId = uid,
+                        productId = productId,
+                        addedAtMillis = System.currentTimeMillis(),
+                    ),
+                )
+            }
+        }
+    }
+
+    fun isWishlisted(productId: String): Boolean = wishlistProductIds.contains(productId)
+
+    fun redeem(item: ShopItem) {
+        viewModelScope.launch {
+            redeemResponse = Response.Loading
             redeemResponse = redemptionRepository.redeem(uid, item)
             loadHistory()
         }

@@ -7,9 +7,11 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import android.os.Build
 
 private val LightColorScheme = lightColorScheme(
     primary = md_theme_light_primary,
@@ -74,8 +76,22 @@ fun RecyclrTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.surface.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+            if (darkTheme) {
+                window.statusBarColor = colorScheme.surface.toArgb()
+                window.navigationBarColor = colorScheme.surface.toArgb()
+            } else {
+                @Suppress("DEPRECATION")
+                window.statusBarColor = android.graphics.Color.TRANSPARENT
+                @Suppress("DEPRECATION")
+                window.navigationBarColor = Color.White.toArgb()
+            }
+            WindowCompat.getInsetsController(window, view).apply {
+                isAppearanceLightStatusBars = !darkTheme
+                isAppearanceLightNavigationBars = !darkTheme
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                window.isNavigationBarContrastEnforced = false
+            }
         }
     }
 

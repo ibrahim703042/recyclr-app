@@ -31,6 +31,7 @@ fun RootNavGraph(
     isGuestModeEnabled: Boolean,
     onGuestModeEnabled: (Boolean) -> Unit,
     onRequestOpenShopFromResults: () -> Unit = {},
+    onRequestOpenMapFromResults: () -> Unit = {},
     navController: NavHostController = rememberNavController()
 ) {
     val startDestination = when {
@@ -111,7 +112,11 @@ fun RootNavGraph(
                 onViewRewards = {
                     onRequestOpenShopFromResults()
                     navController.popBackStack()
-                }
+                },
+                onOpenMap = {
+                    onRequestOpenMapFromResults()
+                    navController.popBackStack()
+                },
             )
         }
     }

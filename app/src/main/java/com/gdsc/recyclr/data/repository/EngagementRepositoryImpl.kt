@@ -201,6 +201,7 @@ class EngagementRepositoryImpl @Inject constructor(
         message = message,
         likes = likes.toInt(),
         isReport = isReport,
+        createdAtMillis = createdAtMillis.takeIf { it > 0L },
     )
 
     private suspend fun resolveDonationCauses(userId: String): List<DonationCause> {
@@ -290,9 +291,10 @@ class EngagementRepositoryImpl @Inject constructor(
         CommunityPost(
             id = "1",
             author = "Ngagara Recycling Team",
-            groupName = "Ngagara",
+            groupName = "Ngagara Recycling Team",
             message = "Collected 42 kg of plastic along the lakeshore this morning.",
             likes = 36,
+            createdAtMillis = System.currentTimeMillis() - 2L * 60L * 60L * 1000L,
         ),
         CommunityPost(
             id = "2",
@@ -300,6 +302,7 @@ class EngagementRepositoryImpl @Inject constructor(
             groupName = "City",
             message = "Repaired a school chair instead of throwing it away.",
             likes = 18,
+            createdAtMillis = System.currentTimeMillis() - 26L * 60L * 60L * 1000L,
         ),
         CommunityPost(
             id = "3",

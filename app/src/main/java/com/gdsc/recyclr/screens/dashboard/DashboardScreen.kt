@@ -2,8 +2,11 @@ package com.gdsc.recyclr.screens.dashboard
 
 import android.annotation.SuppressLint
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -11,8 +14,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination
@@ -73,16 +78,19 @@ fun BottomBar(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    NavigationBar(
-        tonalElevation = 8.dp,
-        containerColor = MaterialTheme.colorScheme.surface,
-    ) {
-        screens.forEach { screen ->
-            AddItem(
-                screen = screen,
-                currentDestination = currentDestination,
-                navController = navController,
-            )
+    Column(modifier = Modifier.background(Color.White)) {
+        HorizontalDivider(thickness = 0.5.dp, color = Color(0xFFE0E0E0))
+        NavigationBar(
+            containerColor = Color.White,
+            tonalElevation = 0.dp,
+        ) {
+            screens.forEach { screen ->
+                AddItem(
+                    screen = screen,
+                    currentDestination = currentDestination,
+                    navController = navController,
+                )
+            }
         }
     }
 }
@@ -99,7 +107,8 @@ fun RowScope.AddItem(
         label = {
             Text(
                 text = stringResource(screen.titleRes),
-                style = MaterialTheme.typography.labelSmall,
+                fontSize = 10.sp,
+                maxLines = 1,
                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
             )
         },
@@ -107,6 +116,7 @@ fun RowScope.AddItem(
             Icon(
                 imageVector = screen.icon,
                 contentDescription = screen.route,
+                modifier = Modifier.size(24.dp),
             )
         },
         selected = selected,
@@ -120,9 +130,11 @@ fun RowScope.AddItem(
             }
         },
         colors = NavigationBarItemDefaults.colors(
-            selectedIconColor = MaterialTheme.colorScheme.primary,
-            selectedTextColor = MaterialTheme.colorScheme.primary,
-            indicatorColor = MaterialTheme.colorScheme.primaryContainer
-        )
+            selectedIconColor = Color(0xFF2E7D32),
+            selectedTextColor = Color(0xFF2E7D32),
+            unselectedIconColor = Color(0xFF9E9E9E),
+            unselectedTextColor = Color(0xFF9E9E9E),
+            indicatorColor = Color.Transparent,
+        ),
     )
 }

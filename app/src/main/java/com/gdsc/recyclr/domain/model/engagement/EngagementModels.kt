@@ -31,6 +31,8 @@ data class CommunityPost(
     val message: String,
     val likes: Int,
     val isReport: Boolean = false,
+    /** Server time for relative labels (e.g. “2h ago”); optional for legacy seeds. */
+    val createdAtMillis: Long? = null,
 )
 
 data class RecWallet(

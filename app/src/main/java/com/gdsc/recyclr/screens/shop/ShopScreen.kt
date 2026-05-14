@@ -1,57 +1,99 @@
+@file:Suppress("DEPRECATION")
+@file:OptIn(
+    androidx.compose.material.ExperimentalMaterialApi::class,
+    androidx.compose.material3.ExperimentalMaterial3Api::class,
+)
+
 package com.gdsc.recyclr.screens.shop
 
+import android.content.Intent
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.outlined.Inventory2
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.ShoppingBag
-import androidx.compose.material.icons.outlined.VerifiedUser
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.outlined.Chat
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
 import com.gdsc.recyclr.R
-import com.gdsc.recyclr.components.composable.RecyclrTopBar
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.ShopItem
 import com.gdsc.recyclr.screens.engagement.DonationHubSection
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShopScreen(
+    onOpenSupportChat: () -> Unit = {},
     viewModel: ShopViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val shopItemsResponse = viewModel.shopItemsResponse
     val redeemResponse = viewModel.redeemResponse
-    
+    val scope = rememberCoroutineScope()
+
     var selectedItem by remember { mutableStateOf<ShopItem?>(null) }
     var showConfirmation by remember { mutableStateOf(false) }
     var showDonations by remember { mutableStateOf(false) }
+    var selectedCategoryKey by remember { mutableStateOf<String?>(null) }
+    var refreshing by remember { mutableStateOf(false) }
+    val pullState = rememberPullRefreshState(
+        refreshing = refreshing,
+        onRefresh = {
+            refreshing = true
+            viewModel.refreshShop()
+            scope.launch {
+                delay(500)
+                refreshing = false
+            }
+        },
+    )
 
     LaunchedEffect(redeemResponse) {
         when (redeemResponse) {
@@ -71,18 +113,51 @@ fun ShopScreen(
         }
     }
 
+    val allItems = (shopItemsResponse as? Response.Success)?.data.orEmpty()
+    val filteredItems = remember(allItems, selectedCategoryKey) {
+        val key = selectedCategoryKey
+        if (key.isNullOrBlank()) allItems else allItems.filter { it.category.equals(key, ignoreCase = true) }
+    }
+
     Scaffold(
         topBar = {
-            RecyclrTopBar(
-                title = if (selectedItem == null) "Marketplace" else "Product Details",
-                onNavigationClick = if (selectedItem != null) { { selectedItem = null } } else null,
-                actions = {
+            TopAppBar(
+                title = {
                     if (selectedItem == null) {
-                        IconButton(onClick = { /* TODO */ }) {
-                            Icon(imageVector = Icons.Outlined.Search, contentDescription = "Search")
+                        Column {
+                            Text(
+                                stringResource(R.string.shop_marketplace_title),
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                            )
+                            Text(
+                                stringResource(R.string.shop_points_available, viewModel.pointsBalance),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                    } else {
+                        Text(
+                            stringResource(R.string.shop_product_details_title),
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                },
+                navigationIcon = {
+                    if (selectedItem != null) {
+                        IconButton(onClick = { selectedItem = null }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                         }
                     }
-                }
+                },
+                actions = {
+                    if (selectedItem == null) {
+                        IconButton(onClick = onOpenSupportChat) {
+                            Icon(Icons.Outlined.Chat, contentDescription = stringResource(R.string.shop_support_chat))
+                        }
+                    }
+                },
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -90,68 +165,60 @@ fun ShopScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
+                .padding(paddingValues)
+                .pullRefresh(pullState),
         ) {
             if (selectedItem == null) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    // Category Selection Tabs
+                Column(Modifier.fillMaxSize()) {
                     TabRow(
                         selectedTabIndex = if (showDonations) 1 else 0,
                         containerColor = MaterialTheme.colorScheme.surface,
                         contentColor = MaterialTheme.colorScheme.primary,
-                        divider = {}
+                        divider = {},
                     ) {
                         Tab(
                             selected = !showDonations,
                             onClick = { showDonations = false },
-                            text = { Text("Shop Items", style = MaterialTheme.typography.titleSmall) }
+                            text = { Text(stringResource(R.string.shop_tab_items)) },
                         )
                         Tab(
                             selected = showDonations,
                             onClick = { showDonations = true },
-                            text = { Text("Donations", style = MaterialTheme.typography.titleSmall) }
+                            text = { Text(stringResource(R.string.shop_tab_donations)) },
                         )
                     }
 
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                    ) {
-                        if (showDonations) {
-                            Box(modifier = Modifier.padding(16.dp).widthIn(max = 800.dp).align(Alignment.TopCenter)) {
-                                DonationHubSection()
+                    if (showDonations) {
+                        Box(Modifier.padding(16.dp).fillMaxSize()) {
+                            DonationHubSection()
+                        }
+                    } else {
+                        CategoryChipRow(
+                            selectedKey = selectedCategoryKey,
+                            onSelect = { selectedCategoryKey = it },
+                        )
+                        when (shopItemsResponse) {
+                            is Response.Loading -> {
+                                ShopGridShimmer()
                             }
-                        } else {
-                            when (shopItemsResponse) {
-                                is Response.Loading -> {
-                                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                        CircularProgressIndicator()
-                                    }
+                            is Response.Failure -> {
+                                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    Text(stringResource(R.string.shop_load_failed))
                                 }
-                                is Response.Failure -> {
-                                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                        Text(text = "Failed to load marketplace items.")
-                                    }
-                                }
-                                is Response.Success -> {
-                                    val shopItems = shopItemsResponse.data.orEmpty()
-                                    LazyVerticalGrid(
-                                        columns = GridCells.Fixed(2),
-                                        modifier = Modifier.fillMaxSize().widthIn(max = 1200.dp).align(Alignment.TopCenter),
-                                        contentPadding = PaddingValues(16.dp),
-                                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                                    ) {
-                                        items(shopItems) { item ->
-                                            ShopItemCard(
-                                                shopItem = item,
-                                                onItemClick = { selectedItem = it }
-                                            )
-                                        }
+                            }
+                            is Response.Success -> {
+                                LazyVerticalGrid(
+                                    columns = GridCells.Fixed(3),
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentPadding = PaddingValues(12.dp),
+                                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                ) {
+                                    items(filteredItems, key = { it.id }) { item ->
+                                        ShopItemCard(
+                                            shopItem = item,
+                                            onItemClick = { selectedItem = it },
+                                        )
                                     }
                                 }
                             }
@@ -159,11 +226,36 @@ fun ShopScreen(
                     }
                 }
             } else {
-                ProductDetailsView(
-                    item = selectedItem!!,
-                    onRedeem = { viewModel.redeem(selectedItem!!) }
+                val item = selectedItem!!
+                val related = allItems.filter { it.id != item.id }.take(3)
+                ProductDetailsContent(
+                    item = item,
+                    userPoints = viewModel.pointsBalance,
+                    wishlisted = viewModel.isWishlisted(item.id),
+                    relatedItems = related,
+                    onShare = {
+                        val send = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(
+                                Intent.EXTRA_TEXT,
+                                context.getString(R.string.product_share_text, item.title, item.price),
+                            )
+                        }
+                        context.startActivity(Intent.createChooser(send, context.getString(R.string.product_share_title)))
+                    },
+                    onToggleWishlist = { viewModel.toggleWishlist(item.id) },
+                    onPickRelated = { rel -> selectedItem = rel },
+                    onConfirmRedeem = { it, _ ->
+                        viewModel.redeem(it)
+                    },
                 )
             }
+            PullRefreshIndicator(
+                refreshing = refreshing,
+                state = pullState,
+                modifier = Modifier.align(Alignment.TopCenter),
+                contentColor = MaterialTheme.colorScheme.primary,
+            )
         }
     }
 
@@ -171,232 +263,100 @@ fun ShopScreen(
         AlertDialog(
             onDismissRequest = { showConfirmation = false },
             confirmButton = {
-                Button(
-                    onClick = { 
-                        showConfirmation = false 
+                TextButton(
+                    onClick = {
+                        showConfirmation = false
                         selectedItem = null
                     },
-                    shape = MaterialTheme.shapes.medium
-                ) {
-                    Text("Done")
-                }
+                ) { Text(stringResource(R.string.shop_ok)) }
             },
-            title = { Text("Redemption Successful!") },
-            text = { Text("Your item has been redeemed. You can find the voucher code in your profile wallet.") },
+            title = { Text(stringResource(R.string.shop_confirmation_title)) },
+            text = { Text(stringResource(R.string.shop_confirmation_message)) },
             icon = {
                 Surface(
                     color = MaterialTheme.colorScheme.primaryContainer,
                     shape = CircleShape,
-                    modifier = Modifier.size(48.dp)
+                    modifier = Modifier.size(48.dp),
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = MaterialTheme.colorScheme.primary,
                         )
                     }
                 }
-            }
+            },
         )
     }
 }
 
 @Composable
-fun ProductDetailsView(
-    item: ShopItem,
-    onRedeem: () -> Unit
+private fun CategoryChipRow(
+    selectedKey: String?,
+    onSelect: (String?) -> Unit,
 ) {
-    Column(
+    val scroll = rememberScrollState()
+    Row(
         modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .fillMaxWidth()
+            .horizontalScroll(scroll)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Box(modifier = Modifier.widthIn(max = 800.dp).fillMaxWidth()) {
-            // Hero Image Section
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(350.dp)
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.surface)
-                        )
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                if (item.imageUrl.isNotBlank()) {
-                    AsyncImage(
-                        model = item.imageUrl,
-                        contentDescription = item.title,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Outlined.ShoppingBag,
-                        contentDescription = null,
-                        modifier = Modifier.size(120.dp),
-                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-                    )
-                }
-            }
-
-            Column(
-                modifier = Modifier
-                    .padding(24.dp)
-                    .fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = item.title,
-                            style = MaterialTheme.typography.headlineLarge,
-                            fontWeight = FontWeight.ExtraBold
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Surface(
-                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
-                            shape = MaterialTheme.shapes.small
-                        ) {
-                            Text(
-                                text = item.category,
-                                style = MaterialTheme.typography.labelLarge,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                    
-                    Column(horizontalAlignment = Alignment.End) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Text(
-                                text = item.price.toString(),
-                                style = MaterialTheme.typography.displaySmall,
-                                fontWeight = FontWeight.Black,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Icon(
-                                painter = painterResource(R.drawable.coins),
-                                contentDescription = null,
-                                modifier = Modifier.size(24.dp),
-                                tint = Color.Unspecified
-                            )
-                        }
-                        Text(
-                            text = "Market Price",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(32.dp))
-                
-                // Features Row
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    ProductFeatureItem(
-                        icon = Icons.Outlined.VerifiedUser,
-                        label = "Verified",
-                        modifier = Modifier.weight(1f)
-                    )
-                    ProductFeatureItem(
-                        icon = Icons.Outlined.Inventory2,
-                        label = "In Stock",
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(32.dp))
-                
-                Text(
-                    text = "Product Description",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = item.description,
-                    style = MaterialTheme.typography.bodyLarge,
-                    lineHeight = 26.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                item.termsSummary?.let { terms ->
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Text(
-                        text = "Terms & Conditions",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = terms,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(48.dp))
-                
-                Button(
-                    onClick = onRedeem,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(64.dp),
-                    shape = MaterialTheme.shapes.extraLarge,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Text(
-                        text = "Redeem Now",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                
-                Spacer(modifier = Modifier.height(32.dp))
-            }
+        val chips = listOf(
+            null to stringResource(R.string.shop_category_all),
+            "nature" to stringResource(R.string.shop_category_nature),
+            "bags" to stringResource(R.string.shop_category_bags),
+            "education" to stringResource(R.string.shop_category_education),
+            "home" to stringResource(R.string.shop_category_home),
+        )
+        chips.forEach { (key, label) ->
+            val selected = key == selectedKey || (key == null && selectedKey == null)
+            AssistChip(
+                onClick = { onSelect(key) },
+                label = { Text(label) },
+                colors = AssistChipDefaults.assistChipColors(
+                    containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer
+                    else MaterialTheme.colorScheme.surfaceVariant,
+                ),
+                shape = RoundedCornerShape(50),
+            )
         }
     }
 }
 
 @Composable
-fun ProductFeatureItem(
-    icon: ImageVector,
-    label: String,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        modifier = modifier,
-        shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+private fun ShopGridShimmer() {
+    val t = rememberInfiniteTransition(label = "shimmer")
+    val a by t.animateFloat(
+        initialValue = 0.35f,
+        targetValue = 0.75f,
+        animationSpec = infiniteRepeatable(tween(700, easing = LinearEasing), RepeatMode.Reverse),
+        label = "a",
+    )
+    val base = Color.Gray.copy(alpha = a)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(12.dp),
     ) {
-        Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(text = label, style = MaterialTheme.typography.labelMedium)
+        repeat(4) { row ->
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                repeat(3) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(180.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(base),
+                    )
+                }
+            }
+            Spacer(Modifier.height(10.dp))
         }
     }
 }

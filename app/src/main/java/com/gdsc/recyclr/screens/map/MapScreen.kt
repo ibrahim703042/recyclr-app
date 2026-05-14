@@ -19,6 +19,11 @@ import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.SnackbarHost
 import androidx.compose.material.SnackbarHostState
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.material.Button
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
@@ -140,6 +145,17 @@ fun MapScreen(
                     Text(text = "Types : ${p?.types?.joinToString().orEmpty()}")
                     Text(text = "Tél. : ${p?.phone ?: "—"}")
                     p?.websiteUrl?.takeIf { it.isNotBlank() }?.let { Text(text = "Web : $it") }
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    Button(
+                        onClick = { /* TODO: Navigate to Pickup */ },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.large
+                    ) {
+                        Text("Request Pickup from here")
+                    }
+
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         TextButton(
                             onClick = {

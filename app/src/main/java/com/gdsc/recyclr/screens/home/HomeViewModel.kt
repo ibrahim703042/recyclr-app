@@ -29,6 +29,12 @@ class HomeViewModel @Inject constructor(
 
     val currentUser get() = authRepository.currentUser
 
+    /** Prénom ou pseudo pour l’accueil (README V4). */
+    val welcomeName: String
+        get() = currentUser?.displayName?.takeIf { !it.isNullOrBlank() }
+            ?: currentUser?.email?.substringBefore('@')?.takeIf { it.isNotBlank() }
+            ?: "Green Hero"
+
     var impactResponse: Response<UserImpact> by mutableStateOf(Loading)
         private set
 

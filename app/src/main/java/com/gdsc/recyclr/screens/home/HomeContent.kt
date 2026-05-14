@@ -1,50 +1,77 @@
+@file:Suppress("DEPRECATION")
+@file:OptIn(androidx.compose.material.ExperimentalMaterialApi::class)
+
 package com.gdsc.recyclr.screens.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Checkroom
 import androidx.compose.material.icons.filled.LocalDrink
 import androidx.compose.material.icons.filled.Newspaper
 import androidx.compose.material.icons.filled.WineBar
-import androidx.compose.material3.*
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.gdsc.recyclr.R
-import com.gdsc.recyclr.components.composable.RecyclrTopBar
-import com.gdsc.recyclr.components.composable.SectionHeader
-import com.gdsc.recyclr.components.design.RecyclrCategoryRow
-import com.gdsc.recyclr.components.home.*
+import com.gdsc.recyclr.ui.theme.RecyclrThemeColors
+import com.gdsc.recyclr.components.home.HomeCategoryChip
+import com.gdsc.recyclr.components.home.HomeCommunityHighlightCard
+import com.gdsc.recyclr.components.home.HomeEcoStreakBanner
+import com.gdsc.recyclr.components.home.HomeGreetingHeader
+import com.gdsc.recyclr.components.home.HomeLeaderboardPreviewCard
+import com.gdsc.recyclr.components.home.HomeRedesignColors
+import com.gdsc.recyclr.components.home.HomeStatsRow
+import com.gdsc.recyclr.components.home.HomeWalletSummaryCard
+import com.gdsc.recyclr.components.home.HomeWeeklyChallengeCard
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.UserImpact
 import com.gdsc.recyclr.domain.model.engagement.HomeDashboard
-import com.gdsc.recyclr.ui.theme.RecyclrThemeColors
-
-@Composable
-private fun homeCategories(): List<HomeCategory> = listOf(
-    HomeCategory("plastic", stringResource(R.string.category_plastic), stringResource(R.string.category_plastic_subtitle), RecyclrThemeColors.categoryPlastic, RecyclrThemeColors.categoryPlasticIcon, Icons.Default.LocalDrink),
-    HomeCategory("paper", stringResource(R.string.category_paper), stringResource(R.string.category_paper_subtitle), RecyclrThemeColors.categoryPaper, RecyclrThemeColors.categoryPaperIcon, Icons.Default.Newspaper),
-    HomeCategory("glass", stringResource(R.string.category_glass), stringResource(R.string.category_glass_subtitle), RecyclrThemeColors.categoryGlass, RecyclrThemeColors.categoryGlassIcon, Icons.Default.WineBar),
-    HomeCategory("metal", stringResource(R.string.category_metal), stringResource(R.string.category_metal_subtitle), RecyclrThemeColors.categoryMetal, RecyclrThemeColors.categoryMetalIcon, Icons.Default.LocalDrink),
-    HomeCategory("textile", stringResource(R.string.category_textile), stringResource(R.string.category_textile_subtitle), RecyclrThemeColors.categoryTextile, RecyclrThemeColors.categoryTextileIcon, Icons.Default.Checkroom),
-)
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 private data class HomeCategory(
     val routeKey: String,
     val title: String,
-    val subtitle: String,
     val iconBackground: Color,
     val iconColor: Color,
     val icon: ImageVector,
+)
+
+@Composable
+private fun homeCategories(): List<HomeCategory> = listOf(
+    HomeCategory("plastic", stringResource(R.string.category_plastic), RecyclrThemeColors.categoryPlastic, RecyclrThemeColors.categoryPlasticIcon, Icons.Default.LocalDrink),
+    HomeCategory("paper", stringResource(R.string.category_paper), RecyclrThemeColors.categoryPaper, RecyclrThemeColors.categoryPaperIcon, Icons.Default.Newspaper),
+    HomeCategory("glass", stringResource(R.string.category_glass), RecyclrThemeColors.categoryGlass, RecyclrThemeColors.categoryGlassIcon, Icons.Default.WineBar),
+    HomeCategory("metal", stringResource(R.string.category_metal), RecyclrThemeColors.categoryMetal, RecyclrThemeColors.categoryMetalIcon, Icons.Default.LocalDrink),
+    HomeCategory("textile", stringResource(R.string.category_textile), RecyclrThemeColors.categoryTextile, RecyclrThemeColors.categoryTextileIcon, Icons.Default.Checkroom),
 )
 
 @Composable
@@ -52,6 +79,10 @@ fun HomeContent(
     padding: PaddingValues,
     impactResponse: Response<UserImpact>,
     dashboardResponse: Response<HomeDashboard>,
+    userName: String,
+    photoUrl: String?,
+    unreadNotificationCount: Int,
+    onRefresh: () -> Unit,
     onOpenCategory: (String) -> Unit,
     onOpenScan: () -> Unit,
     onOpenChallenge: () -> Unit,
@@ -60,180 +91,152 @@ fun HomeContent(
     onOpenWallet: () -> Unit,
     onOpenPickup: () -> Unit,
     onOpenMap: () -> Unit,
+    onOpenProfile: () -> Unit,
+    onOpenNotifications: () -> Unit,
 ) {
     val categories = homeCategories()
+    val scope = rememberCoroutineScope()
+    var pullRefreshing by remember { mutableStateOf(false) }
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = pullRefreshing,
+        onRefresh = {
+            pullRefreshing = true
+            onRefresh()
+            scope.launch {
+                delay(450)
+                pullRefreshing = false
+            }
+        },
+    )
 
-    Column(
+    val impact = (impactResponse as? Response.Success)?.data
+    val co2Kg = impact?.co2SavedKg ?: 0f
+    val points = impact?.pointsBalance ?: 0
+    val trees = impact?.treesEquivalent ?: 0
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(HomeRedesignColors.PageBackground)
             .padding(padding)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .pullRefresh(pullRefreshState),
     ) {
-        RecyclrTopBar(
-            title = stringResource(R.string.app_name)
-        )
-
-        Column(
-            modifier = Modifier
-                .widthIn(max = 600.dp)
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 12.dp)
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            SectionHeader(
-                title = stringResource(R.string.home_welcome_back),
-                subtitle = "Let's make the world cleaner today."
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                PointsCard(impactResponse = impactResponse, modifier = Modifier.weight(1f))
-                ScanShortcutCard(
-                    onClick = onOpenScan,
-                    modifier = Modifier.weight(0.6f)
+            item(key = "header") {
+                HomeGreetingHeader(
+                    userName = userName,
+                    photoUrl = photoUrl,
+                    unreadNotificationCount = unreadNotificationCount,
+                    onNotificationClick = onOpenNotifications,
+                    onProfileClick = onOpenProfile,
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-            
+            item(key = "stats") {
+                HomeStatsRow(
+                    co2Kg = co2Kg,
+                    points = points,
+                    trees = trees,
+                )
+            }
+
             when (val dashboard = dashboardResponse) {
                 is Response.Success -> {
                     val data = dashboard.data
                     if (data != null) {
-                        HomeStreakAndWalletRow(
-                            streak = data.streak,
-                            wallet = data.wallet,
-                            onOpenWallet = onOpenWallet,
-                        )
-                        Spacer(modifier = Modifier.height(20.dp))
-                        HomeChallengeBanner(challenge = data.challenge, onClick = onOpenChallenge)
-                        Spacer(modifier = Modifier.height(20.dp))
-                        HomeLeaderboardPreview(entries = data.leaderboard, onOpenLeaderboard = onOpenLeaderboard)
-                        Spacer(modifier = Modifier.height(20.dp))
-                        data.communityPreview?.let { post ->
-                            HomeCommunityPreview(post = post, onOpenCommunity = onOpenCommunity)
-                            Spacer(modifier = Modifier.height(20.dp))
+                        item(key = "wallet") {
+                            HomeWalletSummaryCard(
+                                wallet = data.wallet,
+                                onOpenWallet = onOpenWallet,
+                            )
                         }
-                        HomeQuickActionsRow(onOpenPickup = onOpenPickup, onOpenMap = onOpenMap)
-                        Spacer(modifier = Modifier.height(24.dp))
+                        item(key = "streak") {
+                            HomeEcoStreakBanner(streak = data.streak)
+                        }
+                        item(key = "challenge") {
+                            HomeWeeklyChallengeCard(
+                                challenge = data.challenge,
+                                onClick = onOpenChallenge,
+                            )
+                        }
+                        item(key = "leaderboard") {
+                            HomeLeaderboardPreviewCard(
+                                entries = data.leaderboard,
+                                onOpenLeaderboard = onOpenLeaderboard,
+                            )
+                        }
+                        data.communityPreview?.let { post ->
+                            item(key = "community") {
+                                HomeCommunityHighlightCard(
+                                    post = post,
+                                    onOpenCommunity = onOpenCommunity,
+                                    onOpenPickup = onOpenPickup,
+                                    onOpenMap = onOpenMap,
+                                )
+                            }
+                        }
                     }
                 }
                 is Response.Loading -> {
-                    Box(modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
+                    item(key = "loading") {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 24.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            CircularProgressIndicator(color = HomeRedesignColors.PrimaryGreen)
+                        }
                     }
                 }
                 is Response.Failure -> Unit
             }
 
-            SectionHeader(title = stringResource(R.string.home_categories))
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                categories.forEach { category ->
-                    RecyclrCategoryRow(
-                        title = category.title,
-                        subtitle = category.subtitle,
-                        iconBackground = category.iconBackground,
-                        iconColor = category.iconColor,
-                        icon = category.icon,
-                        onClick = { onOpenCategory(category.routeKey) },
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(32.dp))
-        }
-    }
-}
-
-@Composable
-private fun PointsCard(
-    impactResponse: Response<UserImpact>,
-    modifier: Modifier = Modifier,
-) {
-    ElevatedCard(
-        modifier = modifier.height(160.dp),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.reward),
-                contentDescription = null,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(48.dp),
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Column {
+            item(key = "cat_title") {
                 Text(
-                    text = stringResource(R.string.home_points_earned),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                    text = stringResource(R.string.home_recycling_categories),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = HomeRedesignColors.TextDark,
+                    modifier = Modifier.padding(top = 4.dp),
                 )
-                when (impactResponse) {
-                    is Response.Loading -> CircularProgressIndicator(modifier = Modifier.size(20.dp))
-                    is Response.Failure -> Text(
-                        text = "106",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Black
-                    )
-                    is Response.Success -> Text(
-                        text = "${impactResponse.data?.pointsBalance ?: 0}",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Black,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
+            }
+
+            item(key = "categories_row") {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp)
+                        .horizontalScroll(rememberScrollState()),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    categories.forEach { cat ->
+                        HomeCategoryChip(
+                            title = cat.title,
+                            icon = cat.icon,
+                            iconBackground = cat.iconBackground,
+                            iconTint = cat.iconColor,
+                            onClick = { onOpenCategory(cat.routeKey) },
+                        )
+                    }
                 }
             }
-        }
-    }
-}
 
-@Composable
-private fun ScanShortcutCard(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    ElevatedCard(
-        onClick = onClick,
-        modifier = modifier.height(160.dp),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.scan),
-                contentDescription = null,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(56.dp),
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = stringResource(R.string.home_scan),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSecondaryContainer
-            )
+            item(key = "bottom_spacer") {
+                Spacer(Modifier.height(24.dp))
+            }
         }
+
+        PullRefreshIndicator(
+            refreshing = pullRefreshing,
+            state = pullRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter),
+            contentColor = HomeRedesignColors.PrimaryGreen,
+        )
     }
 }

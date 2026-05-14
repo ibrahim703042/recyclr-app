@@ -10,7 +10,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.outlined.AccountBalanceWallet
+import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Link
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -40,6 +44,7 @@ fun ProfileContent(
     impactResponse: Response<UserImpact>,
     badges: List<UserBadge>,
     onOpenWallet: () -> Unit,
+    onOpenBlockchainWallet: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
     val displayName = user?.displayName?.takeIf { it.isNotBlank() } ?: "Green Hero"
@@ -163,29 +168,36 @@ fun ProfileContent(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = "My Activity",
+                        text = stringResource(R.string.profile_my_activity_section),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     
                     ProfileActionItem(
                         icon = Icons.Outlined.AccountBalanceWallet,
-                        title = "My Wallet",
-                        subtitle = "View your rewards and tokens",
+                        title = stringResource(R.string.profile_my_wallet_title),
+                        subtitle = stringResource(R.string.profile_my_wallet_subtitle),
                         onClick = onOpenWallet
                     )
                     
                     ProfileActionItem(
+                        icon = Icons.Outlined.Link,
+                        title = stringResource(R.string.wallet_blockchain_entry),
+                        subtitle = stringResource(R.string.wallet_blockchain_subtitle),
+                        onClick = onOpenBlockchainWallet
+                    )
+                    
+                    ProfileActionItem(
                         icon = Icons.Outlined.History,
-                        title = "Recycling History",
-                        subtitle = "See what you've recycled so far",
+                        title = stringResource(R.string.profile_recycling_history_title),
+                        subtitle = stringResource(R.string.profile_recycling_history_subtitle),
                         onClick = { /* TODO */ }
                     )
 
                     if (badges.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(24.dp))
                         Text(
-                            text = "Achievements",
+                            text = stringResource(R.string.profile_achievements_section),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )

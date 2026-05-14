@@ -10,6 +10,6 @@ data class CachedShopItemEntity(
     val price: Int,
     val description: String,
     val category: String,
-    val imageUrl: String
+    val imageUrl: String,
+    val payloadJson: String = "{}",
 )
-

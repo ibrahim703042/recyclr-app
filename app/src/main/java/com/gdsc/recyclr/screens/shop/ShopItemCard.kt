@@ -28,7 +28,7 @@ fun ShopItemCard(
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .height(240.dp),
+            .height(178.dp),
         onClick = { onItemClick(shopItem) },
         shape = MaterialTheme.shapes.large,
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp)

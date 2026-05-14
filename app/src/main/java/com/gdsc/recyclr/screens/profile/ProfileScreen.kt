@@ -13,6 +13,7 @@ import com.gdsc.recyclr.screens.profile.components.RevokeAccess
 @Composable
 fun ProfileScreen(
     onOpenWallet: () -> Unit = {},
+    onOpenBlockchainWallet: () -> Unit = {},
     onOpenSettings: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
@@ -29,6 +30,7 @@ fun ProfileScreen(
             impactResponse = viewModel.impactResponse,
             badges = viewModel.badges,
             onOpenWallet = onOpenWallet,
+            onOpenBlockchainWallet = onOpenBlockchainWallet,
             onOpenSettings = onOpenSettings,
         )
     }

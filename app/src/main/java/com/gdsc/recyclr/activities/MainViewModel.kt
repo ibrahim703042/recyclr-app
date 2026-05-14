@@ -50,6 +50,10 @@ class MainViewModel @Inject constructor(
         _pendingMainBottomTabRoute.value = BottomBarPage.Shop.route
     }
 
+    fun requestOpenMapTab() {
+        _pendingMainBottomTabRoute.value = BottomBarPage.Map.route
+    }
+
     fun consumePendingMainBottomTab() {
         _pendingMainBottomTabRoute.value = null
     }

@@ -83,6 +83,7 @@ private fun RecyclrAppRoot(viewModel: MainViewModel) {
                 isGuestModeEnabled = guestModeEnabled,
                 onGuestModeEnabled = { enabled -> viewModel.setGuestModeEnabled(enabled) },
                 onRequestOpenShopFromResults = { viewModel.requestOpenShopTab() },
+                onRequestOpenMapFromResults = { viewModel.requestOpenMapTab() },
             )
         }
     }

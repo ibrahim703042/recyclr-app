@@ -7,8 +7,49 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * v1 : tables `scan_records` et `user_impact` (cache invité minimal).
  * v2 : ajout des caches boutique, points de collecte et redemptions.
  * v3 : cache lookups code-barres et file enfilement demandes de collecte hors ligne.
+ * v4 : payload JSON produits, notifications, chat support, wishlist.
  */
 object RecyclrMigrations {
+
+    val MIGRATION_3_4 = object : Migration(3, 4) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE shop_items ADD COLUMN payloadJson TEXT NOT NULL DEFAULT '{}'")
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS `app_notifications` (
+                    `id` TEXT NOT NULL,
+                    `title` TEXT NOT NULL,
+                    `body` TEXT NOT NULL,
+                    `createdAtMillis` INTEGER NOT NULL,
+                    `isRead` INTEGER NOT NULL,
+                    PRIMARY KEY(`id`)
+                )
+                """.trimIndent(),
+            )
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS `chat_messages` (
+                    `id` TEXT NOT NULL,
+                    `threadId` TEXT NOT NULL,
+                    `body` TEXT NOT NULL,
+                    `fromUser` INTEGER NOT NULL,
+                    `sentAtMillis` INTEGER NOT NULL,
+                    PRIMARY KEY(`id`)
+                )
+                """.trimIndent(),
+            )
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS `wishlist_items` (
+                    `userId` TEXT NOT NULL,
+                    `productId` TEXT NOT NULL,
+                    `addedAtMillis` INTEGER NOT NULL,
+                    PRIMARY KEY(`userId`, `productId`)
+                )
+                """.trimIndent(),
+            )
+        }
+    }
 
     val MIGRATION_2_3 = object : Migration(2, 3) {
         override fun migrate(db: SupportSQLiteDatabase) {

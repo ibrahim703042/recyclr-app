@@ -14,11 +14,16 @@ import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FlashOn
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.LocalDrink
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,7 +40,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.gdsc.recyclr.R
-import com.gdsc.recyclr.components.composable.RecyclrTopBar
+import com.gdsc.recyclr.components.composable.BasicTopBar
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.ui.theme.CategoryPlastic
 import java.io.File
@@ -46,7 +51,6 @@ import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScanScreen(
     viewModel: ScanViewModel = hiltViewModel(),
@@ -72,7 +76,6 @@ fun ScanScreen(
     var showManualEntry by remember { mutableStateOf(false) }
     var pendingHazardousResult by remember { mutableStateOf<ScanResult?>(null) }
     var capturing by remember { mutableStateOf(false) }
-    var inlineResult by remember { mutableStateOf<ScanResult?>(null) }
     var showBarcodeEntry by remember { mutableStateOf(false) }
     var barcodeValue by remember { mutableStateOf("") }
 
@@ -116,117 +119,117 @@ fun ScanScreen(
     }
 
     Scaffold(
+        topBar = {
+            BasicTopBar(title = stringResource(R.string.scan_title))
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
         ) {
-            if (hasCameraPermission) {
-                CameraPreview(
-                    modifier = Modifier.fillMaxSize(),
-                    context = context,
-                    imageCapture = imageCapture,
-                )
-            } else {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(text = stringResource(R.string.scan_permission_required))
-                }
-            }
-
-            // Viewfinder
+            // Top half: Camera
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 48.dp, vertical = 120.dp),
-                contentAlignment = Alignment.Center,
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
+                    .background(Color.Black),
             ) {
-                ScanViewfinder()
-            }
-
-            // Buttons over preview
-            Row(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 120.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                FilledTonalButton(onClick = { showManualEntry = true }) {
-                    Text(stringResource(R.string.scan_manual_title))
-                }
-                FilledTonalButton(onClick = { showBarcodeEntry = true }) {
-                    Text(stringResource(R.string.scan_barcode))
-                }
-            }
-
-            // Capture button
-            FloatingActionButton(
-                onClick = { captureAndScan() },
-                containerColor = Color.White,
-                contentColor = Color.Black,
-                shape = CircleShape,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 32.dp)
-                    .size(72.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Scan",
-                    modifier = Modifier.size(32.dp),
-                )
-            }
-
-            // Standardized Top Bar
-            RecyclrTopBar(
-                title = stringResource(R.string.scan_title),
-                modifier = Modifier.align(Alignment.TopCenter)
-            )
-
-            inlineResult?.let { result ->
-                ScanResultBanner(
-                    itemType = result.itemType,
-                    points = result.points,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(start = 24.dp, end = 24.dp, bottom = 120.dp),
-                )
-            }
-
-            when (val resp = viewModel.submitResponse) {
-                is Response.Loading -> {
+                if (hasCameraPermission) {
+                    CameraPreview(
+                        modifier = Modifier.fillMaxSize(),
+                        context = context,
+                        imageCapture = imageCapture,
+                    )
+                } else {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                        Text(text = stringResource(R.string.scan_permission_required), color = Color.White)
                     }
                 }
-                is Response.Success -> {
-                    val result = resp.data
-                    LaunchedEffect(result) {
-                        if (result != null) {
-                            if (result.isHazardous) {
-                                pendingHazardousResult = result
-                                viewModel.acknowledgeSubmitSuccess()
-                            } else {
-                                inlineResult = result
-                                viewModel.acknowledgeSubmitSuccess()
-                                kotlinx.coroutines.delay(1800)
-                                navigateToResults(
-                                    result.itemType,
-                                    result.points,
-                                    result.co2SavedGrams,
-                                    result.destination,
-                                )
-                                inlineResult = null
-                            }
+
+                ScanViewfinderOverlay(modifier = Modifier.fillMaxSize())
+                
+                // Flash and Gallery buttons
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    IconButton(
+                        onClick = { /* TODO */ },
+                        modifier = Modifier.background(Color.Black.copy(alpha = 0.4f), CircleShape)
+                    ) {
+                        Icon(imageVector = Icons.Default.FlashOn, contentDescription = "Flash", tint = Color.White)
+                    }
+                    IconButton(
+                        onClick = { /* TODO */ },
+                        modifier = Modifier.background(Color.Black.copy(alpha = 0.4f), CircleShape)
+                    ) {
+                        Icon(imageVector = Icons.Default.Image, contentDescription = "Gallery", tint = Color.White)
+                    }
+                }
+            }
+
+            // Bottom half: Controls
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Button(
+                        onClick = { captureAndScan() },
+                        modifier = Modifier.weight(1f).height(56.dp),
+                        shape = MaterialTheme.shapes.large,
+                        enabled = !capturing
+                    ) {
+                        Icon(imageVector = Icons.Default.PhotoCamera, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Scan Item")
+                    }
+                    OutlinedButton(
+                        onClick = { showBarcodeEntry = true },
+                        modifier = Modifier.weight(1f).height(56.dp),
+                        shape = MaterialTheme.shapes.large
+                    ) {
+                        Icon(imageVector = Icons.Default.QrCodeScanner, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Scan Barcode")
+                    }
+                }
+
+                TextButton(onClick = { showManualEntry = true }) {
+                    Text("Enter item name manually", style = MaterialTheme.typography.bodyMedium)
+                }
+
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Recent scans",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(listOf("Plastic Bottle", "Newspaper", "Glass Jar")) { item ->
+                            RecentScanChip(item)
                         }
                     }
                 }
-                is Response.Failure -> Unit
             }
         }
     }
 
+    // Reuse existing dialogs for Barcode and Manual entry...
     if (showBarcodeEntry) {
         AlertDialog(
             onDismissRequest = { showBarcodeEntry = false },
@@ -286,106 +289,82 @@ fun ScanScreen(
         )
     }
 
-    val hazard = pendingHazardousResult
-    if (hazard != null) {
-        AlertDialog(
-            onDismissRequest = { pendingHazardousResult = null },
-            title = { Text(stringResource(R.string.scan_hazardous_title)) },
-            text = {
-                Text(stringResource(R.string.scan_hazardous_message))
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        pendingHazardousResult = null
-                        navigateToResults(hazard.itemType, hazard.points, hazard.co2SavedGrams, hazard.destination)
-                    },
-                ) { Text(stringResource(R.string.scan_continue)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { pendingHazardousResult = null }) { Text(stringResource(R.string.scan_cancel)) }
-            },
-        )
-    }
-}
-
-@Composable
-private fun ScanViewfinder() {
-    val corner = 32.dp
-    val stroke = 4.dp
-    Box(modifier = Modifier.size(240.dp)) {
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .width(corner)
-                .height(corner)
-                .border(stroke, Color.White, RoundedCornerShape(topStart = 12.dp)),
-        )
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .width(corner)
-                .height(corner)
-                .border(stroke, Color.White, RoundedCornerShape(topEnd = 12.dp)),
-        )
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .width(corner)
-                .height(corner)
-                .border(stroke, Color.White, RoundedCornerShape(bottomStart = 12.dp)),
-        )
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .width(corner)
-                .height(corner)
-                .border(stroke, Color.White, RoundedCornerShape(bottomEnd = 12.dp)),
-        )
-    }
-}
-
-@Composable
-private fun ScanResultBanner(
-    itemType: String,
-    points: Int,
-    modifier: Modifier = Modifier,
-) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-    ) {
-        Row(
-            modifier = Modifier.padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Surface(
-                modifier = Modifier.size(48.dp),
-                shape = RoundedCornerShape(12.dp),
-                color = CategoryPlastic.copy(alpha = 0.2f)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Default.LocalDrink,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
+    when (val resp = viewModel.submitResponse) {
+        is Response.Loading -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
+        is Response.Success -> {
+            val result = resp.data
+            LaunchedEffect(result) {
+                if (result != null) {
+                    viewModel.acknowledgeSubmitSuccess()
+                    navigateToResults(
+                        result.itemType,
+                        result.points,
+                        result.co2SavedGrams,
+                        result.destination,
                     )
                 }
             }
-            Column(modifier = Modifier.padding(start = 16.dp)) {
-                Text(
-                    text = stringResource(R.string.scan_result_message, itemType.lowercase()),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                )
-                Text(
-                    text = stringResource(R.string.scan_result_points, points),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                )
-            }
+        }
+        is Response.Failure -> Unit
+    }
+}
+
+@Composable
+private fun RecentScanChip(label: String) {
+    Surface(
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        onClick = { /* TODO */ }
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(imageVector = Icons.Default.LocalDrink, contentDescription = null, modifier = Modifier.size(16.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(text = label, style = MaterialTheme.typography.labelMedium)
+        }
+    }
+}
+
+@Composable
+private fun ScanViewfinderOverlay(modifier: Modifier = Modifier) {
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        val corner = 32.dp
+        val stroke = 4.dp
+        Box(modifier = Modifier.size(240.dp)) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .width(corner)
+                    .height(corner)
+                    .border(stroke, Color.White, RoundedCornerShape(topStart = 12.dp)),
+            )
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .width(corner)
+                    .height(corner)
+                    .border(stroke, Color.White, RoundedCornerShape(topEnd = 12.dp)),
+            )
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .width(corner)
+                    .height(corner)
+                    .border(stroke, Color.White, RoundedCornerShape(bottomStart = 12.dp)),
+            )
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .width(corner)
+                    .height(corner)
+                    .border(stroke, Color.White, RoundedCornerShape(bottomEnd = 12.dp)),
+            )
         }
     }
 }
