@@ -43,7 +43,7 @@ import androidx.compose.ui.unit.dp
 import com.gdsc.recyclr.R
 import com.gdsc.recyclr.ui.theme.RecyclrThemeColors
 import com.gdsc.recyclr.components.home.HomeCategoryChip
-import com.gdsc.recyclr.components.home.HomeCommunityHighlightCard
+import com.gdsc.recyclr.components.home.HomeCommunityHighlightsCarousel
 import com.gdsc.recyclr.components.home.HomeEcoStreakBanner
 import com.gdsc.recyclr.components.home.HomeGreetingHeader
 import com.gdsc.recyclr.components.home.HomeLeaderboardPreviewCard
@@ -55,7 +55,6 @@ import com.gdsc.recyclr.components.home.HomeWeeklyChallengeCard
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.UserImpact
 import com.gdsc.recyclr.domain.model.engagement.HomeDashboard
-import com.gdsc.recyclr.domain.model.engagement.UserBadge
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -172,11 +171,11 @@ fun HomeContent(
                                 onOpenLeaderboard = onOpenLeaderboard,
                             )
                         }
-                        data.communityPreview?.let { post ->
+                        if (data.communityHighlights.isNotEmpty()) {
                             item(key = "community") {
-                                HomeCommunityHighlightCard(
-                                    post = post,
-                                    badges = data.badges.filter { it.earned }.take(5),
+                                HomeCommunityHighlightsCarousel(
+                                    highlights = data.communityHighlights,
+                                    badges = data.badges.filter { it.earned }.take(8),
                                     onOpenCommunity = onOpenCommunity,
                                     onOpenPickup = onOpenPickup,
                                     onOpenMap = onOpenMap,

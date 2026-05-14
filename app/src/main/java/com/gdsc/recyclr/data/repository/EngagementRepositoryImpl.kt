@@ -41,13 +41,13 @@ class EngagementRepositoryImpl @Inject constructor(
             val streak = computeStreak(userId)
             val challenge = resolveChallenge(userId)
             val leaderboard = resolveLeaderboardForUser(userId)
-            val community = resolveCommunityPreviewForUser(userId)
+            val communityHighlights = resolveCommunityPosts(userId).take(8)
             Response.Success(
                 HomeDashboard(
                     streak = streak,
                     challenge = challenge,
                     leaderboard = leaderboard.take(3),
-                    communityPreview = community,
+                    communityHighlights = communityHighlights,
                     wallet = buildWallet(pointsBalance),
                     badges = defaultBadges(streak.currentDays, challenge.currentScans),
                 ),
@@ -178,10 +178,6 @@ class EngagementRepositoryImpl @Inject constructor(
         points = points.toInt(),
         isCurrentUser = isCurrentUser,
     )
-
-    private suspend fun resolveCommunityPreviewForUser(userId: String): CommunityPost? {
-        return resolveCommunityPosts(userId).firstOrNull()
-    }
 
     private suspend fun resolveCommunityPosts(userId: String): List<CommunityPost> {
         if (userId == "guest") return seedCommunity()

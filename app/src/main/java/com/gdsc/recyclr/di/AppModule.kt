@@ -149,8 +149,12 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideRedemptionRepository(service: RedemptionService, dao: RedemptionDao): RedemptionRepository {
-        return RedemptionRepositoryImpl(service, dao)
+    fun provideRedemptionRepository(
+        service: RedemptionService,
+        dao: RedemptionDao,
+        impactRepository: ImpactRepository,
+    ): RedemptionRepository {
+        return RedemptionRepositoryImpl(service, dao, impactRepository)
     }
 
     @Provides

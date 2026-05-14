@@ -17,5 +17,8 @@ interface ImpactRepository {
         energyRecoveredKwhDelta: Float,
         treesEquivalentDelta: Int
     ): Response<Boolean>
+
+    /** Ajustement local des points (ex. invité après un échange boutique). Les comptes connectés se rafraîchissent via [getUserImpact]. */
+    suspend fun applyLocalPointsDelta(userId: String, pointsDelta: Int): Response<Boolean>
 }
 

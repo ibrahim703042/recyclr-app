@@ -38,6 +38,8 @@ import com.gdsc.recyclr.screens.onboarding.OnboardingScreen
 import com.gdsc.recyclr.screens.profile.ProfileScreen
 import com.gdsc.recyclr.screens.results.ResultsScreen
 import com.gdsc.recyclr.screens.scan.ScanScreen
+import com.gdsc.recyclr.screens.settings.AboutRecyclrScreen
+import com.gdsc.recyclr.screens.settings.PersonalInformationScreen
 import com.gdsc.recyclr.screens.settings.SettingsScreen
 import com.gdsc.recyclr.screens.shop.ShopScreen
 import com.gdsc.recyclr.screens.support.HelpWebViewScreen
@@ -125,7 +127,22 @@ fun RootNavGraph(
         }
 
         composable(Screen.Settings.route) {
-            SettingsScreen(onBack = { navController.popBackStack() })
+            SettingsScreen(
+                onBack = { navController.popBackStack() },
+                onOpenHelpCenter = { navController.navigate(Screen.SettingsHelp.route) },
+                onOpenAbout = { navController.navigate(Screen.SettingsAbout.route) },
+                onOpenPersonalInformation = { navController.navigate(Screen.SettingsPersonalInfo.route) },
+            )
+        }
+
+        composable(Screen.SettingsHelp.route) {
+            HelpWebViewScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Screen.SettingsAbout.route) {
+            AboutRecyclrScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Screen.SettingsPersonalInfo.route) {
+            PersonalInformationScreen(onBack = { navController.popBackStack() })
         }
 
         composable("${Screen.Results.route}/{itemType}/{points}/{co2SavedGrams}/{destination}") { entry ->

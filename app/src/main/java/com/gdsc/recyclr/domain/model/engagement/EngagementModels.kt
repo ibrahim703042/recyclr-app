@@ -69,7 +69,8 @@ data class HomeDashboard(
     val streak: EcoStreak,
     val challenge: WeeklyChallenge,
     val leaderboard: List<LeaderboardEntry>,
-    val communityPreview: CommunityPost?,
+    /** Publications récentes (ex. cette semaine) — défilant en carrousel sur l’accueil. */
+    val communityHighlights: List<CommunityPost>,
     val wallet: RecWallet,
     val badges: List<UserBadge>,
 )

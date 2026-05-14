@@ -27,6 +27,9 @@ sealed class Screen(val route: String) {
 
     object Results : Screen("results")
     object Settings : Screen("settings")
+    object SettingsHelp : Screen("settings_help")
+    object SettingsAbout : Screen("settings_about")
+    object SettingsPersonalInfo : Screen("settings_personal_info")
 }
 
 sealed class BottomBarPage(

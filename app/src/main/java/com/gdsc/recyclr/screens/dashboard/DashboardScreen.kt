@@ -45,16 +45,17 @@ fun MainScreen(
     val pendingBottomTab by mainViewModel.pendingMainBottomTabRoute.collectAsStateWithLifecycle()
     val pendingFeature by mainViewModel.pendingFeatureRoute.collectAsStateWithLifecycle()
 
-    LaunchedEffect(pendingBottomTab) {
-        val route = pendingBottomTab ?: return@LaunchedEffect
-        navController.navigateToMainTab(route)
-        mainViewModel.consumePendingMainBottomTab()
-    }
-
-    LaunchedEffect(pendingFeature) {
-        val route = pendingFeature ?: return@LaunchedEffect
-        navController.navigateToFeature(route)
-        mainViewModel.consumePendingFeatureRoute()
+    LaunchedEffect(pendingBottomTab, pendingFeature) {
+        val tab = pendingBottomTab
+        val feat = pendingFeature
+        if (tab != null) {
+            navController.navigateToMainTab(tab)
+            mainViewModel.consumePendingMainBottomTab()
+        }
+        if (feat != null) {
+            navController.navigateToFeature(feat)
+            mainViewModel.consumePendingFeatureRoute()
+        }
     }
 
     Scaffold(

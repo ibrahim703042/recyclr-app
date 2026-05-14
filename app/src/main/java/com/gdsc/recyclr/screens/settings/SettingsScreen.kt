@@ -1,37 +1,74 @@
 package com.gdsc.recyclr.screens.settings
 
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.outlined.HelpOutline
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Security
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.gdsc.recyclr.R
 import com.gdsc.recyclr.activities.MainViewModel
 import com.gdsc.recyclr.components.composable.BasicTopBar
 import com.gdsc.recyclr.components.preferences.LanguageSelectorRow
 import com.gdsc.recyclr.components.preferences.ThemeModeSelectorRow
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
-    viewModel: MainViewModel = hiltViewModel()
+    onOpenHelpCenter: () -> Unit,
+    onOpenAbout: () -> Unit,
+    onOpenPersonalInformation: () -> Unit,
+    viewModel: MainViewModel = hiltViewModel(),
 ) {
+    val context = LocalContext.current
+    val versionName = remember(context.packageName) {
+        runCatching {
+            val pm = context.packageManager
+            val pkg = context.packageName
+            if (Build.VERSION.SDK_INT >= 33) {
+                pm.getPackageInfo(pkg, PackageManager.PackageInfoFlags.of(0)).versionName
+            } else {
+                @Suppress("DEPRECATION")
+                pm.getPackageInfo(pkg, 0).versionName
+            }
+        }.getOrNull().orEmpty().ifBlank { "—" }
+    }
+
     Scaffold(
         topBar = {
             BasicTopBar(
-                title = "Settings",
-                onBack = onBack
+                title = stringResource(R.string.settings_title),
+                onBack = onBack,
             )
-        }
+        },
     ) { padding ->
         LazyColumn(
             modifier = Modifier
@@ -39,13 +76,16 @@ fun SettingsScreen(
                 .padding(padding),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             item {
                 Column(modifier = Modifier.widthIn(max = 600.dp)) {
-                    SettingsSectionTitle("Preferences")
+                    SettingsSectionTitle(stringResource(R.string.settings_section_preferences))
                     SettingsCard {
-                        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                        ) {
                             ThemeModeSelectorRow()
                             HorizontalDivider(modifier = Modifier.alpha(0.5f))
                             LanguageSelectorRow()
@@ -56,25 +96,28 @@ fun SettingsScreen(
 
             item {
                 Column(modifier = Modifier.widthIn(max = 600.dp)) {
-                    SettingsSectionTitle("Account")
+                    SettingsSectionTitle(stringResource(R.string.settings_section_account))
                     SettingsCard {
                         Column {
                             SettingsMenuItem(
                                 icon = Icons.Outlined.Person,
-                                title = "Personal Information",
-                                onClick = { /* TODO */ }
+                                title = stringResource(R.string.settings_personal_information),
+                                onClick = onOpenPersonalInformation,
                             )
                             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                             SettingsMenuItem(
                                 icon = Icons.Outlined.Notifications,
-                                title = "Notifications",
-                                onClick = { /* TODO */ }
+                                title = stringResource(R.string.settings_notifications_in_app),
+                                onClick = {
+                                    viewModel.requestOpenHomeAndNotifications()
+                                    onBack()
+                                },
                             )
                             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                             SettingsMenuItem(
                                 icon = Icons.Outlined.Security,
-                                title = "Security & Privacy",
-                                onClick = { /* TODO */ }
+                                title = stringResource(R.string.settings_security_privacy),
+                                onClick = { },
                             )
                         }
                     }
@@ -83,19 +126,19 @@ fun SettingsScreen(
 
             item {
                 Column(modifier = Modifier.widthIn(max = 600.dp)) {
-                    SettingsSectionTitle("App Info")
+                    SettingsSectionTitle(stringResource(R.string.settings_section_app_info))
                     SettingsCard {
                         Column {
                             SettingsMenuItem(
                                 icon = Icons.Outlined.HelpOutline,
-                                title = "Help Center",
-                                onClick = { /* TODO */ }
+                                title = stringResource(R.string.settings_help_center),
+                                onClick = onOpenHelpCenter,
                             )
                             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                             SettingsMenuItem(
                                 icon = Icons.Outlined.Info,
-                                title = "About Recyclr",
-                                onClick = { /* TODO */ }
+                                title = stringResource(R.string.settings_about_app),
+                                onClick = onOpenAbout,
                             )
                         }
                     }
@@ -107,32 +150,38 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
                         onClick = { viewModel.signOut() },
-                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.errorContainer,
-                            contentColor = MaterialTheme.colorScheme.error
+                            contentColor = MaterialTheme.colorScheme.error,
                         ),
-                        shape = MaterialTheme.shapes.large
+                        shape = MaterialTheme.shapes.large,
                     ) {
-                        Text("Log Out", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text(
+                            stringResource(R.string.settings_log_out),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
                     }
-                    
+
                     Spacer(modifier = Modifier.height(12.dp))
-                    
+
                     TextButton(
                         onClick = { viewModel.revokeAccess() },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
                     ) {
-                        Text("Delete Account")
+                        Text(stringResource(R.string.settings_delete_account))
                     }
-                    
+
                     Spacer(modifier = Modifier.height(32.dp))
                     Text(
-                        text = "Version 1.0.0 (Build 123)",
+                        text = stringResource(R.string.settings_version_line, versionName),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
                     )
                 }
             }

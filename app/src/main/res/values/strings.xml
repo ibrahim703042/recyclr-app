@@ -287,4 +287,25 @@
     <string name="push_default_title">Recyclr</string>
     <string name="push_default_body">You have a new update.</string>
     <string name="home_badge_community">Community</string>
+    <string name="home_community_this_week">Community highlights</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_preferences">Preferences</string>
+    <string name="settings_section_account">Account</string>
+    <string name="settings_section_app_info">About the app</string>
+    <string name="settings_personal_information">Personal information</string>
+    <string name="settings_notifications_in_app">In-app notifications</string>
+    <string name="settings_security_privacy">Security &amp; privacy</string>
+    <string name="settings_help_center">Help center</string>
+    <string name="settings_about_app">About Recyclr</string>
+    <string name="settings_log_out">Log out</string>
+    <string name="settings_delete_account">Delete account</string>
+    <string name="settings_version_line">Version %1$s</string>
+    <string name="about_title">About Recyclr</string>
+    <string name="about_body">Recyclr helps you scan waste, earn points, and support environmental projects.</string>
+    <string name="personal_info_title">Personal information</string>
+    <string name="personal_info_guest">You are browsing as a guest. Sign in to sync your profile.</string>
+    <string name="personal_info_display_name">Display name</string>
+    <string name="personal_info_email">Email</string>
+    <string name="personal_info_not_verified">Email not verified</string>
+    <string name="personal_info_verified">Email verified</string>
 </resources>

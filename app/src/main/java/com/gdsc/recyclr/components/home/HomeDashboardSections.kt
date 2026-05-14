@@ -1,6 +1,9 @@
 package com.gdsc.recyclr.components.home
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -709,6 +712,106 @@ fun HomeCommunityHighlightCard(
                         text = stringResource(R.string.home_recycle_map),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun HomeCommunityHighlightsCarousel(
+    highlights: List<CommunityPost>,
+    badges: List<UserBadge>,
+    onOpenCommunity: () -> Unit,
+    onOpenPickup: () -> Unit,
+    onOpenMap: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    if (highlights.isEmpty()) return
+    val pagerState = rememberPagerState(pageCount = { highlights.size })
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        Text(
+            text = stringResource(R.string.home_community_this_week),
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Bold,
+            color = LocalHomeRedesignPalette.current.onCard,
+            modifier = Modifier
+                .padding(horizontal = 4.dp)
+                .padding(bottom = 8.dp),
+        )
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 8.dp),
+            pageSpacing = 10.dp,
+        ) { page ->
+            HomeCommunityHighlightCard(
+                post = highlights[page],
+                badges = emptyList(),
+                onOpenCommunity = onOpenCommunity,
+                onOpenPickup = onOpenPickup,
+                onOpenMap = onOpenMap,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        if (badges.isNotEmpty()) {
+            Spacer(Modifier.height(8.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                badges.forEach { badge ->
+                    AssistChip(
+                        onClick = onOpenCommunity,
+                        label = {
+                            Text(
+                                badge.title,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                style = MaterialTheme.typography.labelMedium,
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Outlined.Stars,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                            )
+                        },
+                        colors = AssistChipDefaults.assistChipColors(
+                            containerColor = LocalHomeRedesignPalette.current.softAccent,
+                            labelColor = LocalHomeRedesignPalette.current.onCard,
+                        ),
+                    )
+                }
+            }
+        }
+        if (highlights.size > 1) {
+            Spacer(Modifier.height(8.dp))
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 4.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                repeat(highlights.size) { i ->
+                    val selected = i == pagerState.currentPage
+                    Spacer(
+                        Modifier
+                            .padding(horizontal = 3.dp)
+                            .size(if (selected) 8.dp else 6.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (selected) LocalHomeRedesignPalette.current.primary
+                                else LocalHomeRedesignPalette.current.muted.copy(alpha = 0.35f),
+                            ),
                     )
                 }
             }

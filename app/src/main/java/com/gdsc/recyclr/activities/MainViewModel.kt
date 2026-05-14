@@ -62,6 +62,11 @@ class MainViewModel @Inject constructor(
         _pendingFeatureRoute.value = FeatureRoute.Notifications
     }
 
+    fun requestOpenHomeAndNotifications() {
+        _pendingMainBottomTabRoute.value = BottomBarPage.Home.route
+        _pendingFeatureRoute.value = FeatureRoute.Notifications
+    }
+
     fun consumePendingFeatureRoute() {
         _pendingFeatureRoute.value = null
     }

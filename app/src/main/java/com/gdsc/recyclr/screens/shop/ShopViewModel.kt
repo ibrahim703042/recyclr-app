@@ -132,7 +132,11 @@ class ShopViewModel @Inject constructor(
     fun redeem(item: ShopItem) {
         viewModelScope.launch {
             redeemResponse = Response.Loading
-            redeemResponse = redemptionRepository.redeem(uid, item)
+            val result = redemptionRepository.redeem(uid, item)
+            redeemResponse = result
+            if (result is Success && result.data != null) {
+                impactRepository.getUserImpact(uid)
+            }
             loadHistory()
         }
     }

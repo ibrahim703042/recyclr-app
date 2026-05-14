@@ -285,4 +285,25 @@
     <string name="push_default_title">Recyclr</string>
     <string name="push_default_body">Nouvelle mise à jour.</string>
     <string name="home_badge_community">Communauté</string>
+    <string name="home_community_this_week">Temps fort communauté</string>
+    <string name="settings_title">Paramètres</string>
+    <string name="settings_section_preferences">Préférences</string>
+    <string name="settings_section_account">Compte</string>
+    <string name="settings_section_app_info">À propos de l’app</string>
+    <string name="settings_personal_information">Informations personnelles</string>
+    <string name="settings_notifications_in_app">Notifications dans l’app</string>
+    <string name="settings_security_privacy">Sécurité et confidentialité</string>
+    <string name="settings_help_center">Centre d’aide</string>
+    <string name="settings_about_app">À propos de Recyclr</string>
+    <string name="settings_log_out">Se déconnecter</string>
+    <string name="settings_delete_account">Supprimer le compte</string>
+    <string name="settings_version_line">Version %1$s</string>
+    <string name="about_title">À propos de Recyclr</string>
+    <string name="about_body">Recyclr vous aide à scanner vos déchets, à gagner des points et à soutenir des actions pour l’environnement.</string>
+    <string name="personal_info_title">Informations personnelles</string>
+    <string name="personal_info_guest">Vous naviguez en invité. Connectez-vous pour synchroniser votre profil.</string>
+    <string name="personal_info_display_name">Nom affiché</string>
+    <string name="personal_info_email">E-mail</string>
+    <string name="personal_info_not_verified">E-mail non vérifié</string>
+    <string name="personal_info_verified">E-mail vérifié</string>
 </resources>

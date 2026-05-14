@@ -98,6 +98,14 @@ class ImpactRepositoryImpl @Inject constructor(
             )
     }
 
+    override suspend fun applyLocalPointsDelta(userId: String, pointsDelta: Int): Response<Boolean> {
+        if (userId != "guest") return Response.Success(true)
+        val base = dao.get(userId)?.toDomain() ?: defaultImpact(userId).toDomain()
+        val updated = base.copy(pointsBalance = (base.pointsBalance + pointsDelta).coerceAtLeast(0))
+        dao.upsert(updated.toCached())
+        return Response.Success(true)
+    }
+
     private fun defaultImpact(userId: String): UserImpactDto = UserImpactDto(userId = userId)
 
     private fun UserImpact.toCached() = CachedUserImpactEntity(

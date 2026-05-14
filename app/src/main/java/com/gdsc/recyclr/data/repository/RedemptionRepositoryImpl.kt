@@ -8,13 +8,15 @@ import com.gdsc.recyclr.domain.model.Redemption
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.ShopItem
 import com.gdsc.recyclr.domain.repository.RedemptionRepository
+import com.gdsc.recyclr.domain.repository.ImpactRepository
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class RedemptionRepositoryImpl @Inject constructor(
     private val service: RedemptionService,
-    private val dao: RedemptionDao
+    private val dao: RedemptionDao,
+    private val impactRepository: ImpactRepository,
 ) : RedemptionRepository {
     override suspend fun redeem(userId: String, item: ShopItem): Response<Redemption> {
         if (userId == "guest") {
@@ -31,6 +33,7 @@ class RedemptionRepositoryImpl @Inject constructor(
                 pickupHint = null
             )
             dao.upsert(redemption.toCached())
+            impactRepository.applyLocalPointsDelta(userId, -item.price)
             return Response.Success(redemption)
         }
 
