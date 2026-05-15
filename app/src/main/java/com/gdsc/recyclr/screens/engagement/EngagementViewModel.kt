@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.gdsc.recyclr.domain.model.UserRole
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.engagement.CommunityPost
 import com.gdsc.recyclr.domain.model.engagement.DonationCause
@@ -28,6 +29,9 @@ class EngagementViewModel @Inject constructor(
     private val impactRepository: ImpactRepository,
 ) : ViewModel() {
 
+    var userRole by mutableStateOf(UserRole.USER)
+        private set
+
     var challengeResponse: Response<WeeklyChallenge> = Response.Loading
         private set
     var leaderboardResponse: Response<List<LeaderboardEntry>> = Response.Loading
@@ -43,6 +47,13 @@ class EngagementViewModel @Inject constructor(
 
     init {
         refresh()
+        fetchRole()
+    }
+
+    private fun fetchRole() {
+        viewModelScope.launch {
+            userRole = authRepository.getCurrentUser()?.role ?: UserRole.USER
+        }
     }
 
     fun refresh() {

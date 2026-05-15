@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gdsc.recyclr.data.local.dao.NotificationDao
+import com.gdsc.recyclr.domain.model.User
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.Response.Loading
 import com.gdsc.recyclr.domain.model.UserImpact
@@ -29,7 +30,10 @@ class HomeViewModel @Inject constructor(
     private val notificationDao: NotificationDao,
 ) : ViewModel() {
 
-    val currentUser get() = authRepository.currentUser
+    var currentUserWithRole by mutableStateOf<User?>(null)
+        private set
+
+    val currentUser get() = currentUserWithRole ?: authRepository.currentUser
 
     /** Prénom ou pseudo pour l’accueil (README V4). */
     val welcomeName: String
@@ -49,6 +53,13 @@ class HomeViewModel @Inject constructor(
     init {
         observeImpact()
         refreshDashboard()
+        fetchUserWithRole()
+    }
+
+    private fun fetchUserWithRole() {
+        viewModelScope.launch {
+            currentUserWithRole = authRepository.getCurrentUser()
+        }
     }
 
     private fun observeImpact() {

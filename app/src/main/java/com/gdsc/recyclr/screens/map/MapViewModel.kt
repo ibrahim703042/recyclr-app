@@ -6,11 +6,15 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gdsc.recyclr.domain.model.CollectionPoint
+import com.gdsc.recyclr.domain.model.CollectorLocation
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.Response.Loading
 import com.gdsc.recyclr.domain.repository.CollectionPointsRepository
 import com.gdsc.recyclr.data.location.GeofenceManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,6 +26,9 @@ class MapViewModel @Inject constructor(
 
     var pointsResponse: Response<List<CollectionPoint>> by mutableStateOf(Loading)
         private set
+
+    val collectors: StateFlow<List<CollectorLocation>> = repository.observeNearbyCollectors()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     var selectedTypes: Set<String> by mutableStateOf(emptySet())
         private set

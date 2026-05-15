@@ -2,6 +2,8 @@ package com.gdsc.recyclr.domain.model
 
 data class UserImpact(
     val userId: String,
+    val displayName: String = "",
+    val role: UserRole = UserRole.USER,
     val totalScans: Int,
     val wasteDivertedKg: Float,
     val co2SavedKg: Float,

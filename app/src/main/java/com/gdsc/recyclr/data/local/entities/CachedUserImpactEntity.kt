@@ -6,6 +6,8 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "user_impact")
 data class CachedUserImpactEntity(
     @PrimaryKey val userId: String,
+    val displayName: String = "",
+    val role: String = "USER",
     val totalScans: Int,
     val wasteDivertedKg: Float,
     val co2SavedKg: Float,

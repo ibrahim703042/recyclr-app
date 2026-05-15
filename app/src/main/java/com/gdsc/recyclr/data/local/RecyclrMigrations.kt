@@ -8,8 +8,16 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * v2 : ajout des caches boutique, points de collecte et redemptions.
  * v3 : cache lookups code-barres et file enfilement demandes de collecte hors ligne.
  * v4 : payload JSON produits, notifications, chat support, wishlist.
+ * v5 : displayName et role dans user_impact (classements).
  */
 object RecyclrMigrations {
+
+    val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE user_impact ADD COLUMN displayName TEXT NOT NULL DEFAULT ''")
+            db.execSQL("ALTER TABLE user_impact ADD COLUMN role TEXT NOT NULL DEFAULT 'USER'")
+        }
+    }
 
     val MIGRATION_3_4 = object : Migration(3, 4) {
         override fun migrate(db: SupportSQLiteDatabase) {

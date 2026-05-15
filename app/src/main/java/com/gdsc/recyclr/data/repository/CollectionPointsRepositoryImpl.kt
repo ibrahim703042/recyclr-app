@@ -2,10 +2,14 @@ package com.gdsc.recyclr.data.repository
 
 import com.gdsc.recyclr.data.local.dao.CollectionPointDao
 import com.gdsc.recyclr.data.local.entities.CachedCollectionPointEntity
+import com.gdsc.recyclr.data.model.CollectorLocationDto
 import com.gdsc.recyclr.data.service.CollectionPointsService
 import com.gdsc.recyclr.domain.model.CollectionPoint
+import com.gdsc.recyclr.domain.model.CollectorLocation
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.repository.CollectionPointsRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.*
@@ -43,6 +47,20 @@ class CollectionPointsRepositoryImpl @Inject constructor(
                 }
             )
     }
+
+    override fun observeNearbyCollectors(): Flow<List<CollectorLocation>> {
+        return service.observeCollectors().map { dtos ->
+            dtos.map { it.toDomain() }
+        }
+    }
+
+    private fun CollectorLocationDto.toDomain() = CollectorLocation(
+        id = collectorId,
+        name = name,
+        lat = lat,
+        lng = lng,
+        vehicleType = vehicleType
+    )
 
     // Small, deterministic distance check without extra dependencies
     private fun haversineKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {

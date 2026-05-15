@@ -6,11 +6,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Share
@@ -28,11 +27,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.gdsc.recyclr.R
 import com.gdsc.recyclr.components.composable.BasicTopBar
 import com.gdsc.recyclr.domain.model.Response
+import com.gdsc.recyclr.domain.model.UserRole
 import com.gdsc.recyclr.domain.model.engagement.*
-import kotlinx.coroutines.launch
-
-import androidx.compose.foundation.shape.RoundedCornerShape
 import com.gdsc.recyclr.ui.theme.PrimaryGreen
+import kotlinx.coroutines.launch
 
 @Composable
 fun ChallengeScreen(onBack: () -> Unit, viewModel: EngagementViewModel = hiltViewModel()) {
@@ -119,7 +117,6 @@ fun LeaderboardScreen(onBack: () -> Unit, viewModel: EngagementViewModel = hiltV
                                 .padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            // Active Challenge card at top
                             viewModel.challengeResponse.let { 
                                 if (it is Response.Success && it.data != null) {
                                     ChallengeBody(it.data)
@@ -133,9 +130,8 @@ fun LeaderboardScreen(onBack: () -> Unit, viewModel: EngagementViewModel = hiltV
                 }
             }
             
-            // Fixed bottom bar for current user rank
             viewModel.currentUserLeaderboardEntry?.let { entry ->
-                if (selectedTab == 0) { // Only show for Weekly/Overall
+                if (selectedTab == 0) {
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         tonalElevation = 8.dp,
@@ -185,11 +181,26 @@ private fun LeaderboardRow(entry: LeaderboardEntry) {
                     }
                 }
                 Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = entry.name,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = if (entry.isCurrentUser) FontWeight.Bold else FontWeight.Normal
-                )
+                Column {
+                    Text(
+                        text = entry.name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = if (entry.isCurrentUser) FontWeight.Bold else FontWeight.Normal
+                    )
+                    if (entry.role != UserRole.USER) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.tertiaryContainer,
+                            shape = MaterialTheme.shapes.extraSmall
+                        ) {
+                            Text(
+                                text = entry.role.name,
+                                style = MaterialTheme.typography.labelSmall,
+                                modifier = Modifier.padding(horizontal = 4.dp),
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                        }
+                    }
+                }
             }
             Text(
                 text = "${entry.points} pts",
@@ -205,6 +216,7 @@ private fun LeaderboardRow(entry: LeaderboardEntry) {
 fun CommunityScreen(onBack: () -> Unit, viewModel: EngagementViewModel = hiltViewModel()) {
     var selectedTab by remember { mutableIntStateOf(0) }
     var showCreatePost by remember { mutableStateOf(false) }
+    val userRole = viewModel.userRole
 
     Scaffold(
         topBar = {
@@ -225,8 +237,10 @@ fun CommunityScreen(onBack: () -> Unit, viewModel: EngagementViewModel = hiltVie
                 Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }) {
                     Text("For You", modifier = Modifier.padding(16.dp))
                 }
-                Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }) {
-                    Text("Reports", modifier = Modifier.padding(16.dp))
+                if (userRole != UserRole.USER) {
+                    Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }) {
+                        Text("Reports", modifier = Modifier.padding(16.dp))
+                    }
                 }
             }
 
@@ -328,7 +342,6 @@ private fun WalletBody(wallet: RecWallet, onOpenBlockchainWallet: () -> Unit) {
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        // Balance Card
         ElevatedCard(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.primary),
@@ -349,7 +362,6 @@ private fun WalletBody(wallet: RecWallet, onOpenBlockchainWallet: () -> Unit) {
                 )
                 
                 Spacer(modifier = Modifier.height(16.dp))
-                // Mock Graph placeholder
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -362,7 +374,6 @@ private fun WalletBody(wallet: RecWallet, onOpenBlockchainWallet: () -> Unit) {
             }
         }
         
-        // Carbon Credits Card
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)),
@@ -438,14 +449,6 @@ private fun TransactionItem(title: String, amount: String, time: String) {
             fontWeight = FontWeight.Black,
             color = if (amount.startsWith("+")) PrimaryGreen else MaterialTheme.colorScheme.error
         )
-    }
-}
-
-@Composable
-private fun WalletInfoRow(label: String, value: String) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label, style = MaterialTheme.typography.bodyMedium)
-        Text(value, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
     }
 }
 

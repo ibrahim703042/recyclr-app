@@ -49,10 +49,12 @@ class EngagementServiceImpl @Inject constructor(
             
             val entries = snapshot.documents.mapIndexed { index, doc ->
                 LeaderboardEntryDto(
+                    userId = doc.id,
                     rank = (index + 1).toLong(),
                     displayName = doc.getString("displayName") ?: "Anonymous",
                     points = doc.getLong("pointsBalance") ?: 0L,
-                    isCurrentUser = false // This will be handled in the repository/viewmodel
+                    isCurrentUser = false,
+                    role = doc.getString("role") ?: "USER"
                 )
             }
             Result.success(entries)

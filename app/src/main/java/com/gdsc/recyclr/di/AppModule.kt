@@ -149,8 +149,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideImpactRepository(service: ImpactService, dao: UserImpactDao): ImpactRepository {
-        return ImpactRepositoryImpl(service, dao)
+    fun provideImpactRepository(service: ImpactService, dao: UserImpactDao, authRepository: AuthRepository): ImpactRepository {
+        return ImpactRepositoryImpl(service, dao, authRepository)
     }
 
     @Provides
@@ -193,6 +193,7 @@ object AppModule {
                 RecyclrMigrations.MIGRATION_1_2,
                 RecyclrMigrations.MIGRATION_2_3,
                 RecyclrMigrations.MIGRATION_3_4,
+                RecyclrMigrations.MIGRATION_4_5,
             )
             .fallbackToDestructiveMigration()
             .build()

@@ -57,13 +57,26 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import androidx.compose.runtime.collectAsState
+import androidx.core.content.res.ResourcesCompat
+import androidx.compose.ui.graphics.Color
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+
 @Composable
 @OptIn(ExperimentalMaterialApi::class)
 fun MapScreen(
     viewModel: MapViewModel = hiltViewModel(),
     onRequestPickup: () -> Unit = {},
 ) {
+    val collectors by viewModel.collectors.collectAsState()
     val context = LocalContext.current
+
+    val collectorIcon = remember(context) {
+        vectorToBitmap(context, R.drawable.ic_launcher_foreground, Color(0xFF2196F3))
+    }
     val snackbarHostState = remember { SnackbarHostState() }
     val mapLoadError = (viewModel.pointsResponse as? Response.Failure)?.e?.message
     LaunchedEffect(mapLoadError) {
@@ -200,6 +213,7 @@ fun MapScreen(
                                     state = MarkerState(position = LatLng(p.lat, p.lng)),
                                     title = p.name,
                                     snippet = p.hours,
+                                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN),
                                     onClick = {
                                         selectedPoint = p
                                         scope.launch { sheetState.show() }
@@ -209,6 +223,15 @@ fun MapScreen(
                             }
                         }
                         else -> Unit
+                    }
+
+                    collectors.forEach { collector ->
+                        Marker(
+                            state = MarkerState(position = LatLng(collector.lat, collector.lng)),
+                            title = "Collector: ${collector.name}",
+                            snippet = "Vehicle: ${collector.vehicleType}",
+                            icon = collectorIcon
+                        )
                     }
                 }
 
@@ -243,4 +266,20 @@ fun MapScreen(
             modifier = Modifier.align(Alignment.BottomCenter)
         )
     }
+}
+
+private fun vectorToBitmap(context: android.content.Context, id: Int, color: Color): BitmapDescriptor {
+    val vectorDrawable = ResourcesCompat.getDrawable(context.resources, id, null)
+    if (vectorDrawable == null) {
+        return BitmapDescriptorFactory.defaultMarker()
+    }
+    val bitmap = Bitmap.createBitmap(
+        vectorDrawable.intrinsicWidth,
+        vectorDrawable.intrinsicHeight,
+        Bitmap.Config.ARGB_8888
+    )
+    val canvas = Canvas(bitmap)
+    vectorDrawable.setBounds(0, 0, canvas.width, canvas.height)
+    vectorDrawable.draw(canvas)
+    return BitmapDescriptorFactory.fromBitmap(bitmap)
 }

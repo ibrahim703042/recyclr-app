@@ -6,6 +6,8 @@ import com.gdsc.recyclr.data.model.UserImpactDto
 import com.gdsc.recyclr.data.service.ImpactService
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.UserImpact
+import com.gdsc.recyclr.domain.model.UserRole
+import com.gdsc.recyclr.domain.repository.AuthRepository
 import com.gdsc.recyclr.domain.repository.ImpactRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -16,7 +18,8 @@ import javax.inject.Singleton
 @Singleton
 class ImpactRepositoryImpl @Inject constructor(
     private val service: ImpactService,
-    private val dao: UserImpactDao
+    private val dao: UserImpactDao,
+    private val authRepository: AuthRepository,
 ) : ImpactRepository {
 
     override fun observeUserImpact(userId: String): Flow<Response<UserImpact>> {
@@ -59,9 +62,15 @@ class ImpactRepositoryImpl @Inject constructor(
         energyRecoveredKwhDelta: Float,
         treesEquivalentDelta: Int
     ): Response<Boolean> {
+        val user = if (userId != "guest") authRepository.currentUser else null
+        val displayName = user?.displayName ?: "Green Hero"
+        val role = user?.role ?: UserRole.USER
+
         if (userId == "guest") {
             val base = dao.get(userId)?.toDomain() ?: defaultImpact(userId).toDomain()
             val updated = base.copy(
+                displayName = "Guest",
+                role = UserRole.USER,
                 totalScans = base.totalScans + 1,
                 wasteDivertedKg = base.wasteDivertedKg + wasteDivertedKgDelta,
                 co2SavedKg = base.co2SavedKg + (co2SavedGramsDelta / 1000f),
@@ -78,6 +87,8 @@ class ImpactRepositoryImpl @Inject constructor(
                 onSuccess = { current ->
                     val base = (current ?: defaultImpact(userId))
                     val updated = base.copy(
+                        displayName = displayName,
+                        role = role.name,
                         totalScans = base.totalScans + 1,
                         wasteDivertedKg = base.wasteDivertedKg + wasteDivertedKgDelta,
                         co2SavedKg = base.co2SavedKg + (co2SavedGramsDelta / 1000f),
@@ -110,6 +121,8 @@ class ImpactRepositoryImpl @Inject constructor(
 
     private fun UserImpact.toCached() = CachedUserImpactEntity(
         userId = userId,
+        displayName = displayName,
+        role = role.name,
         totalScans = totalScans,
         wasteDivertedKg = wasteDivertedKg,
         co2SavedKg = co2SavedKg,
@@ -120,6 +133,8 @@ class ImpactRepositoryImpl @Inject constructor(
 
     private fun CachedUserImpactEntity.toDomain() = UserImpact(
         userId = userId,
+        displayName = displayName,
+        role = try { UserRole.valueOf(role) } catch (_: Exception) { UserRole.USER },
         totalScans = totalScans,
         wasteDivertedKg = wasteDivertedKg,
         co2SavedKg = co2SavedKg,
@@ -129,4 +144,3 @@ class ImpactRepositoryImpl @Inject constructor(
         lastUpdatedMillis = null
     )
 }
-

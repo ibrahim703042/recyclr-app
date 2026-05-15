@@ -19,10 +19,12 @@ data class WeeklyChallengeConfigDto(
 
 /** Collection `leaderboard`. Fields: rank, displayName, points, isCurrentUser */
 data class LeaderboardEntryDto(
+    val userId: String = "",
     val rank: Long = 0,
     val displayName: String = "",
     val points: Long = 0,
     val isCurrentUser: Boolean = false,
+    val role: String = "USER",
 )
 
 /** Collection `community_posts`. Order by createdAtMillis descending. Document id in [id]. */

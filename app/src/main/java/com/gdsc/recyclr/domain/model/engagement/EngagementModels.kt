@@ -1,5 +1,7 @@
 package com.gdsc.recyclr.domain.model.engagement
 
+import com.gdsc.recyclr.domain.model.UserRole
+
 data class EcoStreak(
     val currentDays: Int,
     val bestDays: Int,
@@ -18,10 +20,12 @@ data class WeeklyChallenge(
 )
 
 data class LeaderboardEntry(
+    val userId: String = "",
     val rank: Int,
     val name: String,
     val points: Int,
     val isCurrentUser: Boolean = false,
+    val role: UserRole = UserRole.USER,
 )
 
 data class CommunityPost(

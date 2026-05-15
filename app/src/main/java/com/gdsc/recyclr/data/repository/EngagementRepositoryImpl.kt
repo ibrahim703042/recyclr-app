@@ -1,5 +1,6 @@
 package com.gdsc.recyclr.data.repository
 
+import com.gdsc.recyclr.domain.model.UserRole
 import com.gdsc.recyclr.data.local.dao.BarcodeCacheDao
 import com.gdsc.recyclr.data.local.dao.PickupQueueDao
 import com.gdsc.recyclr.data.local.entities.CachedBarcodeEntity
@@ -163,25 +164,22 @@ class EngagementRepositoryImpl @Inject constructor(
 
     private suspend fun resolveLeaderboardForUser(userId: String): List<LeaderboardEntry> {
         if (userId == "guest") return seedLeaderboard()
-        val user = engagementService.getLeaderboard(20).fold(
+        return engagementService.getLeaderboard(20).fold(
             onSuccess = { list ->
                 if (list.isEmpty()) seedLeaderboard()
-                else list.map { it.toDomain().copy(isCurrentUser = it.displayName == userId || it.displayName == "You") }
+                else list.map { it.toDomain().copy(isCurrentUser = it.userId == userId) }
             },
             onFailure = { seedLeaderboard() },
         )
-        // Correcting isCurrentUser based on uid/name
-        return user.map { 
-            // In a real app, we'd compare UIDs. For now, let's assume we can match or it's provided by service.
-            it 
-        }
     }
 
     private fun LeaderboardEntryDto.toDomain() = LeaderboardEntry(
+        userId = userId,
         rank = rank.toInt(),
         name = displayName,
         points = points.toInt(),
         isCurrentUser = isCurrentUser,
+        role = try { UserRole.valueOf(role) } catch (e: Exception) { UserRole.USER }
     )
 
     private suspend fun resolveCommunityPosts(userId: String): List<CommunityPost> {
@@ -281,11 +279,11 @@ class EngagementRepositoryImpl @Inject constructor(
     }
 
     private fun seedLeaderboard() = listOf(
-        LeaderboardEntry(1, "Aline N.", 1280),
-        LeaderboardEntry(2, "Eric M.", 1140),
-        LeaderboardEntry(3, "You", 1060, isCurrentUser = true),
-        LeaderboardEntry(4, "Divine K.", 980),
-        LeaderboardEntry(5, "Moise T.", 910),
+        LeaderboardEntry("1", 1, "Aline N.", 1280),
+        LeaderboardEntry("2", 2, "Eric M.", 1140),
+        LeaderboardEntry("guest", 3, "You", 1060, isCurrentUser = true),
+        LeaderboardEntry("4", 4, "Divine K.", 980),
+        LeaderboardEntry("5", 5, "Moise T.", 910),
     )
 
     private fun seedCommunity() = listOf(

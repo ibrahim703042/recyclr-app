@@ -36,7 +36,7 @@ import com.gdsc.recyclr.data.local.entities.LocalPickupRequestEntity
         CachedChatMessageEntity::class,
         CachedWishlistEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true
 )
 abstract class RecyclrDatabase : RoomDatabase() {
