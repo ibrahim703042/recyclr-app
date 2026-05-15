@@ -2,6 +2,8 @@
     <string name="app_name">Recyclr</string>
     <string name="default_web_client_id" translatable="false">909025540028-u3ntnk9canpo5gm2kmrkjqicn5a0l7u4.apps.googleusercontent.com</string>
     <string name="web_client_id" translatable="false">909025540028-u3ntnk9canpo5gm2kmrkjqicn5a0l7u4.apps.googleusercontent.com</string>
+    <!-- Nom du modèle personnalisé dans Firebase ML (console) ; vide = pas de téléchargement distant. -->
+    <string name="firebase_waste_model_name" translatable="false">waste_classifier</string>
 
     <string name="nav_home">Home</string>
     <string name="nav_scan">Scan</string>

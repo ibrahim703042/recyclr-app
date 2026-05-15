@@ -4,6 +4,7 @@ import com.gdsc.recyclr.domain.model.UserImpact
 
 data class UserImpactDto(
     val userId: String = "",
+    val displayName: String = "",
     val totalScans: Int = 0,
     val wasteDivertedKg: Float = 0f,
     val co2SavedKg: Float = 0f,

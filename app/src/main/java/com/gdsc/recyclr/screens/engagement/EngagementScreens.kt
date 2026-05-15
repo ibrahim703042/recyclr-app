@@ -132,6 +132,24 @@ fun LeaderboardScreen(onBack: () -> Unit, viewModel: EngagementViewModel = hiltV
                     }
                 }
             }
+            
+            // Fixed bottom bar for current user rank
+            viewModel.currentUserLeaderboardEntry?.let { entry ->
+                if (selectedTab == 0) { // Only show for Weekly/Overall
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        tonalElevation = 8.dp,
+                        shadowElevation = 8.dp,
+                        color = MaterialTheme.colorScheme.surface
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(text = "Your Rank", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            LeaderboardRow(entry.copy(isCurrentUser = true))
+                        }
+                    }
+                }
+            }
         }
     }
 }

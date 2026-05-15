@@ -1,10 +1,8 @@
 package com.gdsc.recyclr.di
 
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -67,17 +65,25 @@ object AppModule {
     // Firebase Providers
     @Provides
     @Singleton
-    fun provideFirebaseAuth(): FirebaseAuth = Firebase.auth
+    fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
 
     @Provides
     @Singleton
-    fun provideFirestore(): FirebaseFirestore = Firebase.firestore
+    fun provideFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
+
+    @Provides
+    @Singleton
+    fun provideStorage(): FirebaseStorage = FirebaseStorage.getInstance()
     
     // Service Providers
     @Provides
     @Singleton
-    fun provideAuthService(firebaseAuth: FirebaseAuth): AuthService {
-        return AuthServiceImpl(firebaseAuth)
+    fun provideAuthService(
+        firebaseAuth: FirebaseAuth, 
+        storage: FirebaseStorage,
+        firestore: FirebaseFirestore
+    ): AuthService {
+        return AuthServiceImpl(firebaseAuth, storage, firestore)
     }
     
     @Provides
@@ -94,8 +100,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideScanRecordsService(firestore: FirebaseFirestore): ScanRecordsService {
-        return ScanRecordsServiceImpl(firestore)
+    fun provideScanRecordsService(firestore: FirebaseFirestore, storage: FirebaseStorage): ScanRecordsService {
+        return ScanRecordsServiceImpl(firestore, storage)
     }
 
     @Provides

@@ -1,6 +1,9 @@
 package com.gdsc.recyclr.data.service.impl
 
 import android.app.Activity
+import android.graphics.Bitmap
+import android.net.Uri
+import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.AuthCredential
@@ -9,25 +12,51 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthOptions
 import com.google.firebase.auth.PhoneAuthProvider
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.firestore.FirebaseFirestore
 import com.gdsc.recyclr.data.model.UserDto
 import com.gdsc.recyclr.data.service.AuthService
 import com.gdsc.recyclr.util.AppLogger
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
+import java.io.ByteArrayOutputStream
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class AuthServiceImpl @Inject constructor(
-    private val firebaseAuth: FirebaseAuth
+    private val firebaseAuth: FirebaseAuth,
+    private val storage: FirebaseStorage,
+    private val firestore: FirebaseFirestore
 ) : AuthService {
 
-    override fun peekCurrentUser(): UserDto? = firebaseAuth.currentUser?.toDto()
+    override fun peekCurrentUser(): UserDto? {
+        val user = firebaseAuth.currentUser ?: return null
+        // We can't really do a sync call to Firestore here easily without blocking.
+        // For peek, we'll return what we have in Auth and use default role.
+        return user.toDto()
+    }
 
-    override suspend fun getCurrentUser(): UserDto? = peekCurrentUser()
+    override suspend fun getCurrentUser(): UserDto? {
+        val user = firebaseAuth.currentUser ?: return null
+        val dto = user.toDto()
+        return try {
+            val doc = firestore.collection("users").document(user.uid).get().await()
+            if (doc.exists()) {
+                dto.copy(role = doc.getString("role") ?: "USER")
+            } else {
+                // Initialize user doc if missing
+                firestore.collection("users").document(user.uid).set(dto).await()
+                dto
+            }
+        } catch (e: Exception) {
+            dto
+        }
+    }
 
     override suspend fun signUpWithEmailAndPassword(
         name: String,
@@ -35,12 +64,16 @@ class AuthServiceImpl @Inject constructor(
         password: String
     ): Result<Boolean> {
         return try {
-            firebaseAuth.createUserWithEmailAndPassword(email, password).await()
-            firebaseAuth.currentUser?.updateProfile(
-                com.google.firebase.auth.UserProfileChangeRequest.Builder()
+            val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+            val user = result.user ?: throw Exception("User creation failed")
+            
+            user.updateProfile(
+                UserProfileChangeRequest.Builder()
                     .setDisplayName(name)
                     .build()
-            )?.await()
+            ).await()
+            
+            ensureUserDocumentExists(user)
             Result.success(true)
         } catch (e: Exception) {
             AppLogger.w("signUpWithEmailAndPassword", e)
@@ -53,7 +86,8 @@ class AuthServiceImpl @Inject constructor(
         password: String
     ): Result<Boolean> {
         return try {
-            firebaseAuth.signInWithEmailAndPassword(email, password).await()
+            val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
+            result.user?.let { ensureUserDocumentExists(it) }
             Result.success(true)
         } catch (e: Exception) {
             AppLogger.w("signInWithEmailAndPassword", e)
@@ -64,11 +98,24 @@ class AuthServiceImpl @Inject constructor(
     override suspend fun signInWithGoogleIdToken(idToken: String): Result<Boolean> {
         return try {
             val credential = GoogleAuthProvider.getCredential(idToken, null)
-            firebaseAuth.signInWithCredential(credential).await()
+            val result = firebaseAuth.signInWithCredential(credential).await()
+            result.user?.let { ensureUserDocumentExists(it) }
             Result.success(true)
         } catch (e: Exception) {
             AppLogger.w("signInWithGoogleIdToken", e)
             Result.failure(e)
+        }
+    }
+
+    private suspend fun ensureUserDocumentExists(user: FirebaseUser) {
+        try {
+            val doc = firestore.collection("users").document(user.uid).get().await()
+            if (!doc.exists()) {
+                val dto = user.toDto()
+                firestore.collection("users").document(user.uid).set(dto).await()
+            }
+        } catch (e: Exception) {
+            AppLogger.w("ensureUserDocumentExists", e)
         }
     }
 
@@ -133,6 +180,34 @@ class AuthServiceImpl @Inject constructor(
         return try {
             firebaseAuth.sendPasswordResetEmail(email).await()
             Result.success(true)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun updateProfilePhoto(photoUrl: String): Result<Boolean> {
+        return try {
+            val user = firebaseAuth.currentUser ?: throw Exception("User not signed in")
+            val profileUpdates = UserProfileChangeRequest.Builder()
+                .setPhotoUri(Uri.parse(photoUrl))
+                .build()
+            user.updateProfile(profileUpdates).await()
+            Result.success(true)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun uploadProfilePhoto(userId: String, bitmap: Bitmap): Result<String> {
+        return try {
+            val baos = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos)
+            val data = baos.toByteArray()
+
+            val ref = storage.reference.child("users/$userId/profile.jpg")
+            ref.putBytes(data).await()
+            val url = ref.downloadUrl.await().toString()
+            Result.success(url)
         } catch (e: Exception) {
             Result.failure(e)
         }

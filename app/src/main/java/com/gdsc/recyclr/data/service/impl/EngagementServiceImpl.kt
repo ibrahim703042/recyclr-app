@@ -41,14 +41,21 @@ class EngagementServiceImpl @Inject constructor(
 
     override suspend fun getLeaderboard(limit: Long): Result<List<LeaderboardEntryDto>> {
         return try {
-            val snapshot = firestore.collection(COL_LEADERBOARD)
-                .orderBy(FIELD_RANK, Query.Direction.ASCENDING)
+            val snapshot = firestore.collection("user_impact")
+                .orderBy("pointsBalance", Query.Direction.DESCENDING)
                 .limit(limit)
                 .get()
                 .await()
-            Result.success(
-                snapshot.documents.mapNotNull { it.toObject(LeaderboardEntryDto::class.java) },
-            )
+            
+            val entries = snapshot.documents.mapIndexed { index, doc ->
+                LeaderboardEntryDto(
+                    rank = (index + 1).toLong(),
+                    displayName = doc.getString("displayName") ?: "Anonymous",
+                    points = doc.getLong("pointsBalance") ?: 0L,
+                    isCurrentUser = false // This will be handled in the repository/viewmodel
+                )
+            }
+            Result.success(entries)
         } catch (e: Exception) {
             Result.failure(e)
         }

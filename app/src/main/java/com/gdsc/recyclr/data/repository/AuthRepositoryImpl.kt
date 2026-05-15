@@ -1,5 +1,6 @@
 package com.gdsc.recyclr.data.repository
 
+import android.graphics.Bitmap
 import android.app.Activity
 import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthProvider
@@ -28,6 +29,8 @@ class AuthRepositoryImpl @Inject constructor(
 
     override val currentUser: User?
         get() = authService.peekCurrentUser()?.toDomain()
+
+    override suspend fun getCurrentUser(): User? = authService.getCurrentUser()?.toDomain()
 
     override suspend fun signUpWithEmailAndPassword(
         name: String,
@@ -102,6 +105,22 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun sendPasswordResetEmail(email: String): SendPasswordResetEmailResponse {
         return authService.sendPasswordResetEmail(email)
+            .fold(
+                onSuccess = { Response.Success(it) },
+                onFailure = { Response.Failure(it as Exception) }
+            )
+    }
+
+    override suspend fun updateProfilePhoto(photoUrl: String): Response<Boolean> {
+        return authService.updateProfilePhoto(photoUrl)
+            .fold(
+                onSuccess = { Response.Success(it) },
+                onFailure = { Response.Failure(it as Exception) }
+            )
+    }
+
+    override suspend fun uploadProfilePhoto(userId: String, bitmap: Bitmap): Response<String> {
+        return authService.uploadProfilePhoto(userId, bitmap)
             .fold(
                 onSuccess = { Response.Success(it) },
                 onFailure = { Response.Failure(it as Exception) }

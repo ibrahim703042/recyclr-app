@@ -12,9 +12,11 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.AccountBalanceWallet
+import androidx.compose.material.icons.outlined.AdminPanelSettings
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Link
+import androidx.compose.material.icons.outlined.LocalShipping
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -35,6 +37,7 @@ import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.User
 import com.gdsc.recyclr.domain.model.UserImpact
 import com.gdsc.recyclr.domain.model.engagement.UserBadge
+import com.gdsc.recyclr.domain.model.UserRole
 import com.gdsc.recyclr.screens.settings.SettingsCard
 import com.gdsc.recyclr.screens.settings.SettingsMenuItem
 import java.util.Locale
@@ -53,6 +56,8 @@ fun ProfileContent(
     onOpenWallet: () -> Unit,
     onOpenBlockchainWallet: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenAdminDashboard: () -> Unit,
+    onOpenCollectorDashboard: () -> Unit,
 ) {
     val displayName = when {
         isGuest -> stringResource(R.string.profile_guest_name)
@@ -227,6 +232,24 @@ fun ProfileContent(
                         subtitle = stringResource(R.string.profile_recycling_history_subtitle),
                         onClick = { /* TODO */ }
                     )
+
+                    if (user?.role == UserRole.ADMIN) {
+                        ProfileActionItem(
+                            icon = Icons.Outlined.AdminPanelSettings,
+                            title = "Admin Dashboard",
+                            subtitle = "Manage users and app data",
+                            onClick = onOpenAdminDashboard
+                        )
+                    }
+
+                    if (user?.role == UserRole.COLLECTOR || user?.role == UserRole.ADMIN) {
+                        ProfileActionItem(
+                            icon = Icons.Outlined.LocalShipping,
+                            title = "Collector Dashboard",
+                            subtitle = "View and manage assigned pickups",
+                            onClick = onOpenCollectorDashboard
+                        )
+                    }
 
                     if (!isGuest) {
                         Spacer(modifier = Modifier.height(24.dp))

@@ -38,6 +38,12 @@ class ScanViewModel @Inject constructor(
     private val engagementRepository: EngagementRepository,
 ) : ViewModel() {
 
+    init {
+        viewModelScope.launch {
+            wasteDetector.syncHostedModelIfAvailable()
+        }
+    }
+
     var submitResponse: Response<ScanResult> by mutableStateOf(Response.Success(null))
         private set
 
@@ -79,7 +85,7 @@ class ScanViewModel @Inject constructor(
             val detected = withContext(Dispatchers.Default) {
                 wasteDetector.detectItemTypeFromBitmap(bitmap)
             }
-            val itemType = detected.getOrElse { e ->
+            val waste = detected.getOrElse { e ->
                 submitResponse = Response.Failure(
                     (e as? Exception) ?: Exception(e.message ?: e.toString())
                 )
@@ -87,7 +93,11 @@ class ScanViewModel @Inject constructor(
                 return@launch
             }
             if (!bitmap.isRecycled) bitmap.recycle()
-            persistScan(itemType, scanSource = "ml", detectionConfidence = null)
+            persistScan(
+                itemType = waste.itemType,
+                scanSource = "ml",
+                detectionConfidence = waste.confidence,
+            )
         }
     }
 

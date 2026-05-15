@@ -1,5 +1,8 @@
 package com.gdsc.recyclr.screens.engagement
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gdsc.recyclr.domain.model.Response
@@ -35,6 +38,8 @@ class EngagementViewModel @Inject constructor(
         private set
     var donationsResponse: Response<List<DonationCause>> = Response.Loading
         private set
+    var currentUserLeaderboardEntry by mutableStateOf<LeaderboardEntry?>(null)
+        private set
 
     init {
         refresh()
@@ -44,7 +49,12 @@ class EngagementViewModel @Inject constructor(
         viewModelScope.launch {
             val uid = authRepository.currentUser?.uid ?: "guest"
             challengeResponse = engagementRepository.getChallenge(uid)
-            leaderboardResponse = engagementRepository.getLeaderboard(uid)
+            val lb = engagementRepository.getLeaderboard(uid)
+            leaderboardResponse = lb
+            if (lb is Response.Success) {
+                currentUserLeaderboardEntry = lb.data?.find { it.isCurrentUser }
+            }
+
             communityResponse = engagementRepository.getCommunityFeed(uid)
             donationsResponse = engagementRepository.getDonationCauses(uid)
             val impact = impactRepository.getUserImpact(uid)

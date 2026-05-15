@@ -8,5 +8,12 @@ data class User(
     val photoUrl: String?,
     val isEmailVerified: Boolean,
     /** Résumé lisible des fournisseurs (google.com, phone, password, …). */
-    val authProvidersSummary: String?
+    val authProvidersSummary: String?,
+    val role: UserRole = UserRole.USER
 )
+
+enum class UserRole {
+    USER,
+    COLLECTOR,
+    ADMIN
+}

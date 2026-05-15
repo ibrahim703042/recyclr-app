@@ -9,9 +9,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.gdsc.recyclr" />
-                  <option name="mobileSdkAppId" value="1:909025540028:android:72f6a8b2aa24a56cb51db9" />
-                  <option name="projectId" value="recyclr-310ab" />
-                  <option name="projectNumber" value="909025540028" />
+                  <option name="mobileSdkAppId" value="1:1063076324427:android:37b49f34f09a9927c1d9ce" />
+                  <option name="projectId" value="recyclr-d50fa" />
+                  <option name="projectNumber" value="1063076324427" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

@@ -1,5 +1,6 @@
 package com.gdsc.recyclr.domain.repository
 
+import android.graphics.Bitmap
 import android.app.Activity
 import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthProvider
@@ -18,6 +19,8 @@ typealias AuthStateResponse = StateFlow<Boolean>
 
 interface AuthRepository {
     val currentUser: User?
+
+    suspend fun getCurrentUser(): User?
 
     suspend fun signUpWithEmailAndPassword(name: String, email: String, password: String): SignUpResponse
 
@@ -40,6 +43,10 @@ interface AuthRepository {
     suspend fun reloadUser(): ReloadUserResponse
 
     suspend fun sendPasswordResetEmail(email: String): SendPasswordResetEmailResponse
+
+    suspend fun updateProfilePhoto(photoUrl: String): Response<Boolean>
+
+    suspend fun uploadProfilePhoto(userId: String, bitmap: Bitmap): Response<String>
 
     fun signOut()
 

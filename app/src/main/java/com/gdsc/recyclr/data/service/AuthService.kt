@@ -1,6 +1,7 @@
 package com.gdsc.recyclr.data.service
 
 import android.app.Activity
+import android.graphics.Bitmap
 import com.gdsc.recyclr.data.model.UserDto
 import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthProvider
@@ -37,6 +38,10 @@ interface AuthService {
     suspend fun reloadUser(): Result<Boolean>
 
     suspend fun sendPasswordResetEmail(email: String): Result<Boolean>
+
+    suspend fun updateProfilePhoto(photoUrl: String): Result<Boolean>
+
+    suspend fun uploadProfilePhoto(userId: String, bitmap: Bitmap): Result<String>
 
     fun signOut()
 

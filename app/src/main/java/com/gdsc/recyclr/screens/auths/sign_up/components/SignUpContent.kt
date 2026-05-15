@@ -34,6 +34,7 @@ fun SignUpContent(
     phoneVerificationId: String?,
     onSendPhoneCode: (phone: String) -> Unit,
     onVerifyPhoneCode: (code: String) -> Unit,
+    onGoogleClick: () -> Unit,
 ) {
     var name by rememberSaveable { mutableStateOf("") }
     var email by rememberSaveable { mutableStateOf("") }
@@ -109,7 +110,7 @@ fun SignUpContent(
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             OutlinedButton(
-                onClick = { /* Google sign-up : même flux que la connexion ; à brancher si besoin */ },
+                onClick = onGoogleClick,
                 modifier = Modifier.weight(1f).height(56.dp),
                 shape = MaterialTheme.shapes.medium,
                 colors = outlineColors,

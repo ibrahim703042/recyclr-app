@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,18 +15,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Checkroom
 import androidx.compose.material.icons.filled.LocalDrink
 import androidx.compose.material.icons.filled.Newspaper
+import androidx.compose.material.icons.filled.LocalShipping
 import androidx.compose.material.icons.filled.WineBar
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -51,6 +56,7 @@ import com.gdsc.recyclr.components.home.HomeRedesignThemeProvider
 import com.gdsc.recyclr.components.home.LocalHomeRedesignPalette
 import com.gdsc.recyclr.components.home.HomeStatsRow
 import com.gdsc.recyclr.components.home.HomeWalletSummaryCard
+import com.gdsc.recyclr.domain.model.UserRole
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.UserImpact
 import com.gdsc.recyclr.domain.model.engagement.HomeDashboard
@@ -80,6 +86,7 @@ fun HomeContent(
     impactResponse: Response<UserImpact>,
     dashboardResponse: Response<HomeDashboard>,
     userName: String,
+    userRole: UserRole,
     photoUrl: String?,
     unreadNotificationCount: Int,
     onRefresh: () -> Unit,
@@ -93,6 +100,7 @@ fun HomeContent(
     onOpenMap: () -> Unit,
     onOpenProfile: () -> Unit,
     onOpenNotifications: () -> Unit,
+    onOpenCollectorDashboard: () -> Unit = {},
 ) {
     val categories = homeCategories()
     val scope = rememberCoroutineScope()
@@ -135,6 +143,26 @@ fun HomeContent(
                     onNotificationClick = onOpenNotifications,
                     onProfileClick = onOpenProfile,
                 )
+            }
+
+            if (userRole == UserRole.COLLECTOR || userRole == UserRole.ADMIN) {
+                item(key = "collector_shortcut") {
+                    Surface(
+                        onClick = onOpenCollectorDashboard,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.large,
+                        color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.4f)
+                    ) {
+                        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(imageVector = Icons.Default.LocalShipping, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary)
+                            Spacer(Modifier.width(16.dp))
+                            Column {
+                                Text("Active Pickup Jobs", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                                Text("You have 2 pending tasks", style = MaterialTheme.typography.labelSmall)
+                            }
+                        }
+                    }
+                }
             }
 
             item(key = "stats") {

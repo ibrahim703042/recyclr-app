@@ -20,10 +20,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.gdsc.recyclr.screens.admin.AdminDashboardScreen
 import com.gdsc.recyclr.screens.auths.forgot_password.ForgotPasswordScreen
 import com.gdsc.recyclr.screens.auths.sign_in.SignInScreen
 import com.gdsc.recyclr.screens.auths.sign_up.SignUpScreen
 import com.gdsc.recyclr.screens.category.CategoryDetailScreen
+import com.gdsc.recyclr.screens.collector.CollectorDashboardScreen
 import com.gdsc.recyclr.screens.dashboard.MainScreen
 import com.gdsc.recyclr.screens.engagement.BlockchainWalletScreen
 import com.gdsc.recyclr.screens.engagement.ChallengeScreen
@@ -223,6 +225,9 @@ fun BottomNavGraph(
                 onOpenNotifications = {
                     navController.navigateToFeature(FeatureRoute.Notifications)
                 },
+                onOpenCollectorDashboard = {
+                    navController.navigateToFeature(FeatureRoute.CollectorDashboard)
+                },
             )
         }
         composable(route = BottomBarPage.Scan.route) {
@@ -245,6 +250,8 @@ fun BottomNavGraph(
                 onOpenWallet = { navController.navigateToFeature(FeatureRoute.Wallet) },
                 onOpenBlockchainWallet = { navController.navigateToFeature(FeatureRoute.BlockchainWallet) },
                 onOpenSettings = navigateToSettings,
+                onOpenAdminDashboard = { navController.navigateToFeature(FeatureRoute.AdminDashboard) },
+                onOpenCollectorDashboard = { navController.navigateToFeature(FeatureRoute.CollectorDashboard) },
             )
         }
         composable(
@@ -276,6 +283,12 @@ fun BottomNavGraph(
         }
         composable(FeatureRoute.Pickup) {
             PickupScreen(onBack = { navController.popBackStack() })
+        }
+        composable(FeatureRoute.AdminDashboard) {
+            AdminDashboardScreen(onBack = { navController.popBackStack() })
+        }
+        composable(FeatureRoute.CollectorDashboard) {
+            CollectorDashboardScreen(onBack = { navController.popBackStack() })
         }
         composable(FeatureRoute.Notifications) {
             NotificationsScreen(

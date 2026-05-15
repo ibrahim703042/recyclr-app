@@ -1,14 +1,17 @@
 package com.gdsc.recyclr.activities
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gdsc.recyclr.domain.model.AppLanguage
 import com.gdsc.recyclr.domain.model.AppThemeMode
 import com.gdsc.recyclr.domain.repository.AuthRepository
 import com.gdsc.recyclr.domain.repository.SettingsRepository
+import com.gdsc.recyclr.auth.GoogleCredentialAuth
 import com.gdsc.recyclr.navigation.BottomBarPage
 import com.gdsc.recyclr.navigation.FeatureRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -21,6 +24,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val repo: AuthRepository,
     private val settingsRepository: SettingsRepository,
+    @ApplicationContext private val appContext: Context,
 ) : ViewModel() {
     init {
         getAuthState()
@@ -108,9 +112,15 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun signOut() = repo.signOut()
+    fun signOut() {
+        viewModelScope.launch {
+            GoogleCredentialAuth.clearCredentialState(appContext)
+            repo.signOut()
+        }
+    }
 
     fun revokeAccess() = viewModelScope.launch {
         repo.revokeAccess()
+        GoogleCredentialAuth.clearCredentialState(appContext)
     }
 }

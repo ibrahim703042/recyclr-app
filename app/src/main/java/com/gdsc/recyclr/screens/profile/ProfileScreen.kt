@@ -20,6 +20,8 @@ fun ProfileScreen(
     onOpenWallet: () -> Unit = {},
     onOpenBlockchainWallet: () -> Unit = {},
     onOpenSettings: () -> Unit = {},
+    onOpenAdminDashboard: () -> Unit = {},
+    onOpenCollectorDashboard: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val activity = LocalContext.current as ComponentActivity
@@ -45,6 +47,8 @@ fun ProfileScreen(
             onOpenWallet = onOpenWallet,
             onOpenBlockchainWallet = onOpenBlockchainWallet,
             onOpenSettings = onOpenSettings,
+            onOpenAdminDashboard = onOpenAdminDashboard,
+            onOpenCollectorDashboard = onOpenCollectorDashboard,
         )
     }
 

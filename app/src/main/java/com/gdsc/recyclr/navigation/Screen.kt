@@ -77,6 +77,8 @@ object FeatureRoute {
     const val Wallet = "feature/wallet"
     const val BlockchainWallet = "feature/blockchain_wallet"
     const val Pickup = "feature/pickup"
+    const val AdminDashboard = "feature/admin_dashboard"
+    const val CollectorDashboard = "feature/collector_dashboard"
     const val Notifications = "feature/notifications"
     const val SupportChat = "feature/support_chat"
     const val HelpCenter = "feature/help_center"

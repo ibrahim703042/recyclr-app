@@ -6,6 +6,8 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
+import com.gdsc.recyclr.domain.model.UserRole
+
 @Composable
 fun HomeScreen(
     onOpenCategory: (String) -> Unit,
@@ -18,16 +20,19 @@ fun HomeScreen(
     onOpenMap: () -> Unit,
     onOpenProfile: () -> Unit,
     onOpenNotifications: () -> Unit,
+    onOpenCollectorDashboard: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val unreadNotificationCount by viewModel.unreadNotificationCount.collectAsStateWithLifecycle()
     val photoUrl = viewModel.currentUser?.photoUrl?.takeIf { !it.isNullOrBlank() }
+    val userRole = viewModel.currentUser?.role ?: UserRole.USER
 
     HomeContent(
         padding = PaddingValues(),
         impactResponse = viewModel.impactResponse,
         dashboardResponse = viewModel.dashboardResponse,
         userName = viewModel.welcomeName,
+        userRole = userRole,
         photoUrl = photoUrl,
         unreadNotificationCount = unreadNotificationCount,
         onRefresh = { viewModel.refreshDashboard() },
@@ -41,5 +46,6 @@ fun HomeScreen(
         onOpenMap = onOpenMap,
         onOpenProfile = onOpenProfile,
         onOpenNotifications = onOpenNotifications,
+        onOpenCollectorDashboard = onOpenCollectorDashboard,
     )
 }

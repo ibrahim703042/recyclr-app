@@ -52,6 +52,15 @@ class SignUpViewModel @Inject constructor(
         signUpResponse = repo.signUpWithEmailAndPassword(name, email, password)
     }
 
+    fun signInWithGoogleIdToken(idToken: String?) = viewModelScope.launch {
+        if (idToken.isNullOrBlank()) {
+            signUpResponse = Failure(IllegalStateException("Google token missing"))
+            return@launch
+        }
+        signUpResponse = Loading
+        signUpResponse = repo.signInWithGoogleIdToken(idToken)
+    }
+
     private fun buildPhoneCallbacks(): PhoneAuthProvider.OnVerificationStateChangedCallbacks =
         object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
             override fun onVerificationCompleted(credential: PhoneAuthCredential) {
