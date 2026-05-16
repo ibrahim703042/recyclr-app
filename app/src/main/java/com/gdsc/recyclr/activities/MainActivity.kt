@@ -25,6 +25,7 @@ import com.gdsc.recyclr.ui.preferences.LocalAppAppearance
 import com.gdsc.recyclr.ui.preferences.resolveIsDarkTheme
 import com.gdsc.recyclr.ui.theme.RecyclrTheme
 import com.gdsc.recyclr.util.AppLocaleManager
+import com.google.android.gms.maps.MapsInitializer
 import com.google.accompanist.pager.ExperimentalPagerApi
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -39,6 +40,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
+        MapsInitializer.initialize(applicationContext, MapsInitializer.Renderer.LATEST) { 
+            // Renderer initialized
+        }
         handleNotificationIntent(intent)
         enableEdgeToEdge()
         setContent {

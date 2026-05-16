@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -51,8 +52,8 @@ sealed class BottomBarPage(
 
     object Map : BottomBarPage(
         route = "map",
-        titleRes = R.string.nav_stats,
-        icon = Icons.Default.BarChart,
+        titleRes = R.string.nav_map,
+        icon = Icons.Default.Map,
     )
 
     object Shop : BottomBarPage(

@@ -64,6 +64,8 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.compose.ui.graphics.Color
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.MapsInitializer
+import com.gdsc.recyclr.ui.theme.GreenHero
 
 @Composable
 @OptIn(ExperimentalMaterialApi::class)
@@ -74,9 +76,15 @@ fun MapScreen(
     val collectors by viewModel.collectors.collectAsState()
     val context = LocalContext.current
 
-    val collectorIcon = remember(context) {
-        vectorToBitmap(context, R.drawable.ic_launcher_foreground, Color(0xFF2196F3))
+    var collectorIcon by remember { mutableStateOf<BitmapDescriptor?>(null) }
+    LaunchedEffect(context) {
+        runCatching {
+            collectorIcon = vectorToBitmap(context, R.drawable.ic_launcher_foreground, Color(0xFF2196F3))
+        }.onFailure {
+            AppLogger.w("Failed to create collector icon", it)
+        }
     }
+
     val snackbarHostState = remember { SnackbarHostState() }
     val mapLoadError = (viewModel.pointsResponse as? Response.Failure)?.e?.message
     LaunchedEffect(mapLoadError) {
@@ -167,17 +175,17 @@ fun MapScreen(
                     Button(
                         onClick = {
                             scope.launch {
-                                runCatching { sheetState.hide() }.onFailure {
-                                    AppLogger.w("Fermeture fiche point avant collecte", it)
-                                }
+                                runCatching { sheetState.hide() }
                                 onRequestPickup()
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = MaterialTheme.shapes.large
+                        shape = MaterialTheme.shapes.medium
                     ) {
                         Text(stringResource(R.string.home_request_pickup))
                     }
+
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         TextButton(
@@ -230,7 +238,7 @@ fun MapScreen(
                             state = MarkerState(position = LatLng(collector.lat, collector.lng)),
                             title = "Collector: ${collector.name}",
                             snippet = "Vehicle: ${collector.vehicleType}",
-                            icon = collectorIcon,
+                            icon = collectorIcon ?: BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE),
                             onClick = {
                                 scope.launch {
                                     // Set a "fake" collection point for the sheet if needed, or just show info
@@ -280,9 +288,12 @@ private fun vectorToBitmap(context: android.content.Context, id: Int, color: Col
     if (vectorDrawable == null) {
         return BitmapDescriptorFactory.defaultMarker()
     }
+    val width = vectorDrawable.intrinsicWidth.coerceAtLeast(100)
+    val height = vectorDrawable.intrinsicHeight.coerceAtLeast(100)
+    
     val bitmap = Bitmap.createBitmap(
-        vectorDrawable.intrinsicWidth,
-        vectorDrawable.intrinsicHeight,
+        width,
+        height,
         Bitmap.Config.ARGB_8888
     )
     val canvas = Canvas(bitmap)

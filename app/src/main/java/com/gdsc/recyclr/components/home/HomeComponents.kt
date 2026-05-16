@@ -801,7 +801,7 @@ fun HomeCommunityHighlightCard(
             if (badges.isNotEmpty()) {
                 Spacer(Modifier.height(8.dp))
                 Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    badges.forEach { badge ->
+                    badges.filter { it.id != "lake" }.forEach { badge ->
                         AssistChip(
                             onClick = onOpenCommunity,
                             label   = { Text(badge.title, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.labelSmall) },

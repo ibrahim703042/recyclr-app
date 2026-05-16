@@ -48,12 +48,19 @@ class GeofenceManagerImpl @Inject constructor(
             .addGeofences(geofences)
             .build()
 
-        // Permissions are handled in the UI layer; failures are ignored for now.
-        geofencingClient.addGeofences(request, pendingIntent)
+        try {
+            geofencingClient.addGeofences(request, pendingIntent)
+        } catch (e: SecurityException) {
+            // Silently fail if permission was revoked or not yet granted
+        }
     }
 
     override fun unregisterAll() {
-        geofencingClient.removeGeofences(pendingIntent)
+        try {
+            geofencingClient.removeGeofences(pendingIntent)
+        } catch (e: SecurityException) {
+            // Silently fail
+        }
     }
 }
 

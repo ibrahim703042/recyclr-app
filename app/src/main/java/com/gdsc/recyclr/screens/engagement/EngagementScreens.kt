@@ -489,7 +489,7 @@ fun PickupScreen(onBack: () -> Unit, viewModel: EngagementViewModel = hiltViewMo
             }
 
             Column {
-                Text(stringResource(R.string.pickup_weight, weight.toInt()), style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(R.string.pickup_weight, weight), style = MaterialTheme.typography.bodyMedium)
                 Slider(value = weight, onValueChange = { weight = it }, valueRange = 1f..50f)
             }
 

@@ -209,7 +209,7 @@
     <string name="home_leaderboard_you">You</string>
     <string name="home_leaderboard_pts">%1$d pts</string>
     <string name="home_recycling_categories">Recycling Categories</string>
-    <string name="home_request_pickup_capitalized">Request Pickup</string>
+    <string name="home_request_pickup_capitalized">Req Pickup</string>
     <string name="home_recycle_map">Recycle Map</string>
     <string name="home_community_likes">❤️ %1$d people liked this</string>
     <string name="home_time_just_now">Just now</string>
@@ -225,7 +225,8 @@
     <string name="home_leaderboard">Leaderboard</string>
     <string name="home_community">Community</string>
     <string name="home_post_likes">%1$d likes</string>
-    <string name="home_request_pickup">Request pickup</string>
+    <string name="home_request_pickup">Req pickup</string>
+    <!-- <string name="home_request_pickup">Request pickup</string> -->
     <string name="home_open_map">Open map</string>
     <string name="challenge_title">Weekly challenge</string>
     <string name="challenge_reward">Reward: %1$d points</string>
