@@ -26,10 +26,14 @@ fun ForgotPassword(
                 }
             }
         }
-        is Failure -> sendPasswordResetEmailResponse.apply {
-            LaunchedEffect(e) {
-                print(e)
-                showErrorMessage(e.message)
+        is Failure -> {
+            LaunchedEffect(sendPasswordResetEmailResponse) {
+                print(sendPasswordResetEmailResponse.e)
+                showErrorMessage(
+                    sendPasswordResetEmailResponse.e.localizedMessage
+                        ?: sendPasswordResetEmailResponse.e.message,
+                )
+                viewModel.resetSendPasswordResetEmailResponse()
             }
         }
     }

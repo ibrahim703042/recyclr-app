@@ -10,7 +10,13 @@ object RecyclrThemeColors {
     @Composable get() = !LocalAppAppearance.current.isDarkTheme
 
   val headerBackground: Color
-    @Composable get() = if (isAppLightTheme) PointsCardGreen else Color(0xFF243B32)
+    @Composable get() = if (isAppLightTheme) GreenHero.Primary else Color(0xFF243B32)
+
+  val pageBackground: Color
+    @Composable get() = if (isAppLightTheme) GreenHero.PageBackground else Color(0xFF1A1C19)
+
+  val lightGreenSurface: Color
+    @Composable get() = if (isAppLightTheme) GreenHero.LightGreen else Color(0xFF2A3D33)
 
   val pointsCard: Color
     @Composable get() = if (isAppLightTheme) PointsCardGreen else Color(0xFF2E4A3D)

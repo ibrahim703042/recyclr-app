@@ -10,6 +10,9 @@
     <string name="nav_shop">Shop</string>
     <string name="nav_profile">Profile</string>
     <string name="nav_map">Map</string>
+    <string name="nav_stats">Stats</string>
+    <string name="nav_rewards">Rewards</string>
+    <string name="home_details_link">Details &gt;</string>
 
     <string name="theme_toggle">Toggle theme</string>
     <string name="theme_label">Theme</string>
@@ -161,6 +164,10 @@
     <string name="auth_send_sms">Receive SMS code</string>
     <string name="auth_sms_code">SMS code</string>
     <string name="auth_verify_code">Verify code</string>
+    <string name="auth_otp_label">Enter verification code</string>
+    <string name="auth_otp_enter_code">Enter the 6-digit code sent to your phone.</string>
+    <string name="auth_otp_sent_to">Code sent to %1$s</string>
+    <string name="auth_otp_resend">Resend code</string>
     <string name="auth_no_account">Don\'t have an account yet?</string>
     <string name="auth_sign_up">Sign up</string>
     <string name="auth_name">Name</string>
@@ -169,6 +176,8 @@
     <string name="auth_have_account">Already have an account?</string>
     <string name="auth_submit">Submit</string>
     <string name="auth_google_unavailable">Google sign-in is unavailable on this device.</string>
+    <string name="auth_error_generic">Something went wrong. Please try again.</string>
+    <string name="auth_activity_unavailable">Unable to open sign-in on this screen. Please restart the app.</string>
     <string name="auth_provider_google">Google</string>
     <string name="auth_provider_phone">Phone</string>
     <string name="auth_or_register_with">Or register with</string>

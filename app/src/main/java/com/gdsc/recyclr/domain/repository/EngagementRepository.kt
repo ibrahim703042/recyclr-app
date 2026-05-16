@@ -18,4 +18,7 @@ interface EngagementRepository {
     suspend fun getDonationCauses(userId: String): Response<List<DonationCause>>
     suspend fun submitPickupRequest(userId: String, draft: PickupRequestDraft): Response<Boolean>
     suspend fun lookupBarcode(barcode: String, userId: String): Response<Pair<String, Int>?>
+    suspend fun createCommunityPost(post: CommunityPost): Response<String>
+    suspend fun deleteCommunityPost(postId: String): Response<Boolean>
+    suspend fun getAdminStats(): Response<Map<String, Long>>
 }

@@ -11,22 +11,28 @@ import com.gdsc.recyclr.screens.auths.forgot_password.components.ForgotPasswordC
 @Composable
 fun ForgotPasswordScreen(
     viewModel: ForgotPasswordViewModel = hiltViewModel(),
-    navigateBack: () -> Unit
+    navigateBack: () -> Unit,
 ) {
     val context = LocalContext.current
+
     ForgotPasswordContent(
         sendPasswordResetEmail = { email ->
             viewModel.sendPasswordResetEmail(email)
-        }
+        },
     )
 
     ForgotPassword(
+        viewModel = viewModel,
         navigateBack = navigateBack,
         showResetPasswordMessage = {
             showMessage(context, context.getString(R.string.auth_reset_email_sent))
         },
         showErrorMessage = { errorMessage ->
-            showMessage(context, errorMessage)
-        }
+            showMessage(
+                context,
+                errorMessage?.takeIf { it.isNotBlank() }
+                    ?: context.getString(R.string.auth_error_generic),
+            )
+        },
     )
 }

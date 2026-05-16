@@ -6,11 +6,11 @@ package com.gdsc.recyclr.navigation
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhotoCamera
-import androidx.compose.material.icons.filled.Place
-import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -51,14 +51,14 @@ sealed class BottomBarPage(
 
     object Map : BottomBarPage(
         route = "map",
-        titleRes = R.string.nav_map,
-        icon = Icons.Default.Place,
+        titleRes = R.string.nav_stats,
+        icon = Icons.Default.BarChart,
     )
 
     object Shop : BottomBarPage(
         route = "shop",
-        titleRes = R.string.nav_shop,
-        icon = Icons.Default.ShoppingBag,
+        titleRes = R.string.nav_rewards,
+        icon = Icons.Default.EmojiEvents,
     )
 
     object Profile : BottomBarPage(

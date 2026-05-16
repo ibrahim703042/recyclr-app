@@ -1,83 +1,93 @@
 package com.gdsc.recyclr.screens.support
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.gdsc.recyclr.data.local.dao.ChatMessageDao
-import com.gdsc.recyclr.data.local.entities.CachedChatMessageEntity
 import com.gdsc.recyclr.data.local.preferences.BadgePreferencesStore
 import com.gdsc.recyclr.domain.model.ChatMessage
+import com.gdsc.recyclr.domain.model.ChatMessageType
+import com.gdsc.recyclr.domain.repository.AuthRepository
+import com.gdsc.recyclr.domain.repository.ChatRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class SupportChatViewModel @Inject constructor(
-    private val chatMessageDao: ChatMessageDao,
+    private val chatRepository: ChatRepository,
+    private val authRepository: AuthRepository,
     private val badgePreferencesStore: BadgePreferencesStore,
 ) : ViewModel() {
 
-    val messages = chatMessageDao.observeThread(SUPPORT_CHAT_THREAD_ID)
-        .map { rows ->
-            rows.map { r ->
-                ChatMessage(
-                    id = r.id,
-                    threadId = r.threadId,
-                    body = r.body,
-                    fromUser = r.fromUser,
-                    sentAtMillis = r.sentAtMillis,
-                )
-            }
-        }
+    private val currentUserId = authRepository.currentUser?.uid ?: "guest"
+
+    // Each user's support thread is keyed by their own UID
+    private val threadId = currentUserId
+
+    val messages: StateFlow<List<ChatMessage>> = chatRepository
+        .getMessages(threadId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    init {
-        viewModelScope.launch { ensureWelcome() }
-    }
-
-    private suspend fun ensureWelcome() {
-        chatMessageDao.insert(
-            CachedChatMessageEntity(
-                id = "welcome_seed",
-                threadId = SUPPORT_CHAT_THREAD_ID,
-                body = "Hello! Ask us about recycling, pickups, or rewards.",
-                fromUser = false,
-                sentAtMillis = System.currentTimeMillis(),
-            ),
-        )
-    }
+    val typingStatuses: StateFlow<Map<String, String>> = chatRepository
+        .getTypingStatuses(threadId)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
     fun sendUserMessage(text: String) {
-        if (text.isBlank()) return
+        if (text.isBlank() || currentUserId == "guest") return
         viewModelScope.launch {
-            chatMessageDao.insert(
-                CachedChatMessageEntity(
-                    id = UUID.randomUUID().toString(),
-                    threadId = SUPPORT_CHAT_THREAD_ID,
+            setTypingStatus("none")
+            chatRepository.sendMessage(
+                threadId,
+                ChatMessage(
+                    senderId = currentUserId,
                     body = text.trim(),
                     fromUser = true,
-                    sentAtMillis = System.currentTimeMillis(),
-                ),
+                    type = ChatMessageType.TEXT,
+                )
             )
-            // Simple canned reply
-            chatMessageDao.insert(
-                CachedChatMessageEntity(
-                    id = UUID.randomUUID().toString(),
-                    threadId = SUPPORT_CHAT_THREAD_ID,
-                    body = "Thanks for your message. A teammate will follow up soon.",
-                    fromUser = false,
-                    sentAtMillis = System.currentTimeMillis() + 1,
-                ),
-            )
+        }
+    }
+
+    fun sendMediaMessage(
+        uri: Uri,
+        mimeType: String,
+        type: ChatMessageType,
+        durationMillis: Long? = null,
+    ) {
+        if (currentUserId == "guest") return
+        viewModelScope.launch {
+            setTypingStatus("none")
+            chatRepository.uploadFile(threadId, uri, mimeType)
+                .onSuccess { url ->
+                    chatRepository.sendMessage(
+                        threadId,
+                        ChatMessage(
+                            senderId = currentUserId,
+                            fromUser = true,
+                            type = type,
+                            fileUrl = url,
+                            durationMillis = durationMillis,
+                        )
+                    )
+                }
+                .onFailure { /* TODO: show snackbar */ }
+        }
+    }
+
+    fun setTypingStatus(status: String) {
+        if (currentUserId == "guest") return
+        viewModelScope.launch {
+            chatRepository.setTypingStatus(threadId, currentUserId, status)
         }
     }
 
     fun markSupportThreadSeenOnLeave() {
         viewModelScope.launch {
             badgePreferencesStore.markSupportThreadSeenNow()
+            setTypingStatus("none")
         }
     }
 }

@@ -7,8 +7,9 @@ import android.widget.Toast
 object UiUtils {
     fun print(e: Exception) = Log.e("APP TAG", e.stackTraceToString())
 
-    fun showMessage(
-        context: Context,
-        message: String?
-    ) = Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+    fun showMessage(context: Context, message: String?) {
+        val text = message?.trim().orEmpty()
+        if (text.isEmpty()) return
+        Toast.makeText(context, text, Toast.LENGTH_LONG).show()
+    }
 }

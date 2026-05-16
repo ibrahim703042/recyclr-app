@@ -8,6 +8,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.gdsc.recyclr.components.composable.ProgressBar
 import com.gdsc.recyclr.domain.model.Response.Failure
 import com.gdsc.recyclr.domain.model.Response.Loading
+import com.gdsc.recyclr.domain.model.Response.Success
 import com.gdsc.recyclr.screens.auths.sign_up.SignUpViewModel
 import com.gdsc.recyclr.util.AppLogger
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -28,6 +29,9 @@ fun SignUp(
                         showErrorMessage(resp.e.localizedMessage ?: resp.e.message)
                         viewModel.resetSignUpResponse()
                     }
+                    is Success -> {
+                        if (resp.data == true) viewModel.resetSignUpResponse()
+                    }
                     else -> Unit
                 }
             }
@@ -42,6 +46,9 @@ fun SignUp(
                         AppLogger.w("Phone sign-up error", resp.e)
                         showErrorMessage(resp.e.localizedMessage ?: resp.e.message)
                         viewModel.resetPhoneSignInResponse()
+                    }
+                    is Success -> {
+                        if (resp.data == true) viewModel.resetPhoneSignInResponse()
                     }
                     else -> Unit
                 }

@@ -4,7 +4,7 @@ import android.app.Activity
 import android.graphics.Bitmap
 import android.net.Uri
 import com.google.firebase.auth.UserProfileChangeRequest
-import com.google.firebase.FirebaseException
+import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseUser
@@ -109,10 +109,20 @@ class AuthServiceImpl @Inject constructor(
 
     private suspend fun ensureUserDocumentExists(user: FirebaseUser) {
         try {
-            val doc = firestore.collection("users").document(user.uid).get().await()
-            if (!doc.exists()) {
+            val userDoc = firestore.collection("users").document(user.uid).get().await()
+            if (!userDoc.exists()) {
                 val dto = user.toDto()
                 firestore.collection("users").document(user.uid).set(dto).await()
+            }
+            
+            val impactDoc = firestore.collection("user_impact").document(user.uid).get().await()
+            if (!impactDoc.exists()) {
+                val impactDto = com.gdsc.recyclr.data.model.UserImpactDto(
+                    userId = user.uid,
+                    displayName = user.displayName ?: user.email?.substringBefore('@') ?: "Green Hero",
+                    role = userDoc.getString("role") ?: "USER"
+                )
+                firestore.collection("user_impact").document(user.uid).set(impactDto).await()
             }
         } catch (e: Exception) {
             AppLogger.w("ensureUserDocumentExists", e)
@@ -132,10 +142,13 @@ class AuthServiceImpl @Inject constructor(
                 .setCallbacks(callbacks)
                 .build()
             PhoneAuthProvider.verifyPhoneNumber(options)
-        }.onFailure {
-            AppLogger.e("startPhoneVerification — échec configuration", it)
+        }.onFailure { error ->
+            AppLogger.e("startPhoneVerification — échec configuration", error)
             callbacks.onVerificationFailed(
-                FirebaseException("Phone Auth indisponible : ${it.message}")
+                FirebaseAuthException(
+                    "ERROR_INTERNAL_ERROR",
+                    "Phone Auth indisponible : ${error.message}",
+                ),
             )
         }
     }
@@ -150,7 +163,8 @@ class AuthServiceImpl @Inject constructor(
 
     private suspend fun signInWithAuthCredential(credential: AuthCredential): Result<Boolean> {
         return try {
-            firebaseAuth.signInWithCredential(credential).await()
+            val result = firebaseAuth.signInWithCredential(credential).await()
+            result.user?.let { ensureUserDocumentExists(it) }
             Result.success(true)
         } catch (e: Exception) {
             AppLogger.w("signInWithCredential", e)
@@ -228,8 +242,9 @@ class AuthServiceImpl @Inject constructor(
 
     override fun observeAuthState(): Flow<Boolean> = callbackFlow {
         val authStateListener = FirebaseAuth.AuthStateListener { auth ->
-            trySend(auth.currentUser == null)
+            trySend(auth.currentUser == null).isSuccess
         }
+        trySend(firebaseAuth.currentUser == null)
         firebaseAuth.addAuthStateListener(authStateListener)
         awaitClose {
             firebaseAuth.removeAuthStateListener(authStateListener)

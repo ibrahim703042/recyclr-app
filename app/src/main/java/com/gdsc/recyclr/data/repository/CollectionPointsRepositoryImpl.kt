@@ -54,6 +54,13 @@ class CollectionPointsRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun updateCollectorLocation(collectorId: String, lat: Double, lng: Double): Response<Boolean> {
+        return service.updateCollectorLocation(collectorId, lat, lng).fold(
+            onSuccess = { Response.Success(it) },
+            onFailure = { Response.Failure(it as Exception) }
+        )
+    }
+
     private fun CollectorLocationDto.toDomain() = CollectorLocation(
         id = collectorId,
         name = name,

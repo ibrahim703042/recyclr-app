@@ -171,7 +171,7 @@ fun RootNavGraph(
         }
     }
 
-    LaunchedEffect(isSignedOut, isOnboardingCompleted) {
+    LaunchedEffect(isSignedOut, isOnboardingCompleted, isGuestModeEnabled) {
         val destination = when {
             !isOnboardingCompleted -> Screen.Onboarding.route
             isSignedOut && !isGuestModeEnabled -> Screen.SignInScreen.route
@@ -180,10 +180,17 @@ fun RootNavGraph(
         if (!isSignedOut && isGuestModeEnabled) {
             onGuestModeEnabled(false)
         }
-        if (navController.currentDestination?.route != destination) {
+        val currentRoute = navController.currentBackStackEntry?.destination?.route
+        if (currentRoute == destination) return@LaunchedEffect
+
+        runCatching {
             navController.navigate(destination) {
-                popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                popUpTo(navController.graph.id) {
+                    inclusive = true
+                    saveState = false
+                }
                 launchSingleTop = true
+                restoreState = destination == Screen.Main.route
             }
         }
     }

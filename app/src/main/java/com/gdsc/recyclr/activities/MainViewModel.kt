@@ -3,6 +3,7 @@ package com.gdsc.recyclr.activities
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.gdsc.recyclr.data.local.RecyclrDatabase
 import com.gdsc.recyclr.domain.model.AppLanguage
 import com.gdsc.recyclr.domain.model.AppThemeMode
 import com.gdsc.recyclr.domain.repository.AuthRepository
@@ -24,6 +25,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val repo: AuthRepository,
     private val settingsRepository: SettingsRepository,
+    private val database: RecyclrDatabase,
     @ApplicationContext private val appContext: Context,
 ) : ViewModel() {
     init {
@@ -122,5 +124,11 @@ class MainViewModel @Inject constructor(
     fun revokeAccess() = viewModelScope.launch {
         repo.revokeAccess()
         GoogleCredentialAuth.clearCredentialState(appContext)
+    }
+
+    fun clearAllCache() = viewModelScope.launch {
+        database.clearAllTables()
+        settingsRepository.setGuestModeEnabled(false)
+        settingsRepository.setOnboardingCompleted(false)
     }
 }

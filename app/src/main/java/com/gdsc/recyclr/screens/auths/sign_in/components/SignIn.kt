@@ -27,6 +27,11 @@ fun SignIn(
                         showErrorMessage(resp.e.localizedMessage ?: resp.e.message)
                         viewModel.resetSignInResponse()
                     }
+                    is Success -> {
+                        if (resp.data == true) {
+                            viewModel.resetSignInResponse()
+                        }
+                    }
                     else -> Unit
                 }
             }

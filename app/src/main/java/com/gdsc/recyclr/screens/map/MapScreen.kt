@@ -176,7 +176,7 @@ fun MapScreen(
                         modifier = Modifier.fillMaxWidth(),
                         shape = MaterialTheme.shapes.large
                     ) {
-                        Text(stringResource(R.string.home_request_pickup_capitalized))
+                        Text(stringResource(R.string.home_request_pickup))
                     }
 
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -230,7 +230,14 @@ fun MapScreen(
                             state = MarkerState(position = LatLng(collector.lat, collector.lng)),
                             title = "Collector: ${collector.name}",
                             snippet = "Vehicle: ${collector.vehicleType}",
-                            icon = collectorIcon
+                            icon = collectorIcon,
+                            onClick = {
+                                scope.launch {
+                                    // Set a "fake" collection point for the sheet if needed, or just show info
+                                    sheetState.show()
+                                }
+                                true
+                            }
                         )
                     }
                 }

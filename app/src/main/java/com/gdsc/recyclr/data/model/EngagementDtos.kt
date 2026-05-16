@@ -12,9 +12,9 @@ data class WeeklyChallengeConfigDto(
     val title: String = "",
     val description: String = "",
     val targetScans: Long = 40,
+    val communityScansCount: Long = 0,
     val rewardPoints: Long = 300,
     val endsInDays: Long = 4,
-    val communityProgressOffset: Long = 0,
 )
 
 /** Collection `leaderboard`. Fields: rank, displayName, points, isCurrentUser */
@@ -36,7 +36,19 @@ data class CommunityPostDto(
     val likes: Long = 0,
     val isReport: Boolean = false,
     val createdAtMillis: Long = 0,
-)
+) {
+    companion object {
+        fun fromDomain(model: com.gdsc.recyclr.domain.model.engagement.CommunityPost): CommunityPostDto = CommunityPostDto(
+            id = model.id,
+            author = model.author,
+            groupName = model.groupName,
+            message = model.message,
+            likes = model.likes.toLong(),
+            isReport = model.isReport,
+            createdAtMillis = model.createdAtMillis ?: System.currentTimeMillis()
+        )
+    }
+}
 
 /** Collection `donation_causes`. Document id used as [id]. */
 data class DonationCauseDto(

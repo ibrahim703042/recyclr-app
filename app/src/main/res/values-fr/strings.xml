@@ -6,6 +6,9 @@
     <string name="nav_shop">Boutique</string>
     <string name="nav_profile">Profil</string>
     <string name="nav_map">Carte</string>
+    <string name="nav_stats">Stats</string>
+    <string name="nav_rewards">Récompenses</string>
+    <string name="home_details_link">Détails &gt;</string>
 
     <string name="theme_toggle">Changer de thème</string>
     <string name="theme_label">Thème</string>
@@ -158,6 +161,10 @@
     <string name="auth_send_sms">Recevoir le code SMS</string>
     <string name="auth_sms_code">Code SMS</string>
     <string name="auth_verify_code">Vérifier le code</string>
+    <string name="auth_otp_label">Saisir le code de vérification</string>
+    <string name="auth_otp_enter_code">Entrez le code à 6 chiffres envoyé sur votre téléphone.</string>
+    <string name="auth_otp_sent_to">Code envoyé au %1$s</string>
+    <string name="auth_otp_resend">Renvoyer le code</string>
     <string name="auth_no_account">Pas encore de compte ?</string>
     <string name="auth_sign_up">S\'inscrire</string>
     <string name="auth_name">Nom</string>
@@ -166,6 +173,8 @@
     <string name="auth_have_account">Vous avez déjà un compte ?</string>
     <string name="auth_submit">Envoyer</string>
     <string name="auth_google_unavailable">Connexion Google indisponible sur cet appareil.</string>
+    <string name="auth_error_generic">Une erreur est survenue. Veuillez réessayer.</string>
+    <string name="auth_activity_unavailable">Impossible d’ouvrir la connexion sur cet écran. Redémarrez l’application.</string>
     <string name="auth_provider_google">Google</string>
     <string name="auth_provider_phone">Téléphone</string>
     <string name="auth_or_register_with">Ou s’inscrire avec</string>

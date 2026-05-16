@@ -10,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -22,16 +23,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.gdsc.recyclr.R
+import com.gdsc.recyclr.components.auth.PhoneVerificationSheet
 import com.gdsc.recyclr.components.composable.*
 import com.gdsc.recyclr.components.design.AuthShell
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpContent(
     signUp: (name: String, email: String, password: String) -> Unit,
     navigateBack: () -> Unit,
     phoneHint: String?,
     phoneVerificationId: String?,
+    isPhoneVerifying: Boolean,
     onSendPhoneCode: (phone: String) -> Unit,
     onVerifyPhoneCode: (code: String) -> Unit,
     onGoogleClick: () -> Unit,
@@ -39,10 +41,7 @@ fun SignUpContent(
     var name by rememberSaveable { mutableStateOf("") }
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
-    var phone by rememberSaveable { mutableStateOf("") }
-    var countryCode by rememberSaveable { mutableStateOf("+1") }
-    var smsCode by rememberSaveable { mutableStateOf("") }
-    var showPhoneModal by rememberSaveable { mutableStateOf(false) }
+    var showPhoneModal by remember { mutableStateOf(false) }
 
     val keyboard = LocalSoftwareKeyboardController.current
 
@@ -165,102 +164,14 @@ fun SignUpContent(
         }
     }
 
-    if (showPhoneModal) {
-        ModalBottomSheet(
-            onDismissRequest = { showPhoneModal = false },
-            containerColor = MaterialTheme.colorScheme.surface,
-            shape = MaterialTheme.shapes.extraLarge,
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = stringResource(R.string.auth_phone_sheet_title_sign_up),
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = stringResource(R.string.auth_phone_sheet_body),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    OutlinedTextField(
-                        value = countryCode,
-                        onValueChange = { countryCode = it },
-                        modifier = Modifier.width(80.dp),
-                        label = { Text(stringResource(R.string.auth_country_code_label)) },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                        shape = MaterialTheme.shapes.medium,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                        ),
-                    )
-
-                    RecyclrTextField(
-                        value = phone,
-                        onValueChange = { phone = it },
-                        label = stringResource(R.string.auth_phone_number),
-                        placeholder = stringResource(R.string.auth_phone_hint),
-                        modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                RecyclrButton(
-                    text = R.string.auth_send_sms,
-                    onClick = { onSendPhoneCode(countryCode + phone) },
-                    enabled = phone.isNotBlank(),
-                )
-
-                if (!phoneVerificationId.isNullOrBlank()) {
-                    Spacer(modifier = Modifier.height(24.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    RecyclrTextField(
-                        value = smsCode,
-                        onValueChange = { smsCode = it },
-                        label = stringResource(R.string.auth_sms_code),
-                        placeholder = "123456",
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    RecyclrButton(
-                        text = R.string.auth_verify_code,
-                        onClick = { onVerifyPhoneCode(smsCode) },
-                        enabled = smsCode.length >= 6,
-                    )
-                }
-
-                phoneHint?.let {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(32.dp))
-            }
-        }
-    }
+    PhoneVerificationSheet(
+        visible = showPhoneModal,
+        onDismiss = { showPhoneModal = false },
+        titleRes = R.string.auth_phone_sheet_title_sign_up,
+        phoneHint = phoneHint,
+        phoneVerificationId = phoneVerificationId,
+        isVerifying = isPhoneVerifying,
+        onSendPhoneCode = onSendPhoneCode,
+        onVerifyPhoneCode = onVerifyPhoneCode,
+    )
 }

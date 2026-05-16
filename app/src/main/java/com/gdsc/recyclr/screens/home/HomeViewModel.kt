@@ -6,6 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gdsc.recyclr.data.local.dao.NotificationDao
+import com.gdsc.recyclr.data.service.LiveActivity
+import com.gdsc.recyclr.data.service.LiveTickerService
 import com.gdsc.recyclr.domain.model.User
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.Response.Loading
@@ -28,7 +30,11 @@ class HomeViewModel @Inject constructor(
     private val impactRepository: ImpactRepository,
     private val engagementRepository: EngagementRepository,
     private val notificationDao: NotificationDao,
+    private val liveTickerService: LiveTickerService,
 ) : ViewModel() {
+
+    var latestLiveActivity by mutableStateOf<LiveActivity?>(null)
+        private set
 
     var currentUserWithRole by mutableStateOf<User?>(null)
         private set
@@ -54,6 +60,15 @@ class HomeViewModel @Inject constructor(
         observeImpact()
         refreshDashboard()
         fetchUserWithRole()
+        observeLiveTicker()
+    }
+
+    private fun observeLiveTicker() {
+        viewModelScope.launch {
+            liveTickerService.observeLiveActivity().collect { activity ->
+                latestLiveActivity = activity
+            }
+        }
     }
 
     private fun fetchUserWithRole() {

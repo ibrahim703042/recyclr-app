@@ -14,4 +14,7 @@ interface EngagementService {
     suspend fun getCommunityPosts(limit: Long = 30): Result<List<CommunityPostDto>>
     suspend fun getDonationCauses(): Result<List<DonationCauseDto>>
     suspend fun submitPickupRequest(userId: String, draft: PickupRequestDraft): Result<String>
+    suspend fun createCommunityPost(post: CommunityPostDto): Result<String>
+    suspend fun deleteCommunityPost(postId: String): Result<Boolean>
+    suspend fun getAdminStats(): Result<Map<String, Long>>
 }

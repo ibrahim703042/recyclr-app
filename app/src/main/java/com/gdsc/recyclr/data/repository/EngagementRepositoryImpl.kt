@@ -137,18 +137,38 @@ class EngagementRepositoryImpl @Inject constructor(
         return Response.Success(SEED_BARCODES[trimmed])
     }
 
+    override suspend fun createCommunityPost(post: CommunityPost): Response<String> {
+        return engagementService.createCommunityPost(CommunityPostDto.fromDomain(post))
+            .fold(
+                onSuccess = { Response.Success(it) },
+                onFailure = { Response.Failure(it as Exception) }
+            )
+    }
+
+    override suspend fun deleteCommunityPost(postId: String): Response<Boolean> {
+        return engagementService.deleteCommunityPost(postId)
+            .fold(
+                onSuccess = { Response.Success(it) },
+                onFailure = { Response.Failure(it as Exception) }
+            )
+    }
+
+    override suspend fun getAdminStats(): Response<Map<String, Long>> {
+        return engagementService.getAdminStats()
+            .fold(
+                onSuccess = { Response.Success(it) },
+                onFailure = { Response.Failure(it as Exception) }
+            )
+    }
+
     private suspend fun resolveChallenge(userId: String): WeeklyChallenge {
-        val scans = scanHistory(userId)
-        val weekStart = weekStartMillis()
-        val weeklyScans = scans.count { it.timestampMillis >= weekStart }
         val config = if (userId != "guest") {
             engagementService.getWeeklyChallengeConfig().getOrNull()
         } else {
             null
         } ?: defaultChallengeConfig()
         val target = config.targetScans.toInt().coerceAtLeast(1)
-        val offset = config.communityProgressOffset.toInt()
-        val current = min(weeklyScans + offset, target)
+        val current = min(config.communityScansCount.toInt(), target)
         return WeeklyChallenge(
             id = config.id.ifBlank { "lake-week" },
             title = config.title.ifBlank { "Clean Lake Tanganyika Week" },
@@ -166,10 +186,9 @@ class EngagementRepositoryImpl @Inject constructor(
         if (userId == "guest") return seedLeaderboard()
         return engagementService.getLeaderboard(20).fold(
             onSuccess = { list ->
-                if (list.isEmpty()) seedLeaderboard()
-                else list.map { it.toDomain().copy(isCurrentUser = it.userId == userId) }
+                list.map { it.toDomain().copy(isCurrentUser = it.userId == userId) }
             },
-            onFailure = { seedLeaderboard() },
+            onFailure = { emptyList() },
         )
     }
 
@@ -179,17 +198,14 @@ class EngagementRepositoryImpl @Inject constructor(
         name = displayName,
         points = points.toInt(),
         isCurrentUser = isCurrentUser,
-        role = try { UserRole.valueOf(role) } catch (e: Exception) { UserRole.USER }
+        role = try { UserRole.valueOf(role) } catch (_: Exception) { UserRole.USER }
     )
 
     private suspend fun resolveCommunityPosts(userId: String): List<CommunityPost> {
         if (userId == "guest") return seedCommunity()
         return engagementService.getCommunityPosts(30).fold(
-            onSuccess = { list ->
-                if (list.isEmpty()) seedCommunity()
-                else list.map { it.toDomain() }
-            },
-            onFailure = { seedCommunity() },
+            onSuccess = { list -> list.map { it.toDomain() } },
+            onFailure = { emptyList() },
         )
     }
 
@@ -223,7 +239,7 @@ class EngagementRepositoryImpl @Inject constructor(
     )
 
     private fun defaultChallengeConfig() = WeeklyChallengeConfigDto(
-        communityProgressOffset = 18,
+        communityScansCount = 18,
     )
 
     private suspend fun scanHistory(userId: String) = when (val history = scanRecordsRepository.getRecentScans(userId, 120)) {

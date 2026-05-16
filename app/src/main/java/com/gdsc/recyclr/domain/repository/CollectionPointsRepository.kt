@@ -16,5 +16,6 @@ interface CollectionPointsRepository {
     ): CollectionPointsResponse
 
     fun observeNearbyCollectors(): Flow<List<CollectorLocation>>
+    suspend fun updateCollectorLocation(collectorId: String, lat: Double, lng: Double): Response<Boolean>
 }
 

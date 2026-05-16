@@ -10,11 +10,11 @@ val PrimaryDarkGreen = Color(0xFF005005)
 val SecondaryTeal = Color(0xFF00796B)
 val TertiaryGold = Color(0xFFFBC02D)
 
-// M3 Light Color Scheme
-val md_theme_light_primary = Color(0xFF006D32)
-val md_theme_light_onPrimary = Color(0xFFFFFFFF)
-val md_theme_light_primaryContainer = Color(0xFF98F7AC)
-val md_theme_light_onPrimaryContainer = Color(0xFF00210A)
+// M3 Light Color Scheme (Green Hero)
+val md_theme_light_primary = GreenHero.Primary
+val md_theme_light_onPrimary = GreenHero.OnPrimary
+val md_theme_light_primaryContainer = GreenHero.LightGreen
+val md_theme_light_onPrimaryContainer = GreenHero.PrimaryDark
 val md_theme_light_secondary = Color(0xFF506351)
 val md_theme_light_onSecondary = Color(0xFFFFFFFF)
 val md_theme_light_secondaryContainer = Color(0xFFD2E8D2)
@@ -27,13 +27,13 @@ val md_theme_light_error = Color(0xFFBA1A1A)
 val md_theme_light_errorContainer = Color(0xFFFFDAD6)
 val md_theme_light_onError = Color(0xFFFFFFFF)
 val md_theme_light_onErrorContainer = Color(0xFF410002)
-val md_theme_light_background = Color(0xFFFBFDF7)
-val md_theme_light_onBackground = Color(0xFF1A1C19)
-val md_theme_light_surface = Color(0xFFFBFDF7)
-val md_theme_light_onSurface = Color(0xFF1A1C19)
-val md_theme_light_surfaceVariant = Color(0xFFDDE5DB)
-val md_theme_light_onSurfaceVariant = Color(0xFF414941)
-val md_theme_light_outline = Color(0xFF717970)
+val md_theme_light_background = GreenHero.PageBackground
+val md_theme_light_onBackground = GreenHero.TextPrimary
+val md_theme_light_surface = GreenHero.Card
+val md_theme_light_onSurface = GreenHero.TextPrimary
+val md_theme_light_surfaceVariant = GreenHero.LightGreenMuted
+val md_theme_light_onSurfaceVariant = GreenHero.TextSecondary
+val md_theme_light_outline = GreenHero.Divider
 
 // M3 Dark Color Scheme
 val md_theme_dark_primary = Color(0xFF7DDA92)

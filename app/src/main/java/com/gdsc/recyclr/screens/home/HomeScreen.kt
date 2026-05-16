@@ -33,6 +33,7 @@ fun HomeScreen(
         dashboardResponse = viewModel.dashboardResponse,
         userName = viewModel.welcomeName,
         userRole = userRole,
+        latestLiveActivity = viewModel.latestLiveActivity,
         photoUrl = photoUrl,
         unreadNotificationCount = unreadNotificationCount,
         onRefresh = { viewModel.refreshDashboard() },

@@ -118,7 +118,7 @@ fun ShopItemCard(
                     contentPadding = PaddingValues(0.dp)
                 ) {
                     Text(
-                        text = "Redeem",
+                        text = if (shopItem.isDonation) "Support" else "Redeem",
                         style = MaterialTheme.typography.labelSmall
                     )
                 }

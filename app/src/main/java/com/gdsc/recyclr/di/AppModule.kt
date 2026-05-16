@@ -1,6 +1,7 @@
 package com.gdsc.recyclr.di
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import dagger.Module
@@ -8,6 +9,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import com.gdsc.recyclr.data.repository.AuthRepositoryImpl
+import com.gdsc.recyclr.data.repository.ChatRepositoryImpl
 import com.gdsc.recyclr.data.repository.EngagementRepositoryImpl
 import com.gdsc.recyclr.data.repository.CollectionPointsRepositoryImpl
 import com.gdsc.recyclr.data.repository.ImpactRepositoryImpl
@@ -36,8 +38,12 @@ import com.gdsc.recyclr.data.service.ImpactService
 import com.gdsc.recyclr.data.service.RedemptionService
 import com.gdsc.recyclr.data.service.ScanRecordsService
 import com.gdsc.recyclr.data.service.ShopService
+import com.gdsc.recyclr.data.service.ChatService
+import com.gdsc.recyclr.data.service.LiveTickerService
 import com.gdsc.recyclr.data.service.impl.AuthServiceImpl
+import com.gdsc.recyclr.data.service.impl.ChatServiceImpl
 import com.gdsc.recyclr.data.service.impl.CollectionPointsServiceImpl
+import com.gdsc.recyclr.data.service.impl.LiveTickerServiceImpl
 import com.gdsc.recyclr.data.service.impl.ImpactServiceImpl
 import com.gdsc.recyclr.data.service.impl.RedemptionServiceImpl
 import com.gdsc.recyclr.data.service.impl.ScanRecordsServiceImpl
@@ -45,6 +51,7 @@ import com.gdsc.recyclr.data.service.impl.ShopServiceImpl
 import com.gdsc.recyclr.data.service.EngagementService
 import com.gdsc.recyclr.data.service.impl.EngagementServiceImpl
 import com.gdsc.recyclr.domain.repository.AuthRepository
+import com.gdsc.recyclr.domain.repository.ChatRepository
 import com.gdsc.recyclr.domain.repository.EngagementRepository
 import com.gdsc.recyclr.domain.repository.CollectionPointsRepository
 import com.gdsc.recyclr.domain.repository.ImpactRepository
@@ -74,6 +81,10 @@ object AppModule {
     @Provides
     @Singleton
     fun provideStorage(): FirebaseStorage = FirebaseStorage.getInstance()
+
+    @Provides
+    @Singleton
+    fun provideRealtimeDatabase(): FirebaseDatabase = FirebaseDatabase.getInstance()
     
     // Service Providers
     @Provides
@@ -94,8 +105,11 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideCollectionPointsService(firestore: FirebaseFirestore): CollectionPointsService {
-        return CollectionPointsServiceImpl(firestore)
+    fun provideCollectionPointsService(
+        firestore: FirebaseFirestore,
+        db: FirebaseDatabase
+    ): CollectionPointsService {
+        return CollectionPointsServiceImpl(firestore, db)
     }
 
     @Provides
@@ -121,12 +135,30 @@ object AppModule {
     fun provideEngagementService(firestore: FirebaseFirestore): EngagementService {
         return EngagementServiceImpl(firestore)
     }
+
+    @Provides
+    @Singleton
+    fun provideChatService(db: FirebaseDatabase): ChatService {
+        return ChatServiceImpl(db)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLiveTickerService(db: FirebaseDatabase): LiveTickerService {
+        return LiveTickerServiceImpl(db)
+    }
     
     // Repository Providers
     @Provides
     @Singleton
     fun provideAuthRepository(authService: AuthService): AuthRepository {
         return AuthRepositoryImpl(authService)
+    }
+
+    @Provides
+    @Singleton
+    fun provideChatRepository(service: ChatService, storage: FirebaseStorage): ChatRepository {
+        return ChatRepositoryImpl(service, storage)
     }
     
     @Provides

@@ -7,6 +7,7 @@ import com.gdsc.recyclr.data.model.LeaderboardEntryDto
 import com.gdsc.recyclr.data.model.WeeklyChallengeConfigDto
 import com.gdsc.recyclr.data.service.EngagementService
 import com.gdsc.recyclr.domain.model.engagement.PickupRequestDraft
+import com.google.firebase.firestore.AggregateSource
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
@@ -105,6 +106,40 @@ class EngagementServiceImpl @Inject constructor(
             }
             val ref = firestore.collection(COL_PICKUPS).add(payload).await()
             Result.success(ref.id)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun createCommunityPost(post: CommunityPostDto): Result<String> {
+        return try {
+            val ref = firestore.collection(COL_COMMUNITY).add(post.copy(createdAtMillis = System.currentTimeMillis())).await()
+            Result.success(ref.id)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun deleteCommunityPost(postId: String): Result<Boolean> {
+        return try {
+            firestore.collection(COL_COMMUNITY).document(postId).delete().await()
+            Result.success(true)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun getAdminStats(): Result<Map<String, Long>> {
+        return try {
+            val userCount = firestore.collection("users").count().get(AggregateSource.SERVER).await().count
+            val scanCount = firestore.collection("scans").count().get(AggregateSource.SERVER).await().count
+            val reportCount = firestore.collection(COL_COMMUNITY).whereEqualTo("isReport", true).count().get(AggregateSource.SERVER).await().count
+            
+            Result.success(mapOf(
+                "totalUsers" to userCount,
+                "totalScans" to scanCount,
+                "pendingReports" to reportCount
+            ))
         } catch (e: Exception) {
             Result.failure(e)
         }

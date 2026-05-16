@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.gdsc.recyclr.data.service.LiveTickerService
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.Response.Loading
 import com.gdsc.recyclr.domain.model.ScanRecord
@@ -36,6 +37,7 @@ class ScanViewModel @Inject constructor(
     private val impactRepository: ImpactRepository,
     private val wasteDetector: WasteDetector,
     private val engagementRepository: EngagementRepository,
+    private val liveTickerService: LiveTickerService,
 ) : ViewModel() {
 
     init {
@@ -137,6 +139,11 @@ class ScanViewModel @Inject constructor(
             energyRecoveredKwhDelta = computed.energyRecoveredKwh,
             treesEquivalentDelta = computed.treesEquivalentDelta
         )
+
+        viewModelScope.launch {
+            val name = authRepository.currentUser?.displayName ?: "Someone"
+            liveTickerService.postActivity(name, itemType)
+        }
 
         submitResponse = Response.Success(computed.toResult())
     }

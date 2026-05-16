@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import com.gdsc.recyclr.data.service.AuthService
 import com.gdsc.recyclr.domain.model.Response
+import com.gdsc.recyclr.domain.model.toFailure
 import com.gdsc.recyclr.domain.model.User
 import com.gdsc.recyclr.domain.repository.AuthRepository
 import com.gdsc.recyclr.domain.repository.AuthStateResponse
@@ -40,7 +41,7 @@ class AuthRepositoryImpl @Inject constructor(
         return authService.signUpWithEmailAndPassword(name, email, password)
             .fold(
                 onSuccess = { Response.Success(it) },
-                onFailure = { Response.Failure(it as Exception) }
+                onFailure = { it.toFailure() }
             )
     }
 
@@ -48,7 +49,7 @@ class AuthRepositoryImpl @Inject constructor(
         return authService.sendEmailVerification()
             .fold(
                 onSuccess = { Response.Success(it) },
-                onFailure = { Response.Failure(it as Exception) }
+                onFailure = { it.toFailure() }
             )
     }
 
@@ -59,7 +60,7 @@ class AuthRepositoryImpl @Inject constructor(
         return authService.signInWithEmailAndPassword(email, password)
             .fold(
                 onSuccess = { Response.Success(it) },
-                onFailure = { Response.Failure(it as Exception) }
+                onFailure = { it.toFailure() }
             )
     }
 
@@ -67,7 +68,7 @@ class AuthRepositoryImpl @Inject constructor(
         return authService.signInWithGoogleIdToken(idToken)
             .fold(
                 onSuccess = { Response.Success(it) },
-                onFailure = { Response.Failure(it as Exception) }
+                onFailure = { it.toFailure() }
             )
     }
 
@@ -83,7 +84,7 @@ class AuthRepositoryImpl @Inject constructor(
         return authService.signInWithPhoneSmsCode(verificationId, smsCode)
             .fold(
                 onSuccess = { Response.Success(it) },
-                onFailure = { Response.Failure(it as Exception) }
+                onFailure = { it.toFailure() }
             )
     }
 
@@ -91,7 +92,7 @@ class AuthRepositoryImpl @Inject constructor(
         return authService.signInWithPhoneCredential(credential)
             .fold(
                 onSuccess = { Response.Success(it) },
-                onFailure = { Response.Failure(it as Exception) }
+                onFailure = { it.toFailure() }
             )
     }
 
@@ -99,7 +100,7 @@ class AuthRepositoryImpl @Inject constructor(
         return authService.reloadUser()
             .fold(
                 onSuccess = { Response.Success(it) },
-                onFailure = { Response.Failure(it as Exception) }
+                onFailure = { it.toFailure() }
             )
     }
 
@@ -107,7 +108,7 @@ class AuthRepositoryImpl @Inject constructor(
         return authService.sendPasswordResetEmail(email)
             .fold(
                 onSuccess = { Response.Success(it) },
-                onFailure = { Response.Failure(it as Exception) }
+                onFailure = { it.toFailure() }
             )
     }
 
@@ -115,7 +116,7 @@ class AuthRepositoryImpl @Inject constructor(
         return authService.updateProfilePhoto(photoUrl)
             .fold(
                 onSuccess = { Response.Success(it) },
-                onFailure = { Response.Failure(it as Exception) }
+                onFailure = { it.toFailure() }
             )
     }
 
@@ -123,7 +124,7 @@ class AuthRepositoryImpl @Inject constructor(
         return authService.uploadProfilePhoto(userId, bitmap)
             .fold(
                 onSuccess = { Response.Success(it) },
-                onFailure = { Response.Failure(it as Exception) }
+                onFailure = { it.toFailure() }
             )
     }
 
@@ -135,7 +136,7 @@ class AuthRepositoryImpl @Inject constructor(
         return authService.revokeAccess()
             .fold(
                 onSuccess = { Response.Success(it) },
-                onFailure = { Response.Failure(it as Exception) }
+                onFailure = { it.toFailure() }
             )
     }
 

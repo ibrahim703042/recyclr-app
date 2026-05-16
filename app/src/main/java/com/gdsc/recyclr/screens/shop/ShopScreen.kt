@@ -215,7 +215,21 @@ fun ShopScreen(
 
                     if (showDonations) {
                         Box(Modifier.padding(16.dp).fillMaxSize()) {
-                            DonationHubSection()
+                            DonationHubSection(
+                                onSupportCause = { cause ->
+                                    viewModel.redeem(
+                                        ShopItem(
+                                            id = cause.id,
+                                            title = cause.title,
+                                            price = cause.pointsCost,
+                                            description = cause.description,
+                                            category = cause.category,
+                                            imageUrl = "",
+                                            isDonation = true
+                                        )
+                                    )
+                                }
+                            )
                         }
                     } else {
                         CategoryChipRow(

@@ -1,338 +1,535 @@
 package com.gdsc.recyclr.screens.onboarding
 
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.LocalDrink
-import androidx.compose.material.icons.filled.Newspaper
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
-import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
-import com.gdsc.recyclr.R
-import com.gdsc.recyclr.components.design.OnboardingPageIndicator
-import com.gdsc.recyclr.components.design.RecyclrCategoryRow
-import com.gdsc.recyclr.components.design.WaveBand
-import com.gdsc.recyclr.ui.theme.RecyclrThemeColors
 import kotlinx.coroutines.launch
 
+// ── Brand tokens ─────────────────────────────────────────────────────────────
+private val BrandTeal       = Color(0xFF1D9E75)
+private val BrandTealLight  = Color(0xFFE1F5EE)
+private val BrandTealMid    = Color(0xFFC8EDE0)
+private val BrandTealDark   = Color(0xFF0F6E56)
+private val BrandTealDeep   = Color(0xFF085041)
+
+// ── Page model ───────────────────────────────────────────────────────────────
+private sealed interface OnboardingKind {
+    data object Intro   : OnboardingKind
+    data object Scan    : OnboardingKind
+    data object Rewards : OnboardingKind
+}
+
 private data class OnboardingPage(
-    val title: String,
+    val tag:      String,
+    val title:    String,
     val subtitle: String,
-    val kind: OnboardingPageKind,
+    val kind:     OnboardingKind,
 )
 
-@Composable
-private fun onboardingPages(): List<OnboardingPage> = listOf(
+private val pages = listOf(
     OnboardingPage(
-        title = stringResource(R.string.onboarding_title_intro),
-        subtitle = stringResource(R.string.onboarding_subtitle),
-        kind = OnboardingPageKind.Intro,
+        tag      = "Welcome to Recyclr",
+        title    = "Recycling made simple & rewarding",
+        subtitle = "Scan any item, instantly know how to recycle it, and earn points for every action you take for the planet.",
+        kind     = OnboardingKind.Intro,
     ),
     OnboardingPage(
-        title = stringResource(R.string.onboarding_title_scan),
-        subtitle = stringResource(R.string.onboarding_subtitle),
-        kind = OnboardingPageKind.Scan,
+        tag      = "Smart scanning",
+        title    = "Point. Scan. Know instantly.",
+        subtitle = "Our AI identifies any item in seconds and tells you exactly which bin it belongs in — no guessing required.",
+        kind     = OnboardingKind.Scan,
     ),
     OnboardingPage(
-        title = stringResource(R.string.onboarding_title_rewards),
-        subtitle = stringResource(R.string.onboarding_subtitle),
-        kind = OnboardingPageKind.Rewards,
+        tag      = "Earn rewards",
+        title    = "Every item recycled earns you points",
+        subtitle = "Climb the leaderboard, unlock badges, and redeem your points for real rewards. Good for you, great for the planet.",
+        kind     = OnboardingKind.Rewards,
     ),
 )
 
-private enum class OnboardingPageKind { Intro, Scan, Rewards }
-
-@OptIn(ExperimentalFoundationApi::class)
+// ── Screen ───────────────────────────────────────────────────────────────────
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
-fun OnboardingScreen(
-    onFinish: () -> Unit,
-) {
-    val pages = onboardingPages()
+fun OnboardingScreen(onFinish: () -> Unit) {
     val pagerState = rememberPagerState(pageCount = { pages.size })
-    val scope = rememberCoroutineScope()
-    val cfg = LocalConfiguration.current
-    val horizontalPadding = if (cfg.screenWidthDp < 360) 12.dp else 20.dp
-    val verticalPadding = if (cfg.screenHeightDp < 640) 16.dp else 28.dp
+    val scope      = rememberCoroutineScope()
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.primary),
+            .background(BrandTeal),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = horizontalPadding, vertical = verticalPadding),
+                .systemBarsPadding(),
         ) {
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.weight(1f),
-            ) { page ->
-                OnboardingPageContent(page = pages[page])
-            }
-
+            // ── Top Header (Logo + Skip) ──────────────────────────────────
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp, bottom = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                    .padding(horizontal = 24.dp, vertical = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                OnboardingPageIndicator(
-                    pageCount = pages.size,
-                    currentPage = pagerState.currentPage,
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                TextButton(
-                    onClick = onFinish,
-                ) {
-                    Text(
-                        text = stringResource(R.string.onboarding_skip),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                }
-                
-                FloatingActionButton(
-                    onClick = {
-                        if (pagerState.currentPage == pages.lastIndex) {
-                            onFinish()
-                        } else {
-                            scope.launch {
-                                pagerState.animateScrollToPage(pagerState.currentPage + 1)
-                            }
-                        }
-                    },
-                    containerColor = MaterialTheme.colorScheme.onPrimary,
-                    contentColor = MaterialTheme.colorScheme.primary,
-                    shape = CircleShape,
-                ) {
+                // Mini Logo
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                        contentDescription = "Next",
+                        painter = painterResource(id = com.gdsc.recyclr.R.drawable.recycle),
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(28.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "Recyclr",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
                     )
                 }
-            }
-        }
-    }
-}
 
-@Composable
-private fun OnboardingPageContent(page: OnboardingPage) {
-    val cfg = LocalConfiguration.current
-    val cardPadH = if (cfg.screenWidthDp < 360) 16.dp else 24.dp
-    val cardPadV = if (cfg.screenHeightDp < 640) 16.dp else 24.dp
-    val compactH = cfg.screenHeightDp < 700
-    // Bande vague plus basse et bornée : évite une « carte » visuelle trop haute sur grands écrans
-    val waveHeight = max(96.dp, min(176.dp, (cfg.screenHeightDp * 0.19f).dp))
-    val titleStyle =
-        if (compactH) MaterialTheme.typography.headlineSmall
-        else MaterialTheme.typography.headlineMedium
-
-    Card(
-        modifier = Modifier.fillMaxSize(),
-        shape = RoundedCornerShape(32.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = cardPadH, vertical = cardPadV),
-        ) {
-            Text(
-                text = page.title,
-                style = titleStyle,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Spacer(modifier = Modifier.height(if (compactH) 8.dp else 12.dp))
-            Text(
-                text = page.subtitle,
-                style = if (compactH) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(modifier = Modifier.height(if (compactH) 12.dp else 16.dp))
-            // Bloc illustration dimensionné au contenu, collé sous le texte ; l’espace libre reste en bas
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(),
-                contentAlignment = Alignment.TopCenter,
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.TopCenter,
-                ) {
-                    WaveBand(
-                        modifier = Modifier.align(Alignment.TopCenter),
-                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
-                        height = waveHeight,
-                    )
-                    when (page.kind) {
-                        OnboardingPageKind.Intro -> IntroIllustration(
-                            modifier = Modifier.align(Alignment.TopCenter),
-                            compact = compactH,
-                        )
-                        OnboardingPageKind.Scan -> ScanPreview(
-                            modifier = Modifier
-                                .align(Alignment.TopCenter)
-                                .padding(horizontal = 4.dp, vertical = 8.dp),
-                        )
-                        OnboardingPageKind.Rewards -> RewardPreview(
-                            modifier = Modifier.align(Alignment.TopCenter),
+                // Skip button
+                if (pagerState.currentPage != pages.lastIndex) {
+                    TextButton(onClick = onFinish) {
+                        Text(
+                            text = "Skip",
+                            color = Color.White.copy(alpha = 0.8f),
+                            style = MaterialTheme.typography.labelLarge
                         )
                     }
                 }
             }
-            Spacer(modifier = Modifier.weight(1f))
+
+            // ── Pager ─────────────────────────────────────────────────────
+            HorizontalPager(
+                state    = pagerState,
+                modifier = Modifier.weight(1f),
+            ) { index ->
+                PageCard(page = pages[index])
+            }
+
+            // ── Bottom bar ────────────────────────────────────────────────
+            BottomBar(
+                pagerState = pagerState,
+                onNext     = {
+                    if (pagerState.currentPage == pages.lastIndex) {
+                        onFinish()
+                    } else {
+                        scope.launch {
+                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                        }
+                    }
+                },
+            )
         }
     }
 }
 
+// ── Page card (white rounded card with wave + illustration + text) ────────────
 @Composable
-private fun IntroIllustration(modifier: Modifier = Modifier, compact: Boolean = false) {
-    val gap = if (compact) 10.dp else 14.dp
-    val padH = if (compact) 8.dp else 12.dp
-    Column(
-        modifier = modifier.padding(horizontal = padH),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(gap),
+private fun PageCard(page: OnboardingPage) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        shape    = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+        color    = MaterialTheme.colorScheme.surface,
+        tonalElevation = 0.dp,
     ) {
-        Row(
-            modifier = Modifier.horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(if (compact) 8.dp else 12.dp),
-        ) {
-            BinChip(label = "PLASTIC", color = Color(0xFF81C784), compact = compact)
-            BinChip(label = "GLASS", color = Color(0xFF66BB6A), compact = compact)
-            BinChip(label = "METAL", color = Color(0xFFFFD54F), compact = compact)
-            BinChip(label = "PAPER", color = Color(0xFF64B5F6), compact = compact)
-        }
-        Text(
-            text = stringResource(R.string.onboarding_intro_body),
-            textAlign = TextAlign.Center,
-            style = if (compact) MaterialTheme.typography.bodySmall else MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
+        Column(modifier = Modifier.fillMaxSize()) {
 
-@Composable
-private fun BinChip(label: String, color: Color, compact: Boolean = false) {
-    val w = if (compact) 44.dp else 50.dp
-    val h = if (compact) 52.dp else 58.dp
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(if (compact) 2.dp else 4.dp),
-    ) {
-        Box(
-            modifier = Modifier
-                .size(width = w, height = h)
-                .clip(RoundedCornerShape(8.dp))
-                .background(color),
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-    }
-}
-
-@Composable
-private fun ScanPreview(modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        RecyclrCategoryRow(
-            title = stringResource(R.string.category_plastic),
-            subtitle = stringResource(R.string.category_plastic_subtitle),
-            iconBackground = RecyclrThemeColors.categoryPlastic,
-            iconColor = RecyclrThemeColors.categoryPlasticIcon,
-            icon = Icons.Default.LocalDrink,
-            onClick = {},
-        )
-        RecyclrCategoryRow(
-            title = stringResource(R.string.category_paper),
-            subtitle = stringResource(R.string.category_paper_subtitle),
-            iconBackground = RecyclrThemeColors.categoryPaper,
-            iconColor = RecyclrThemeColors.categoryPaperIcon,
-            icon = Icons.Default.Newspaper,
-            onClick = {},
-        )
-    }
-}
-
-@Composable
-private fun RewardPreview(modifier: Modifier = Modifier) {
-    ElevatedCard(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.reward),
-                contentDescription = null,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(64.dp),
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = stringResource(R.string.onboarding_reward_earned),
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Row(verticalAlignment = Alignment.Bottom) {
-                Text(
-                    text = "106", 
-                    style = MaterialTheme.typography.displayMedium,
-                    fontWeight = FontWeight.Black,
-                    color = MaterialTheme.colorScheme.primary
+            // Wave area with illustration on top
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(240.dp),
+            ) {
+                // Back wave (lighter)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(240.dp)
+                        .clip(
+                            RoundedCornerShape(
+                                bottomStart = 64.dp,
+                                bottomEnd   = 64.dp,
+                            )
+                        )
+                        .background(BrandTealMid),
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+                // Front wave (brand light)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(210.dp)
+                        .align(Alignment.TopCenter)
+                        .clip(
+                            RoundedCornerShape(
+                                bottomStart = 80.dp,
+                                bottomEnd   = 80.dp,
+                            )
+                        )
+                        .background(BrandTealLight),
+                )
+                // Illustration
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp)
+                        .padding(horizontal = 24.dp, vertical = 16.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    when (page.kind) {
+                        OnboardingKind.Intro   -> IntroIllustration()
+                        OnboardingKind.Scan    -> ScanIllustration()
+                        OnboardingKind.Rewards -> RewardsIllustration()
+                    }
+                }
+            }
+
+            // Text content
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp, vertical = 24.dp),
+            ) {
+                // Tag line
                 Text(
-                    text = stringResource(R.string.onboarding_points),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(bottom = 8.dp),
-                    color = MaterialTheme.colorScheme.onSurface,
+                    text  = page.tag.uppercase(),
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        letterSpacing = 1.5.sp,
+                        fontWeight    = FontWeight.ExtraBold,
+                    ),
+                    color = BrandTeal,
+                )
+                Spacer(Modifier.height(12.dp))
+                // Title
+                Text(
+                    text       = page.title,
+                    style      = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color      = MaterialTheme.colorScheme.onSurface,
+                    lineHeight = 32.sp,
+                )
+                Spacer(Modifier.height(16.dp))
+                // Subtitle
+                Text(
+                    text  = page.subtitle,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 26.sp,
                 )
             }
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = stringResource(R.string.onboarding_points_last_week), 
-                style = MaterialTheme.typography.bodySmall, 
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+        }
+    }
+}
+
+// ── Bottom bar ────────────────────────────────────────────────────────────────
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@Composable
+private fun BottomBar(
+    pagerState : PagerState,
+    onNext     : () -> Unit,
+) {
+    val isLast = pagerState.currentPage == pages.lastIndex
+
+    Surface(
+        color          = MaterialTheme.colorScheme.surface,
+        tonalElevation = 0.dp,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 28.dp, vertical = 24.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            // Dot indicators
+            Row(
+                modifier             = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment    = Alignment.CenterVertically,
+            ) {
+                repeat(pages.size) { i ->
+                    PagerDot(active = i == pagerState.currentPage)
+                }
+            }
+
+            // Next / Done FAB
+            FloatingActionButton(
+                onClick        = onNext,
+                containerColor = BrandTeal,
+                contentColor   = Color.White,
+                shape          = CircleShape,
+                modifier       = Modifier.size(56.dp),
+                elevation      = FloatingActionButtonDefaults.elevation(
+                    defaultElevation = 0.dp,
+                    pressedElevation = 4.dp,
+                ),
+            ) {
+                if (isLast) {
+                    Icon(Icons.Default.Check, contentDescription = "Get started")
+                } else {
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Next")
+                }
+            }
+        }
+    }
+}
+
+// Animated dot — stretches into a pill when active
+@Composable
+private fun PagerDot(active: Boolean) {
+    val width by animateDpAsState(
+        targetValue = if (active) 28.dp else 8.dp,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "dot_width",
+    )
+    val color by animateColorAsState(
+        targetValue = if (active) BrandTeal else BrandTealMid,
+        animationSpec = tween(300),
+        label = "dot_color",
+    )
+    Box(
+        modifier = Modifier
+            .height(8.dp)
+            .width(width)
+            .clip(CircleShape)
+            .background(color),
+    )
+}
+
+// ── Illustrations ─────────────────────────────────────────────────────────────
+
+// Page 1 — coloured bin chips + category tags
+@Composable
+private fun IntroIllustration() {
+    val bins = listOf(
+        "PLASTIC" to Color(0xFF81C784),
+        "GLASS"   to Color(0xFF66BB6A),
+        "METAL"   to Color(0xFFFFD54F),
+        "PAPER"   to Color(0xFF64B5F6),
+    )
+    val tags = listOf(
+        "Plastic" to Color(0xFFE8F5E9) to Color(0xFF2E7D32),
+        "Paper"   to Color(0xFFE3F2FD) to Color(0xFF0D47A1),
+        "Metal"   to Color(0xFFFFFDE7) to Color(0xFFF57F17),
+        "Glass"   to Color(0xFFF3E5F5) to Color(0xFF6A1B9A),
+    )
+
+    Column(
+        horizontalAlignment  = Alignment.CenterHorizontally,
+        verticalArrangement  = Arrangement.spacedBy(16.dp),
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            bins.forEach { (label, color) ->
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(width = 48.dp, height = 58.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(color),
+                    )
+                    Text(
+                        text       = label,
+                        style      = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color      = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            }
+        }
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            tags.forEach { (pair, textColor) ->
+                val (label, bgColor) = pair
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(bgColor)
+                        .padding(horizontal = 10.dp, vertical = 5.dp),
+                ) {
+                    Text(
+                        text       = label,
+                        style      = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color      = textColor,
+                    )
+                }
+            }
+        }
+    }
+}
+
+// Page 2 — fake scanner frame with two category rows
+@Composable
+private fun ScanIllustration() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                width = 2.dp,
+                color = BrandTeal,
+                shape = RoundedCornerShape(16.dp),
+            )
+            .padding(16.dp),
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            ScanCategoryRow(
+                label    = "Plastic bottle",
+                subtitle = "Rinse & place in blue bin",
+                iconBg   = Color(0xFFE8F5E9),
+                iconTint = Color(0xFF2E7D32),
+                icon     = Icons.Default.LocalDrink,
+            )
+            ScanCategoryRow(
+                label    = "Newspaper",
+                subtitle = "Flatten & place in yellow bin",
+                iconBg   = Color(0xFFFFF8E1),
+                iconTint = Color(0xFFF57F17),
+                icon     = Icons.Default.Newspaper,
             )
         }
+    }
+}
+
+@Composable
+private fun ScanCategoryRow(
+    label:    String,
+    subtitle: String,
+    iconBg:   Color,
+    iconTint: Color,
+    icon:     ImageVector,
+) {
+    Surface(
+        shape = RoundedCornerShape(14.dp),
+        color = BrandTealLight,
+        tonalElevation = 0.dp,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier          = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Box(
+                modifier         = Modifier
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(iconBg),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(20.dp))
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(label,    style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                Text(subtitle, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Icon(Icons.Default.ChevronRight, contentDescription = null, tint = BrandTealMid, modifier = Modifier.size(16.dp))
+        }
+    }
+}
+
+// Page 3 — reward card
+@Composable
+private fun RewardsIllustration() {
+    Surface(
+        shape          = RoundedCornerShape(20.dp),
+        color          = BrandTealLight,
+        tonalElevation = 0.dp,
+        modifier       = Modifier.fillMaxWidth(),
+    ) {
+        Column(
+            modifier              = Modifier.padding(24.dp),
+            horizontalAlignment   = Alignment.CenterHorizontally,
+            verticalArrangement   = Arrangement.spacedBy(10.dp),
+        ) {
+            // Trophy icon circle
+            Box(
+                modifier         = Modifier
+                    .size(64.dp)
+                    .clip(CircleShape)
+                    .background(Color.White),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    Icons.Default.EmojiEvents,
+                    contentDescription = null,
+                    tint               = BrandTeal,
+                    modifier           = Modifier.size(36.dp),
+                )
+            }
+            Text(
+                text       = "POINTS EARNED",
+                style      = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp),
+                fontWeight = FontWeight.Bold,
+                color      = BrandTealDark,
+            )
+            Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    text       = "106",
+                    style      = MaterialTheme.typography.displaySmall,
+                    fontWeight = FontWeight.Black,
+                    color      = BrandTealDeep,
+                )
+                Text(
+                    text     = "pts",
+                    style    = MaterialTheme.typography.titleMedium,
+                    color    = BrandTeal,
+                    modifier = Modifier.padding(bottom = 6.dp),
+                )
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                RewardBadge(label = "+12 today",  bg = Color.White,      fg = BrandTealDark)
+                RewardBadge(label = "Level 3",    bg = BrandTealDark,    fg = BrandTealLight)
+            }
+            Text(
+                text      = "Earned last week recycling 14 items",
+                style     = MaterialTheme.typography.labelSmall,
+                color     = BrandTealDark.copy(alpha = 0.7f),
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
+}
+
+@Composable
+private fun RewardBadge(label: String, bg: Color, fg: Color) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(bg)
+            .padding(horizontal = 12.dp, vertical = 5.dp),
+    ) {
+        Text(
+            text       = label,
+            style      = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            color      = fg,
+        )
     }
 }

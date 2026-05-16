@@ -133,7 +133,9 @@ fun LeaderboardScreen(onBack: () -> Unit, viewModel: EngagementViewModel = hiltV
             viewModel.currentUserLeaderboardEntry?.let { entry ->
                 if (selectedTab == 0) {
                     Surface(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .navigationBarsPadding(),
                         tonalElevation = 8.dp,
                         shadowElevation = 8.dp,
                         color = MaterialTheme.colorScheme.surface
@@ -543,20 +545,31 @@ fun PickupScreen(onBack: () -> Unit, viewModel: EngagementViewModel = hiltViewMo
 }
 
 @Composable
-fun DonationHubSection(viewModel: EngagementViewModel = hiltViewModel()) {
+fun DonationHubSection(
+    onSupportCause: (DonationCause) -> Unit = {},
+    viewModel: EngagementViewModel = hiltViewModel()
+) {
     when (val response = viewModel.donationsResponse) {
         is Response.Loading -> Box(Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
         is Response.Failure -> Text(response.e.message ?: stringResource(R.string.error_generic))
         is Response.Success -> {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                response.data.orEmpty().forEach { cause -> DonationCard(cause) }
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                response.data.orEmpty().forEach { cause -> 
+                    DonationCard(cause, onSupportCause) 
+                }
+                Spacer(modifier = Modifier.height(32.dp))
             }
         }
     }
 }
 
 @Composable
-private fun DonationCard(cause: DonationCause) {
+private fun DonationCard(cause: DonationCause, onSupport: (DonationCause) -> Unit) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
@@ -618,7 +631,7 @@ private fun DonationCard(cause: DonationCause) {
                 Spacer(modifier = Modifier.height(8.dp))
                 
                 Button(
-                    onClick = { /* TODO */ },
+                    onClick = { onSupport(cause) },
                     modifier = Modifier.fillMaxWidth().height(52.dp),
                     shape = MaterialTheme.shapes.large
                 ) {

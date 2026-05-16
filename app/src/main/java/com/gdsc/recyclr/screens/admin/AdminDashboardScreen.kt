@@ -16,10 +16,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.gdsc.recyclr.components.composable.BasicTopBar
+import com.gdsc.recyclr.domain.model.Response
 
 @Composable
-fun AdminDashboardScreen(onBack: () -> Unit) {
+fun AdminDashboardScreen(
+    onBack: () -> Unit,
+    viewModel: AdminViewModel = hiltViewModel()
+) {
+    val stats = (viewModel.statsResponse as? Response.Success)?.data ?: emptyMap()
+    
     Scaffold(
         topBar = { BasicTopBar(title = "Admin Dashboard", onBack = onBack) }
     ) { padding ->
@@ -35,8 +42,18 @@ fun AdminDashboardScreen(onBack: () -> Unit) {
             Text("Overview", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                AdminStatCard("Total Users", "1.2k", Icons.Default.Group, Modifier.weight(1f))
-                AdminStatCard("New Scans", "84", Icons.Default.Summarize, Modifier.weight(1f))
+                AdminStatCard(
+                    label = "Total Users", 
+                    value = stats["totalUsers"]?.toString() ?: "—", 
+                    icon = Icons.Default.Group, 
+                    modifier = Modifier.weight(1f)
+                )
+                AdminStatCard(
+                    label = "New Scans", 
+                    value = stats["totalScans"]?.toString() ?: "—", 
+                    icon = Icons.Default.Summarize, 
+                    modifier = Modifier.weight(1f)
+                )
             }
             
             Text("Moderation", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
@@ -44,7 +61,7 @@ fun AdminDashboardScreen(onBack: () -> Unit) {
             AdminActionItem(
                 icon = Icons.Default.Report,
                 title = "Illegal Dumping Reports",
-                subtitle = "5 pending reviews",
+                subtitle = "${stats["pendingReports"] ?: 0} pending reviews",
                 onClick = {}
             )
             

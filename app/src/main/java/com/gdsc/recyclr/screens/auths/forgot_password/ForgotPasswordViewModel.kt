@@ -19,6 +19,10 @@ class ForgotPasswordViewModel @Inject constructor(
 ): ViewModel() {
     var sendPasswordResetEmailResponse by mutableStateOf<SendPasswordResetEmailResponse>(Success(false))
 
+    fun resetSendPasswordResetEmailResponse() {
+        sendPasswordResetEmailResponse = Success(false)
+    }
+
     fun sendPasswordResetEmail(email: String) = viewModelScope.launch {
         sendPasswordResetEmailResponse = Loading
         sendPasswordResetEmailResponse = repo.sendPasswordResetEmail(email)
