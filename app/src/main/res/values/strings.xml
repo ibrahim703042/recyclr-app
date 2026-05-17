@@ -12,6 +12,7 @@
     <string name="nav_map">Map</string>
     <string name="nav_stats">Stats</string>
     <string name="nav_rewards">Rewards</string>
+    <string name="nav_tips">Tips</string>
     <string name="home_details_link">Details &gt;</string>
 
     <string name="theme_toggle">Toggle theme</string>

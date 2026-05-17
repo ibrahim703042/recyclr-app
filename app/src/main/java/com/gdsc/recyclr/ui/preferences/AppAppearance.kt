@@ -21,12 +21,13 @@ val LocalAppAppearance = staticCompositionLocalOf<AppAppearanceState> {
     error("AppAppearanceState is not provided")
 }
 
-@Composable
-fun resolveIsDarkTheme(themeMode: AppThemeMode): Boolean {
-    val systemDark = isSystemInDarkTheme()
-    return when (themeMode) {
+fun resolveIsDarkThemeForMode(themeMode: AppThemeMode, systemDark: Boolean): Boolean =
+    when (themeMode) {
         AppThemeMode.SYSTEM -> systemDark
         AppThemeMode.LIGHT -> false
         AppThemeMode.DARK -> true
     }
-}
+
+@Composable
+fun resolveIsDarkTheme(themeMode: AppThemeMode): Boolean =
+    resolveIsDarkThemeForMode(themeMode, isSystemInDarkTheme())
