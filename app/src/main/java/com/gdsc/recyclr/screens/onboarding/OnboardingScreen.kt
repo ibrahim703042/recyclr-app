@@ -391,6 +391,8 @@ private fun ScanIllustration() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White)
             .border(
                 width = 2.dp,
                 color = BrandTeal,
@@ -454,26 +456,31 @@ private fun ScanCategoryRow(
     }
 }
 
-// Page 3 — reward card
+// Page 3 — reward card (same bordered white card as ScanIllustration)
 @Composable
 private fun RewardsIllustration() {
-    Surface(
-        shape          = RoundedCornerShape(20.dp),
-        color          = BrandTealLight,
-        tonalElevation = 0.dp,
-        modifier       = Modifier.fillMaxWidth(),
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White)
+            .border(
+                width = 2.dp,
+                color = BrandTeal,
+                shape = RoundedCornerShape(16.dp),
+            )
+            .padding(24.dp),
+        contentAlignment = Alignment.Center,
     ) {
         Column(
-            modifier              = Modifier.padding(24.dp),
-            horizontalAlignment   = Alignment.CenterHorizontally,
-            verticalArrangement   = Arrangement.spacedBy(10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            // Trophy icon circle
             Box(
                 modifier         = Modifier
                     .size(64.dp)
                     .clip(CircleShape)
-                    .background(Color.White),
+                    .background(BrandTealLight),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
@@ -489,7 +496,10 @@ private fun RewardsIllustration() {
                 fontWeight = FontWeight.Bold,
                 color      = BrandTealDark,
             )
-            Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(
+                verticalAlignment     = Alignment.Bottom,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
                 Text(
                     text       = "106",
                     style      = MaterialTheme.typography.displaySmall,
@@ -504,13 +514,13 @@ private fun RewardsIllustration() {
                 )
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                RewardBadge(label = "+12 today",  bg = Color.White,      fg = BrandTealDark)
-                RewardBadge(label = "Level 3",    bg = BrandTealDark,    fg = BrandTealLight)
+                RewardBadge(label = "+12 today", bg = BrandTealLight, fg = BrandTealDark)
+                RewardBadge(label = "Level 3",   bg = BrandTealDark,  fg = BrandTealLight)
             }
             Text(
                 text      = "Earned last week recycling 14 items",
                 style     = MaterialTheme.typography.labelSmall,
-                color     = BrandTealDark.copy(alpha = 0.7f),
+                color     = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
         }
