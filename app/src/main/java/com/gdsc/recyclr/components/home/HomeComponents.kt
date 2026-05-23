@@ -36,6 +36,12 @@ import com.gdsc.recyclr.ui.theme.GreenHero
 import kotlinx.coroutines.delay
 import java.util.concurrent.TimeUnit
 
+// Challenge / leaderboard carousel — fixed slot so pages don’t jump when swiping
+private val HomeChallengeCarouselHeight = 192.dp
+private val HomeChallengeCarouselSpacing  = 12.dp
+private val HomeCarouselBodyText          = Color(0xFF3D4A43)
+private val HomeCarouselCaptionText       = Color(0xFF0F6E56)
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Palette
 // ─────────────────────────────────────────────────────────────────────────────
@@ -575,51 +581,74 @@ fun HomeWeeklyChallengeCard(
         tonalElevation = 0.dp,
         border         = BorderStroke(0.5.dp, LocalHomeRedesignPalette.current.chipStroke),
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier              = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment     = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text       = challenge.title,
-                    style      = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color      = LocalHomeRedesignPalette.current.onCard,
-                    modifier   = Modifier.weight(1f),
-                )
-                Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = LocalHomeRedesignPalette.current.softAccent,
+        Column(
+            modifier            = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(
+                    modifier              = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment     = Alignment.Top,
                 ) {
                     Text(
-                        text       = stringResource(R.string.home_challenge_pts, challenge.rewardPoints),
-                        style      = MaterialTheme.typography.labelMedium,
+                        text       = challenge.title,
+                        style      = MaterialTheme.typography.titleSmall.copy(
+                            fontSize   = 15.sp,
+                            lineHeight = 20.sp,
+                        ),
                         fontWeight = FontWeight.Bold,
-                        color      = LocalHomeRedesignPalette.current.primary,
-                        modifier   = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        color      = LocalHomeRedesignPalette.current.onCard,
+                        modifier   = Modifier.weight(1f),
+                        maxLines   = 2,
+                        overflow   = TextOverflow.Ellipsis,
                     )
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = LocalHomeRedesignPalette.current.softAccent,
+                    ) {
+                        Text(
+                            text       = stringResource(R.string.home_challenge_pts, challenge.rewardPoints),
+                            style      = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp),
+                            fontWeight = FontWeight.Bold,
+                            color      = HomeCarouselCaptionText,
+                            modifier   = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        )
+                    }
                 }
+                Text(
+                    text     = challenge.description,
+                    style    = MaterialTheme.typography.bodySmall.copy(
+                        fontSize   = 13.sp,
+                        lineHeight = 18.sp,
+                    ),
+                    color    = HomeCarouselBodyText,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
-            Spacer(Modifier.height(6.dp))
-            Text(
-                text  = challenge.description,
-                style = MaterialTheme.typography.bodySmall,
-                color = LocalHomeRedesignPalette.current.muted,
-            )
-            Spacer(Modifier.height(14.dp))
-            LinearProgressIndicator(
-                progress    = { progress },
-                modifier    = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
-                color       = LocalHomeRedesignPalette.current.primary,
-                trackColor  = LocalHomeRedesignPalette.current.progressTrack,
-            )
-            Spacer(Modifier.height(6.dp))
-            Text(
-                text  = stringResource(R.string.home_weekly_challenge_progress, challenge.currentScans, challenge.targetScans, challenge.endsInDays),
-                style = MaterialTheme.typography.labelSmall,
-                color = LocalHomeRedesignPalette.current.muted,
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                LinearProgressIndicator(
+                    progress   = { progress },
+                    modifier   = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
+                    color      = LocalHomeRedesignPalette.current.primary,
+                    trackColor = LocalHomeRedesignPalette.current.progressTrack,
+                )
+                Text(
+                    text  = stringResource(
+                        R.string.home_weekly_challenge_progress,
+                        challenge.currentScans,
+                        challenge.targetScans,
+                        challenge.endsInDays,
+                    ),
+                    style = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp),
+                    color = HomeCarouselBodyText,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
     }
 }
@@ -646,25 +675,46 @@ fun HomeChallengeLeaderboardCarousel(
     }
 
     Column(modifier = modifier.fillMaxWidth()) {
-        HorizontalPager(state = pagerState, modifier = Modifier.fillMaxWidth()) { page ->
+        HorizontalPager(
+            state           = pagerState,
+            modifier        = Modifier
+                .fillMaxWidth()
+                .height(HomeChallengeCarouselHeight),
+            contentPadding  = PaddingValues(end = HomeChallengeCarouselSpacing),
+            pageSpacing     = HomeChallengeCarouselSpacing,
+        ) { page ->
             when (page) {
-                0 -> HomeWeeklyChallengeCard(challenge = challenge, onClick = onOpenChallenge, modifier = Modifier.fillMaxWidth())
-                else -> HomeLeaderboardPreviewCard(entries = entries, onOpenLeaderboard = onOpenLeaderboard, modifier = Modifier.fillMaxWidth())
+                0 -> HomeWeeklyChallengeCard(
+                    challenge = challenge,
+                    onClick   = onOpenChallenge,
+                    modifier  = Modifier.fillMaxSize(),
+                )
+                else -> HomeLeaderboardPreviewCard(
+                    entries           = entries,
+                    onOpenLeaderboard = onOpenLeaderboard,
+                    modifier          = Modifier.fillMaxSize(),
+                )
             }
         }
         Spacer(Modifier.height(8.dp))
-        // Page dots
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
             repeat(2) { i ->
                 val active = i == pagerState.currentPage
-                val width  by animateDpAsState(if (active) 16.dp else 6.dp, spring(Spring.DampingRatioMediumBouncy), label = "dot$i")
+                val width by animateDpAsState(
+                    targetValue   = if (active) 20.dp else 6.dp,
+                    animationSpec = spring(Spring.DampingRatioMediumBouncy),
+                    label         = "challenge_dot_$i",
+                )
                 Box(
                     modifier = Modifier
                         .padding(horizontal = 3.dp)
                         .height(6.dp)
                         .width(width)
                         .clip(CircleShape)
-                        .background(if (active) LocalHomeRedesignPalette.current.primary else LocalHomeRedesignPalette.current.muted.copy(alpha = 0.35f))
+                        .background(
+                            if (active) LocalHomeRedesignPalette.current.primary
+                            else LocalHomeRedesignPalette.current.muted.copy(alpha = 0.35f),
+                        ),
                 )
             }
         }
@@ -692,17 +742,34 @@ fun HomeLeaderboardPreviewCard(
         tonalElevation = 0.dp,
         border         = BorderStroke(0.5.dp, LocalHomeRedesignPalette.current.chipStroke),
     ) {
-        Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 14.dp)) {
+        Column(
+            modifier            = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
+        ) {
             Row(
-                modifier              = Modifier.fillMaxWidth(),
+                modifier              = Modifier
+                    .fillMaxWidth()
+                    .height(28.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment     = Alignment.CenterVertically,
             ) {
-                Text(stringResource(R.string.home_leaderboard), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = LocalHomeRedesignPalette.current.onCard)
-                TextButton(onClick = onOpenLeaderboard) {
-                    Text(stringResource(R.string.home_view_all), style = MaterialTheme.typography.labelMedium, color = LocalHomeRedesignPalette.current.primary)
-                }
+                Text(
+                    text       = stringResource(R.string.home_leaderboard),
+                    style      = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp),
+                    fontWeight = FontWeight.Bold,
+                    color      = LocalHomeRedesignPalette.current.onCard,
+                )
+                Text(
+                    text       = stringResource(R.string.home_view_all),
+                    style      = MaterialTheme.typography.labelMedium.copy(fontSize = 13.sp),
+                    fontWeight = FontWeight.SemiBold,
+                    color      = HomeCarouselCaptionText,
+                    modifier   = Modifier.clickable(onClick = onOpenLeaderboard),
+                )
             }
+            Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
             entries.take(3).forEachIndexed { index, entry ->
                 val isYou = entry.isCurrentUser
                 Row(
@@ -715,7 +782,7 @@ fun HomeLeaderboardPreviewCard(
                                 .border(1.dp, LocalHomeRedesignPalette.current.primary.copy(alpha = 0.35f), RoundedCornerShape(10.dp))
                             else Modifier
                         )
-                        .padding(vertical = 8.dp, horizontal = if (isYou) 8.dp else 0.dp),
+                        .padding(vertical = 5.dp, horizontal = if (isYou) 8.dp else 0.dp),
                     verticalAlignment     = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
@@ -741,21 +808,22 @@ fun HomeLeaderboardPreviewCard(
                     }
                     Text(
                         text       = if (isYou) stringResource(R.string.home_leaderboard_you) else entry.name,
-                        style      = MaterialTheme.typography.bodySmall,
-                        fontWeight = if (isYou) FontWeight.Bold else FontWeight.Normal,
-                        color      = if (isYou) LocalHomeRedesignPalette.current.primary else LocalHomeRedesignPalette.current.onCard,
+                        style      = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
+                        fontWeight = if (isYou) FontWeight.Bold else FontWeight.Medium,
+                        color      = if (isYou) HomeCarouselCaptionText else LocalHomeRedesignPalette.current.onCard,
                         modifier   = Modifier.weight(1f),
                         maxLines   = 1,
                         overflow   = TextOverflow.Ellipsis,
                     )
                     Text(
                         text       = stringResource(R.string.home_leaderboard_pts, entry.points),
-                        style      = MaterialTheme.typography.labelMedium,
+                        style      = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp),
                         fontWeight = FontWeight.SemiBold,
                         color      = LocalHomeRedesignPalette.current.onCard,
                     )
                 }
                 if (index < 2) HorizontalDivider(thickness = 0.5.dp, color = LocalHomeRedesignPalette.current.divider)
+            }
             }
         }
     }
