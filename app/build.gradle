@@ -25,41 +25,50 @@ android {
         versionCode 1
         versionName "1.0"
 
+        multiDexEnabled true
+
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary true
         }
 
-        // Allow debug builds to compile even if local.properties key is missing.
-        // Provide a real key via secrets plugin/local.properties for actual map usage.
         manifestPlaceholders = [GOOGLE_MAPS_API_KEY: (project.findProperty("GOOGLE_MAPS_API_KEY") ?: "")]
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            minifyEnabled false
+            // Optional: Enable multidex support for older devices if needed
         }
     }
     
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
+        coreLibraryDesugaringEnabled true
     }
 
     buildFeatures {
         compose true
     }
 
-
     packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
+            excludes += 'META-INF/versions/9/previous-compilation-data.bin'
         }
     }
 }
 
 dependencies {
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
     implementation 'com.google.firebase:firebase-database:22.0.1'
 
     // Compose BOM (Bill of Materials) - manages Compose versions
