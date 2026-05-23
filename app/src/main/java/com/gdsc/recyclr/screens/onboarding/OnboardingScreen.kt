@@ -17,12 +17,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
@@ -33,6 +33,15 @@ private val BrandTealLight  = Color(0xFFE1F5EE)
 private val BrandTealMid    = Color(0xFFC8EDE0)
 private val BrandTealDark   = Color(0xFF0F6E56)
 private val BrandTealDeep   = Color(0xFF085041)
+
+// Fixed layout slots — keeps every page aligned when Skip hides on the last step
+private val OnboardingHeaderHeight      = 56.dp
+private val OnboardingSkipSlotWidth     = 72.dp
+private val OnboardingIllustrationHeight = 240.dp
+private val OnboardingIllustrationSlot  = 188.dp
+private val OnboardingCardHeight        = 172.dp
+private val OnboardingTitleMinLines     = 3
+private val OnboardingSubtitleMinLines  = 4
 
 // ── Page model ───────────────────────────────────────────────────────────────
 private sealed interface OnboardingKind {
@@ -86,38 +95,47 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                 .fillMaxSize()
                 .systemBarsPadding(),
         ) {
-            // ── Top Header (Logo + Skip) ──────────────────────────────────
+            // ── Top Header (Logo + Skip) — Skip slot always reserved ───────
+            val showSkip = pagerState.currentPage != pages.lastIndex
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 16.dp),
+                    .height(OnboardingHeaderHeight)
+                    .padding(horizontal = 24.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                // Mini Logo
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         painter = painterResource(id = com.gdsc.recyclr.R.drawable.recycle),
                         contentDescription = null,
                         tint = Color.White,
-                        modifier = Modifier.size(28.dp)
+                        modifier = Modifier.size(28.dp),
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
                         text = "Recyclr",
                         style = MaterialTheme.typography.titleMedium,
                         color = Color.White,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
                     )
                 }
 
-                // Skip button
-                if (pagerState.currentPage != pages.lastIndex) {
-                    TextButton(onClick = onFinish) {
+                Box(
+                    modifier = Modifier
+                        .width(OnboardingSkipSlotWidth)
+                        .fillMaxHeight(),
+                    contentAlignment = Alignment.CenterEnd,
+                ) {
+                    TextButton(
+                        onClick = onFinish,
+                        enabled = showSkip,
+                        modifier = Modifier.alpha(if (showSkip) 1f else 0f),
+                    ) {
                         Text(
                             text = "Skip",
                             color = Color.White.copy(alpha = 0.8f),
-                            style = MaterialTheme.typography.labelLarge
+                            style = MaterialTheme.typography.labelLarge,
                         )
                     }
                 }
@@ -163,13 +181,13 @@ private fun PageCard(page: OnboardingPage) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(240.dp),
+                    .height(OnboardingIllustrationHeight),
             ) {
                 // Back wave (lighter)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(240.dp)
+                        .height(OnboardingIllustrationHeight)
                         .clip(
                             RoundedCornerShape(
                                 bottomStart = 64.dp,
@@ -192,12 +210,13 @@ private fun PageCard(page: OnboardingPage) {
                         )
                         .background(BrandTealLight),
                 )
-                // Illustration
+                // Illustration — fixed slot so every page aligns the same
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(220.dp)
-                        .padding(horizontal = 24.dp, vertical = 16.dp),
+                        .height(OnboardingIllustrationSlot)
+                        .padding(horizontal = 24.dp)
+                        .align(Alignment.Center),
                     contentAlignment = Alignment.Center,
                 ) {
                     when (page.kind) {
@@ -211,6 +230,7 @@ private fun PageCard(page: OnboardingPage) {
             // Text content
             Column(
                 modifier = Modifier
+                    .weight(1f)
                     .fillMaxWidth()
                     .padding(horizontal = 32.dp, vertical = 24.dp),
             ) {
@@ -231,6 +251,8 @@ private fun PageCard(page: OnboardingPage) {
                     fontWeight = FontWeight.Bold,
                     color      = MaterialTheme.colorScheme.onSurface,
                     lineHeight = 32.sp,
+                    minLines   = OnboardingTitleMinLines,
+                    maxLines   = OnboardingTitleMinLines,
                 )
                 Spacer(Modifier.height(16.dp))
                 // Subtitle
@@ -239,6 +261,8 @@ private fun PageCard(page: OnboardingPage) {
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 26.sp,
+                    minLines = OnboardingSubtitleMinLines,
+                    maxLines = OnboardingSubtitleMinLines,
                 )
             }
         }
@@ -261,7 +285,8 @@ private fun BottomBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 28.dp, vertical = 24.dp),
+                .height(104.dp)
+                .padding(horizontal = 28.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             // Dot indicators
@@ -391,6 +416,7 @@ private fun ScanIllustration() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .height(OnboardingCardHeight)
             .clip(RoundedCornerShape(16.dp))
             .background(Color.White)
             .border(
@@ -399,6 +425,7 @@ private fun ScanIllustration() {
                 shape = RoundedCornerShape(16.dp),
             )
             .padding(16.dp),
+        contentAlignment = Alignment.Center,
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             ScanCategoryRow(
@@ -462,6 +489,7 @@ private fun RewardsIllustration() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .height(OnboardingCardHeight)
             .clip(RoundedCornerShape(16.dp))
             .background(Color.White)
             .border(
@@ -469,16 +497,16 @@ private fun RewardsIllustration() {
                 color = BrandTeal,
                 shape = RoundedCornerShape(16.dp),
             )
-            .padding(24.dp),
+            .padding(16.dp),
         contentAlignment = Alignment.Center,
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             Box(
                 modifier         = Modifier
-                    .size(64.dp)
+                    .size(52.dp)
                     .clip(CircleShape)
                     .background(BrandTealLight),
                 contentAlignment = Alignment.Center,
@@ -487,7 +515,7 @@ private fun RewardsIllustration() {
                     Icons.Default.EmojiEvents,
                     contentDescription = null,
                     tint               = BrandTeal,
-                    modifier           = Modifier.size(36.dp),
+                    modifier           = Modifier.size(30.dp),
                 )
             }
             Text(
@@ -502,27 +530,21 @@ private fun RewardsIllustration() {
             ) {
                 Text(
                     text       = "106",
-                    style      = MaterialTheme.typography.displaySmall,
+                    style      = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Black,
                     color      = BrandTealDeep,
                 )
                 Text(
                     text     = "pts",
-                    style    = MaterialTheme.typography.titleMedium,
+                    style    = MaterialTheme.typography.titleSmall,
                     color    = BrandTeal,
-                    modifier = Modifier.padding(bottom = 6.dp),
+                    modifier = Modifier.padding(bottom = 4.dp),
                 )
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 RewardBadge(label = "+12 today", bg = BrandTealLight, fg = BrandTealDark)
                 RewardBadge(label = "Level 3",   bg = BrandTealDark,  fg = BrandTealLight)
             }
-            Text(
-                text      = "Earned last week recycling 14 items",
-                style     = MaterialTheme.typography.labelSmall,
-                color     = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-            )
         }
     }
 }
