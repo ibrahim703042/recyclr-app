@@ -33,15 +33,18 @@ private val BrandTealLight  = Color(0xFFE1F5EE)
 private val BrandTealMid    = Color(0xFFC8EDE0)
 private val BrandTealDark   = Color(0xFF0F6E56)
 private val BrandTealDeep   = Color(0xFF085041)
+private val OnboardingTextPrimary   = Color(0xFF1A1A1A)
+private val OnboardingTextBody      = Color(0xFF3D4A43)
+private val OnboardingTextCaption   = Color(0xFF0F6E56)
 
 // Fixed layout slots — keeps every page aligned when Skip hides on the last step
-private val OnboardingHeaderHeight      = 56.dp
-private val OnboardingSkipSlotWidth     = 72.dp
-private val OnboardingIllustrationHeight = 240.dp
-private val OnboardingIllustrationSlot  = 188.dp
-private val OnboardingCardHeight        = 172.dp
-private val OnboardingTitleMinLines     = 3
-private val OnboardingSubtitleMinLines  = 4
+private val OnboardingHeaderHeight       = 56.dp
+private val OnboardingSkipSlotWidth      = 72.dp
+private val OnboardingIllustrationHeight   = 240.dp
+private val OnboardingIllustrationSlot     = 188.dp
+private val OnboardingCardHeight           = 184.dp
+private val OnboardingTitleMinLines        = 2
+private val OnboardingSubtitleMinLines     = 3
 
 // ── Page model ───────────────────────────────────────────────────────────────
 private sealed interface OnboardingKind {
@@ -237,32 +240,36 @@ private fun PageCard(page: OnboardingPage) {
                 // Tag line
                 Text(
                     text  = page.tag.uppercase(),
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        letterSpacing = 1.5.sp,
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontSize      = 12.sp,
+                        letterSpacing = 1.2.sp,
                         fontWeight    = FontWeight.ExtraBold,
+                        lineHeight    = 16.sp,
                     ),
-                    color = BrandTeal,
+                    color = OnboardingTextCaption,
                 )
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(10.dp))
                 // Title
                 Text(
                     text       = page.title,
-                    style      = MaterialTheme.typography.headlineMedium,
+                    style      = MaterialTheme.typography.headlineMedium.copy(
+                        fontSize   = 26.sp,
+                        lineHeight = 32.sp,
+                    ),
                     fontWeight = FontWeight.Bold,
-                    color      = MaterialTheme.colorScheme.onSurface,
-                    lineHeight = 32.sp,
+                    color      = OnboardingTextPrimary,
                     minLines   = OnboardingTitleMinLines,
-                    maxLines   = OnboardingTitleMinLines,
                 )
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(12.dp))
                 // Subtitle
                 Text(
                     text  = page.subtitle,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    lineHeight = 26.sp,
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontSize   = 16.sp,
+                        lineHeight = 24.sp,
+                    ),
+                    color    = OnboardingTextBody,
                     minLines = OnboardingSubtitleMinLines,
-                    maxLines = OnboardingSubtitleMinLines,
                 )
             }
         }
@@ -380,9 +387,9 @@ private fun IntroIllustration() {
                     )
                     Text(
                         text       = label,
-                        style      = MaterialTheme.typography.labelSmall,
+                        style      = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
                         fontWeight = FontWeight.Bold,
-                        color      = MaterialTheme.colorScheme.onSurface,
+                        color      = OnboardingTextPrimary,
                     )
                 }
             }
@@ -475,8 +482,17 @@ private fun ScanCategoryRow(
                 Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(20.dp))
             }
             Column(modifier = Modifier.weight(1f)) {
-                Text(label,    style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
-                Text(subtitle, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    text       = label,
+                    style      = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color      = OnboardingTextPrimary,
+                )
+                Text(
+                    text  = subtitle,
+                    style = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp),
+                    color = OnboardingTextBody,
+                )
             }
             Icon(Icons.Default.ChevronRight, contentDescription = null, tint = BrandTealMid, modifier = Modifier.size(16.dp))
         }
@@ -501,12 +517,13 @@ private fun RewardsIllustration() {
         contentAlignment = Alignment.Center,
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+            modifier              = Modifier.fillMaxWidth(),
+            horizontalAlignment   = Alignment.CenterHorizontally,
+            verticalArrangement   = Arrangement.spacedBy(8.dp),
         ) {
             Box(
                 modifier         = Modifier
-                    .size(52.dp)
+                    .size(48.dp)
                     .clip(CircleShape)
                     .background(BrandTealLight),
                 contentAlignment = Alignment.Center,
@@ -515,14 +532,17 @@ private fun RewardsIllustration() {
                     Icons.Default.EmojiEvents,
                     contentDescription = null,
                     tint               = BrandTeal,
-                    modifier           = Modifier.size(30.dp),
+                    modifier           = Modifier.size(28.dp),
                 )
             }
             Text(
                 text       = "POINTS EARNED",
-                style      = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp),
+                style      = MaterialTheme.typography.labelMedium.copy(
+                    letterSpacing = 1.sp,
+                    fontSize      = 11.sp,
+                ),
                 fontWeight = FontWeight.Bold,
-                color      = BrandTealDark,
+                color      = OnboardingTextCaption,
             )
             Row(
                 verticalAlignment     = Alignment.Bottom,
@@ -530,20 +550,23 @@ private fun RewardsIllustration() {
             ) {
                 Text(
                     text       = "106",
-                    style      = MaterialTheme.typography.headlineLarge,
+                    style      = MaterialTheme.typography.headlineLarge.copy(fontSize = 32.sp),
                     fontWeight = FontWeight.Black,
                     color      = BrandTealDeep,
                 )
                 Text(
                     text     = "pts",
-                    style    = MaterialTheme.typography.titleSmall,
-                    color    = BrandTeal,
+                    style    = MaterialTheme.typography.titleMedium.copy(fontSize = 16.sp),
+                    color    = BrandTealDark,
                     modifier = Modifier.padding(bottom = 4.dp),
                 )
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                RewardBadge(label = "+12 today", bg = BrandTealLight, fg = BrandTealDark)
-                RewardBadge(label = "Level 3",   bg = BrandTealDark,  fg = BrandTealLight)
+            Row(
+                modifier              = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+            ) {
+                RewardBadge(label = "+12", bg = BrandTealLight, fg = BrandTealDark)
+                RewardBadge(label = "Lvl 3", bg = BrandTealDark, fg = BrandTealLight)
             }
         }
     }
@@ -555,11 +578,11 @@ private fun RewardBadge(label: String, bg: Color, fg: Color) {
         modifier = Modifier
             .clip(RoundedCornerShape(12.dp))
             .background(bg)
-            .padding(horizontal = 12.dp, vertical = 5.dp),
+            .padding(horizontal = 14.dp, vertical = 6.dp),
     ) {
         Text(
             text       = label,
-            style      = MaterialTheme.typography.labelSmall,
+            style      = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp),
             fontWeight = FontWeight.Bold,
             color      = fg,
         )
