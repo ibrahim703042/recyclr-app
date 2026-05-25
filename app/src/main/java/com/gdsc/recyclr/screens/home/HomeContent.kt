@@ -96,6 +96,17 @@ fun HomeContent(
     val points  = impact?.pointsBalance ?: 0
     val trees   = impact?.treesEquivalent ?: 0
 
+    var visibleLiveActivity by remember { mutableStateOf<LiveActivity?>(null) }
+    LaunchedEffect(latestLiveActivity?.userName, latestLiveActivity?.itemType, latestLiveActivity?.timestampMillis) {
+        val activity = latestLiveActivity ?: run {
+            visibleLiveActivity = null
+            return@LaunchedEffect
+        }
+        visibleLiveActivity = activity
+        delay(10_000)
+        visibleLiveActivity = null
+    }
+
     HomeRedesignThemeProvider {
         Box(
             modifier = Modifier
@@ -116,7 +127,7 @@ fun HomeContent(
                         userName                = userName,
                         photoUrl                = photoUrl,
                         unreadNotificationCount = unreadNotificationCount,
-                        liveActivity            = latestLiveActivity,
+                        liveActivity            = visibleLiveActivity,
                         onNotificationClick     = onOpenNotifications,
                         onProfileClick          = onOpenProfile,
                     )
@@ -143,6 +154,18 @@ fun HomeContent(
                             .offset(y = (-10).dp)
                             .padding(horizontal = 16.dp)
                             .padding(bottom = 12.dp),
+                    )
+                }
+
+                // Quick Action Buttons
+                item(key = "quick_actions") {
+                    HomeQuickActionsRow(
+                        onScan = onOpenScan,
+                        onMap = onOpenMap,
+                        onPickup = onOpenPickup,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .padding(bottom = 16.dp)
                     )
                 }
 

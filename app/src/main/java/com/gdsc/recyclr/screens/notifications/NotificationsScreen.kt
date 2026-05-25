@@ -58,6 +58,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gdsc.recyclr.R
+import com.gdsc.recyclr.components.design.RecyclrLayout
+import com.gdsc.recyclr.components.design.recyclrContentWidth
 import com.gdsc.recyclr.domain.model.AppNotification
 import com.gdsc.recyclr.push.RecyclrNotificationChannels
 import java.text.DateFormat
@@ -126,10 +128,12 @@ fun NotificationsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
-            contentPadding = PaddingValues(16.dp),
+            contentPadding = PaddingValues(RecyclrLayout.ScreenPadding),
             verticalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             item {
+                Box(Modifier.recyclrContentWidth()) {
                 PushPermissionCard(
                     pushGranted = pushGranted,
                     onRequestPermission = {
@@ -146,9 +150,11 @@ fun NotificationsScreen(
                         context.startActivity(intent)
                     },
                 )
+                }
             }
 
             item {
+                Box(Modifier.recyclrContentWidth()) {
                 Card(
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
@@ -187,19 +193,23 @@ fun NotificationsScreen(
                         )
                     }
                 }
+                }
             }
 
             item {
+                Box(Modifier.recyclrContentWidth()) {
                 Text(
                     text = stringResource(R.string.notifications_types_hint),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
                 )
+                }
             }
 
             if (items.isEmpty()) {
                 item {
+                    Box(Modifier.recyclrContentWidth()) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -212,13 +222,16 @@ fun NotificationsScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
+                    }
                 }
             } else {
                 items(items, key = { it.id }) { n ->
+                    Box(Modifier.recyclrContentWidth()) {
                     NotificationRowCard(
                         notification = n,
                         onClick = { viewModel.markRead(n.id) },
                     )
+                    }
                 }
             }
         }

@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.gdsc.recyclr.components.design.RecyclrLayout
 import com.gdsc.recyclr.domain.model.ChatMessage
 import com.gdsc.recyclr.domain.model.ChatMessageType
 import java.text.DateFormat
@@ -459,7 +460,7 @@ private fun TextBubble(msg: ChatMessage, isMine: Boolean, time: String) {
         bottomStart = if (isMine) 18.dp else 4.dp,
         bottomEnd = if (isMine) 4.dp else 18.dp,
     )
-    Surface(color = bgColor, shape = shape, tonalElevation = 0.dp, modifier = Modifier.widthIn(max = 300.dp)) {
+    Surface(color = bgColor, shape = shape, tonalElevation = 0.dp, modifier = Modifier.widthIn(max = RecyclrLayout.ChatBubbleMaxWidth)) {
         Column(Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
             Text(msg.body, style = MaterialTheme.typography.bodyMedium, color = textColor, lineHeight = 20.sp)
             Spacer(Modifier.height(4.dp))
@@ -478,7 +479,7 @@ private fun ImageBubble(msg: ChatMessage, isMine: Boolean, time: String) {
         bottomStart = if (isMine) 16.dp else 4.dp,
         bottomEnd = if (isMine) 4.dp else 16.dp,
     )
-    Surface(color = bgColor, shape = shape, tonalElevation = 0.dp, modifier = Modifier.widthIn(max = 260.dp)) {
+    Surface(color = bgColor, shape = shape, tonalElevation = 0.dp, modifier = Modifier.widthIn(max = RecyclrLayout.ChatBubbleMaxWidth)) {
         Column(Modifier.padding(5.dp)) {
             if (msg.fileUrl != null) {
                 AsyncImage(
@@ -523,7 +524,7 @@ private fun AudioBubble(msg: ChatMessage, isMine: Boolean, time: String) {
     )
     val barHeights = remember { listOf(6, 10, 14, 18, 22, 16, 12, 8, 20, 24, 18, 14, 10, 16, 22) }
 
-    Surface(color = bgColor, shape = shape, tonalElevation = 0.dp, modifier = Modifier.widthIn(max = 280.dp)) {
+    Surface(color = bgColor, shape = shape, tonalElevation = 0.dp, modifier = Modifier.widthIn(max = RecyclrLayout.ChatBubbleMaxWidth)) {
         Column(Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 // Play button
@@ -573,7 +574,7 @@ private fun VideoBubble(msg: ChatMessage, isMine: Boolean, time: String) {
         bottomStart = if (isMine) 16.dp else 4.dp,
         bottomEnd = if (isMine) 4.dp else 16.dp,
     )
-    Surface(color = bgColor, shape = shape, tonalElevation = 0.dp, modifier = Modifier.widthIn(max = 260.dp)) {
+    Surface(color = bgColor, shape = shape, tonalElevation = 0.dp, modifier = Modifier.widthIn(max = RecyclrLayout.ChatBubbleMaxWidth)) {
         Column(Modifier.padding(5.dp)) {
             Box(
                 modifier = Modifier
@@ -610,7 +611,7 @@ fun FileBubble(
         bottomStart = if (isMine) 18.dp else 4.dp,
         bottomEnd = if (isMine) 4.dp else 18.dp,
     )
-    Surface(color = bgColor, shape = shape, tonalElevation = 0.dp, modifier = Modifier.widthIn(max = 280.dp)) {
+    Surface(color = bgColor, shape = shape, tonalElevation = 0.dp, modifier = Modifier.widthIn(max = RecyclrLayout.ChatBubbleMaxWidth)) {
         Column(Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Box(

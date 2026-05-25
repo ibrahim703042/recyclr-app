@@ -21,4 +21,32 @@ interface EngagementRepository {
     suspend fun createCommunityPost(post: CommunityPost): Response<String>
     suspend fun deleteCommunityPost(postId: String): Response<Boolean>
     suspend fun getAdminStats(): Response<Map<String, Long>>
+    
+    // Wallet operations
+    suspend fun getTransactionHistory(
+        userId: String,
+        limit: Int = 50
+    ): Response<List<com.gdsc.recyclr.domain.model.engagement.WalletTransaction>>
+    
+    suspend fun sellCarbonCredits(
+        userId: String,
+        amount: Float
+    ): Response<com.gdsc.recyclr.domain.model.engagement.WithdrawalResult>
+    
+    suspend fun withdrawREC(
+        userId: String,
+        amount: Float,
+        toAddress: String
+    ): Response<com.gdsc.recyclr.domain.model.engagement.WithdrawalResult>
+    
+    suspend fun sendREC(
+        userId: String,
+        toAddress: String,
+        amount: Float,
+        note: String = ""
+    ): Response<com.gdsc.recyclr.domain.model.engagement.WalletTransaction>
+    
+    suspend fun validateWalletAddress(
+        address: String
+    ): Response<Boolean>
 }

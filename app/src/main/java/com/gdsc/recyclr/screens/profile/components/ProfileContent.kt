@@ -33,13 +33,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.gdsc.recyclr.R
+import com.gdsc.recyclr.components.design.recyclrContentWidth
+import com.gdsc.recyclr.components.profile.AchievementShowcase
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.User
 import com.gdsc.recyclr.domain.model.UserImpact
 import com.gdsc.recyclr.domain.model.engagement.UserBadge
 import com.gdsc.recyclr.domain.model.UserRole
-import com.gdsc.recyclr.screens.settings.SettingsCard
-import com.gdsc.recyclr.screens.settings.SettingsMenuItem
+import com.gdsc.recyclr.components.settings.SettingsGradients
+import com.gdsc.recyclr.components.settings.SettingsCard
+import com.gdsc.recyclr.components.settings.SettingsMenuItem
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -97,7 +100,7 @@ fun ProfileContent(
 
             Column(
                 modifier = Modifier
-                    .widthIn(max = 600.dp)
+                    .recyclrContentWidth()
                     .fillMaxWidth()
             ) {
                 // User Header Section
@@ -265,6 +268,7 @@ fun ProfileContent(
                                     icon = Icons.AutoMirrored.Outlined.Logout,
                                     title = stringResource(R.string.settings_log_out),
                                     onClick = onLogoutClick,
+                                    iconGradient = SettingsGradients.Logout,
                                 )
                                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                                 SettingsMenuItem(
@@ -272,7 +276,7 @@ fun ProfileContent(
                                     title = stringResource(R.string.settings_delete_account),
                                     onClick = onDeleteAccountClick,
                                     titleColor = MaterialTheme.colorScheme.error,
-                                    iconTint = MaterialTheme.colorScheme.error,
+                                    iconGradient = SettingsGradients.Delete,
                                 )
                             }
                         }
@@ -285,22 +289,12 @@ fun ProfileContent(
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
-                        Surface(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = MaterialTheme.shapes.large,
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .horizontalScroll(rememberScrollState()),
-                                horizontalArrangement = Arrangement.spacedBy(16.dp)
-                            ) {
-                                badges.take(5).forEach { badge ->
-                                    BadgeIcon(badge)
-                                }
-                            }
-                        }
+                        AchievementShowcase(
+                            badges = badges,
+                            onBadgeClick = { /* TODO: Show badge details */ },
+                            onViewAll = { /* TODO: Navigate to achievements screen */ },
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
                 }
                 Spacer(modifier = Modifier.height(32.dp))

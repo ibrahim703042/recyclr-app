@@ -44,6 +44,7 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.gdsc.recyclr.R
 import com.gdsc.recyclr.components.composable.BasicTopBar
+import com.gdsc.recyclr.components.scan.ScanningFrame
 import com.gdsc.recyclr.domain.model.Response
 import java.io.File
 import java.util.concurrent.Executor
@@ -149,13 +150,15 @@ fun ScanScreen(
                         context = context,
                         imageCapture = imageCapture,
                     )
+                    // Animated scanning frame overlay
+                    ScanningFrame(
+                        modifier = Modifier.fillMaxSize()
+                    )
                 } else {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(text = stringResource(R.string.scan_permission_required), color = Color.White)
                     }
                 }
-
-                ScanViewfinderOverlay(modifier = Modifier.fillMaxSize())
                 
                 // Flash and Gallery buttons
                 Column(

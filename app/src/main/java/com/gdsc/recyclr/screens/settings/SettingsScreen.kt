@@ -1,16 +1,19 @@
 package com.gdsc.recyclr.screens.settings
 
-import android.content.pm.PackageManager
-import android.os.Build
 import androidx.activity.ComponentActivity
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.automirrored.outlined.Login
+import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Notifications
@@ -18,30 +21,34 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gdsc.recyclr.R
 import com.gdsc.recyclr.activities.MainViewModel
-import com.gdsc.recyclr.components.composable.BasicTopBar
+import com.gdsc.recyclr.components.design.RecyclrDetailScaffold
+import com.gdsc.recyclr.components.design.RecyclrLayout
+import com.gdsc.recyclr.components.design.recyclrContentWidth
 import com.gdsc.recyclr.components.preferences.LanguageSelectorRow
 import com.gdsc.recyclr.components.preferences.ThemeModeSelectorRow
+import com.gdsc.recyclr.components.settings.DestructiveActionDialog
+import com.gdsc.recyclr.components.settings.SettingsCard
+import com.gdsc.recyclr.components.settings.SettingsGradients
+import com.gdsc.recyclr.components.settings.SettingsMenuItem
+import com.gdsc.recyclr.components.settings.SettingsSectionTitle
+import com.gdsc.recyclr.util.readAppVersionInfo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,40 +60,65 @@ fun SettingsScreen(
 ) {
     val activity = LocalContext.current as ComponentActivity
     val viewModel = hiltViewModel<MainViewModel>(viewModelStoreOwner = activity)
+    val settingsVm = hiltViewModel<SettingsViewModel>()
     val context = LocalContext.current
     val isGuest by viewModel.guestModeEnabled.collectAsStateWithLifecycle()
-
-    val versionName = remember(context.packageName) {
-        runCatching {
-            val pm = context.packageManager
-            val pkg = context.packageName
-            if (Build.VERSION.SDK_INT >= 33) {
-                pm.getPackageInfo(pkg, PackageManager.PackageInfoFlags.of(0)).versionName
-            } else {
-                @Suppress("DEPRECATION")
-                pm.getPackageInfo(pkg, 0).versionName
-            }
-        }.getOrNull().orEmpty().ifBlank { "—" }
+    val unreadCount by settingsVm.unreadNotificationCount.collectAsStateWithLifecycle()
+    val notificationBadge = when {
+        unreadCount <= 0 -> null
+        unreadCount > 9 -> "9+"
+        else -> unreadCount.toString()
     }
 
-    Scaffold(
-        topBar = {
-            BasicTopBar(
-                title = stringResource(R.string.settings_title),
-                onBack = onBack,
-            )
-        },
+    var showLogoutDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var isDeleting by remember { mutableStateOf(false) }
+
+    val versionName = remember(context) { readAppVersionInfo(context).versionName }
+
+    if (showLogoutDialog) {
+        DestructiveActionDialog(
+            title = stringResource(R.string.settings_logout_confirm_title),
+            message = stringResource(R.string.settings_logout_confirm_message),
+            confirmText = stringResource(R.string.settings_log_out),
+            onDismiss = { showLogoutDialog = false },
+            onConfirm = {
+                showLogoutDialog = false
+                viewModel.signOut()
+            },
+        )
+    }
+
+    if (showDeleteDialog) {
+        DestructiveActionDialog(
+            title = stringResource(R.string.settings_delete_confirm_title),
+            message = stringResource(R.string.settings_delete_confirm_message),
+            confirmText = stringResource(R.string.settings_confirm_delete),
+            isLoading = isDeleting,
+            onDismiss = { if (!isDeleting) showDeleteDialog = false },
+            onConfirm = {
+                isDeleting = true
+                viewModel.revokeAccess()
+                showDeleteDialog = false
+                isDeleting = false
+            },
+        )
+    }
+
+    RecyclrDetailScaffold(
+        title = stringResource(R.string.settings_title),
+        onBack = onBack,
     ) { padding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(RecyclrLayout.ScreenPadding),
+            verticalArrangement = Arrangement.spacedBy(RecyclrLayout.SectionSpacing),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             item {
-                Column(modifier = Modifier.widthIn(max = 600.dp)) {
+                SettingsSectionBlock {
                     SettingsSectionTitle(stringResource(R.string.settings_section_preferences))
                     SettingsCard {
                         Column(
@@ -102,7 +134,7 @@ fun SettingsScreen(
             }
 
             item {
-                Column(modifier = Modifier.widthIn(max = 600.dp)) {
+                SettingsSectionBlock {
                     SettingsSectionTitle(stringResource(R.string.settings_section_account))
                     SettingsCard {
                         Column {
@@ -111,28 +143,39 @@ fun SettingsScreen(
                                     icon = Icons.AutoMirrored.Outlined.Login,
                                     title = stringResource(R.string.settings_sign_in_create_account),
                                     onClick = { viewModel.setGuestModeEnabled(false) },
+                                    iconGradient = SettingsGradients.Account,
                                 )
                                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                             }
                             SettingsMenuItem(
                                 icon = Icons.Outlined.Person,
                                 title = stringResource(R.string.settings_personal_information),
+                                subtitle = stringResource(R.string.settings_personal_info_subtitle),
                                 onClick = onOpenPersonalInformation,
+                                iconGradient = SettingsGradients.Account,
                             )
                             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                             SettingsMenuItem(
                                 icon = Icons.Outlined.Notifications,
                                 title = stringResource(R.string.settings_notifications_in_app),
+                                subtitle = if (unreadCount > 0) {
+                                    stringResource(R.string.settings_notifications_unread, unreadCount)
+                                } else {
+                                    null
+                                },
+                                badge = notificationBadge,
                                 onClick = {
                                     viewModel.requestOpenHomeAndNotifications()
                                     onBack()
                                 },
+                                iconGradient = SettingsGradients.Notifications,
                             )
                             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                             SettingsMenuItem(
                                 icon = Icons.Outlined.Security,
                                 title = stringResource(R.string.settings_security_privacy),
                                 onClick = { },
+                                iconGradient = SettingsGradients.Security,
                             )
                         }
                     }
@@ -140,7 +183,7 @@ fun SettingsScreen(
             }
 
             item {
-                Column(modifier = Modifier.widthIn(max = 600.dp)) {
+                SettingsSectionBlock {
                     SettingsSectionTitle(stringResource(R.string.settings_section_app_info))
                     SettingsCard {
                         Column {
@@ -148,12 +191,15 @@ fun SettingsScreen(
                                 icon = Icons.AutoMirrored.Outlined.HelpOutline,
                                 title = stringResource(R.string.settings_help_center),
                                 onClick = onOpenHelpCenter,
+                                iconGradient = SettingsGradients.Help,
                             )
                             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                             SettingsMenuItem(
                                 icon = Icons.Outlined.Info,
                                 title = stringResource(R.string.settings_about_app),
+                                subtitle = stringResource(R.string.settings_about_subtitle, versionName),
                                 onClick = onOpenAbout,
+                                iconGradient = SettingsGradients.Info,
                             )
                         }
                     }
@@ -162,22 +208,23 @@ fun SettingsScreen(
 
             if (!isGuest) {
                 item {
-                    Column(modifier = Modifier.widthIn(max = 600.dp)) {
+                    SettingsSectionBlock {
                         SettingsSectionTitle(stringResource(R.string.settings_section_session))
                         SettingsCard {
                             Column {
                                 SettingsMenuItem(
                                     icon = Icons.AutoMirrored.Outlined.Logout,
                                     title = stringResource(R.string.settings_log_out),
-                                    onClick = { viewModel.signOut() },
+                                    onClick = { showLogoutDialog = true },
+                                    iconGradient = SettingsGradients.Logout,
                                 )
                                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                                 SettingsMenuItem(
                                     icon = Icons.Outlined.DeleteOutline,
                                     title = stringResource(R.string.settings_delete_account),
-                                    onClick = { viewModel.revokeAccess() },
+                                    onClick = { showDeleteDialog = true },
                                     titleColor = MaterialTheme.colorScheme.error,
-                                    iconTint = MaterialTheme.colorScheme.error,
+                                    iconGradient = SettingsGradients.Delete,
                                 )
                             }
                         }
@@ -186,8 +233,8 @@ fun SettingsScreen(
             }
 
             item {
-                Column(modifier = Modifier.widthIn(max = 600.dp)) {
-                    Spacer(modifier = Modifier.height(24.dp))
+                SettingsSectionBlock {
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = stringResource(R.string.settings_version_line, versionName),
                         style = MaterialTheme.typography.bodySmall,
@@ -201,76 +248,9 @@ fun SettingsScreen(
 }
 
 @Composable
-fun SettingsSectionTitle(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
-        fontWeight = FontWeight.Bold,
-        modifier = Modifier.padding(start = 8.dp, bottom = 8.dp)
+private fun SettingsSectionBlock(content: @Composable ColumnScope.() -> Unit) {
+    Column(
+        modifier = Modifier.recyclrContentWidth(),
+        content = content,
     )
-}
-
-@Composable
-fun SettingsCard(content: @Composable () -> Unit) {
-    Surface(
-        color = MaterialTheme.colorScheme.surface,
-        shape = MaterialTheme.shapes.extraLarge,
-        tonalElevation = 1.dp,
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        content()
-    }
-}
-
-@Composable
-fun SettingsMenuItem(
-    icon: ImageVector,
-    title: String,
-    onClick: () -> Unit,
-    titleColor: Color = Color.Unspecified,
-    iconTint: Color = Color.Unspecified,
-    showChevron: Boolean = true,
-) {
-    val resolvedTitleColor =
-        if (titleColor != Color.Unspecified) titleColor else MaterialTheme.colorScheme.onSurface
-    val resolvedIconTint =
-        if (iconTint != Color.Unspecified) iconTint else MaterialTheme.colorScheme.onSurfaceVariant
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(20.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Surface(
-            shape = MaterialTheme.shapes.medium,
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-            modifier = Modifier.size(40.dp)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = resolvedIconTint,
-                    modifier = Modifier.size(22.dp)
-                )
-            }
-        }
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyLarge,
-            color = resolvedTitleColor,
-            modifier = Modifier.weight(1f)
-        )
-        if (showChevron) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.outline
-            )
-        }
-    }
 }

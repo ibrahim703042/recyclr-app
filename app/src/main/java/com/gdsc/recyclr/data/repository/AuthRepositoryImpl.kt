@@ -120,6 +120,16 @@ class AuthRepositoryImpl @Inject constructor(
             )
     }
 
+    override suspend fun updateDisplayName(displayName: String): Response<Boolean> {
+        return authService.updateDisplayName(displayName)
+            .fold(
+                onSuccess = { Response.Success(it) },
+                onFailure = { it.toFailure() },
+            )
+    }
+
+    override fun getAccountCreationMillis(): Long? = authService.getAccountCreationMillis()
+
     override suspend fun uploadProfilePhoto(userId: String, bitmap: Bitmap): Response<String> {
         return authService.uploadProfilePhoto(userId, bitmap)
             .fold(

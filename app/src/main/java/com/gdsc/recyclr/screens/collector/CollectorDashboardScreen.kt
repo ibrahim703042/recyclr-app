@@ -1,60 +1,54 @@
 package com.gdsc.recyclr.screens.collector
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.LocalShipping
 import androidx.compose.material.icons.filled.Map
-import androidx.compose.material.icons.filled.PendingActions
-import androidx.compose.material3.*
+import androidx.compose.material3.Badge
+import androidx.compose.material3.Button
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.gdsc.recyclr.components.composable.BasicTopBar
+import com.gdsc.recyclr.components.design.RecyclrFeatureScaffold
 
 @Composable
 fun CollectorDashboardScreen(onBack: () -> Unit) {
-    Scaffold(
-        topBar = { BasicTopBar(title = "Collector Dashboard", onBack = onBack) }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .background(MaterialTheme.colorScheme.background)
-                .verticalScroll(rememberScrollState())
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+    RecyclrFeatureScaffold(title = "Collector Dashboard", onBack = onBack) {
+        Text("Assigned Pickups", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+
+        PickupTaskItem(
+            address = "Kamenge, Bujumbura",
+            items = "Plastic, Paper",
+            weight = "15kg",
+            status = "Pending",
+        )
+
+        PickupTaskItem(
+            address = "Ngagara, Q3",
+            items = "Metal",
+            weight = "8kg",
+            status = "In Progress",
+        )
+
+        Button(
+            onClick = {},
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            shape = MaterialTheme.shapes.large,
         ) {
-            Text("Assigned Pickups", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            
-            PickupTaskItem(
-                address = "Kamenge, Bujumbura",
-                items = "Plastic, Paper",
-                weight = "15kg",
-                status = "Pending"
-            )
-            
-            PickupTaskItem(
-                address = "Ngagara, Q3",
-                items = "Metal",
-                weight = "8kg",
-                status = "In Progress"
-            )
-            
-            Button(
-                onClick = {},
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = MaterialTheme.shapes.large
-            ) {
-                Icon(imageVector = Icons.Default.Map, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text("View Pickup Map")
-            }
+            androidx.compose.material3.Icon(imageVector = Icons.Default.Map, contentDescription = null)
+            Spacer(Modifier.width(8.dp))
+            Text("View Pickup Map")
         }
     }
 }
@@ -70,7 +64,7 @@ private fun PickupTaskItem(address: String, items: String, weight: String, statu
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = "Items: $items", style = MaterialTheme.typography.bodyMedium)
             Text(text = "Estimated: $weight", style = MaterialTheme.typography.bodySmall)
-            
+
             Spacer(modifier = Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Button(onClick = {}, modifier = Modifier.weight(1f)) { Text("Navigate") }

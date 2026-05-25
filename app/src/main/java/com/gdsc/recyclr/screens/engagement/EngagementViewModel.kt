@@ -12,6 +12,7 @@ import com.gdsc.recyclr.domain.model.engagement.DonationCause
 import com.gdsc.recyclr.domain.model.engagement.LeaderboardEntry
 import com.gdsc.recyclr.domain.model.engagement.PickupRequestDraft
 import com.gdsc.recyclr.domain.model.engagement.RecWallet
+import com.gdsc.recyclr.domain.model.engagement.WalletTransaction
 import com.gdsc.recyclr.domain.model.engagement.WeeklyChallenge
 import com.gdsc.recyclr.domain.repository.AuthRepository
 import com.gdsc.recyclr.domain.repository.EngagementRepository
@@ -44,10 +45,25 @@ class EngagementViewModel @Inject constructor(
         private set
     var currentUserLeaderboardEntry by mutableStateOf<LeaderboardEntry?>(null)
         private set
+    
+    // Transaction history
+    var transactionHistoryResponse: Response<List<WalletTransaction>> = Response.Loading
+        private set
+    
+    // Operation states
+    var sellOperationState by mutableStateOf<OperationState>(OperationState.Idle)
+        private set
+    
+    var withdrawOperationState by mutableStateOf<OperationState>(OperationState.Idle)
+        private set
+    
+    var sendOperationState by mutableStateOf<OperationState>(OperationState.Idle)
+        private set
 
     init {
         refresh()
         fetchRole()
+        loadTransactionHistory()
     }
 
     private fun fetchRole() {
@@ -73,6 +89,97 @@ class EngagementViewModel @Inject constructor(
             walletResponse = engagementRepository.getWallet(uid, points)
         }
     }
+    
+    fun loadTransactionHistory() {
+        viewModelScope.launch {
+            val uid = authRepository.currentUser?.uid ?: return@launch
+            transactionHistoryResponse = Response.Loading
+            transactionHistoryResponse = engagementRepository.getTransactionHistory(uid)
+        }
+    }
+    
+    fun sellCarbonCredits(amount: Float) {
+        viewModelScope.launch {
+            try {
+                sellOperationState = OperationState.Loading
+                val uid = authRepository.currentUser?.uid ?: return@launch
+                
+                when (val result = engagementRepository.sellCarbonCredits(uid, amount)) {
+                    is Response.Success -> {
+                        sellOperationState = OperationState.Success(result.data?.message ?: "Sale successful")
+                        refresh()
+                        loadTransactionHistory()
+                    }
+                    is Response.Failure -> {
+                        sellOperationState = OperationState.Error(
+                            result.e.message ?: "Failed to sell carbon credits"
+                        )
+                    }
+                    else -> {}
+                }
+            } catch (e: Exception) {
+                sellOperationState = OperationState.Error(e.message ?: "Unknown error")
+            }
+        }
+    }
+    
+    fun withdrawREC(amount: Float, toAddress: String) {
+        viewModelScope.launch {
+            try {
+                withdrawOperationState = OperationState.Loading
+                val uid = authRepository.currentUser?.uid ?: return@launch
+                
+                when (val result = engagementRepository.withdrawREC(uid, amount, toAddress)) {
+                    is Response.Success -> {
+                        withdrawOperationState = OperationState.Success(result.data?.message ?: "Withdrawal successful")
+                        refresh()
+                        loadTransactionHistory()
+                    }
+                    is Response.Failure -> {
+                        withdrawOperationState = OperationState.Error(
+                            result.e.message ?: "Failed to withdraw REC"
+                        )
+                    }
+                    else -> {}
+                }
+            } catch (e: Exception) {
+                withdrawOperationState = OperationState.Error(e.message ?: "Unknown error")
+            }
+        }
+    }
+    
+    fun sendREC(toAddress: String, amount: Float, note: String = "") {
+        viewModelScope.launch {
+            try {
+                sendOperationState = OperationState.Loading
+                val uid = authRepository.currentUser?.uid ?: return@launch
+                
+                when (val result = engagementRepository.sendREC(uid, toAddress, amount, note)) {
+                    is Response.Success -> {
+                        sendOperationState = OperationState.Success("REC sent successfully")
+                        refresh()
+                        loadTransactionHistory()
+                    }
+                    is Response.Failure -> {
+                        sendOperationState = OperationState.Error(
+                            result.e.message ?: "Failed to send REC"
+                        )
+                    }
+                    else -> {}
+                }
+            } catch (e: Exception) {
+                sendOperationState = OperationState.Error(e.message ?: "Unknown error")
+            }
+        }
+    }
+    
+    fun resetOperationState(operation: String) {
+        when (operation) {
+            "sell" -> sellOperationState = OperationState.Idle
+            "withdraw" -> withdrawOperationState = OperationState.Idle
+            "send" -> sendOperationState = OperationState.Idle
+        }
+    }
 
     suspend fun submitPickup(draft: PickupRequestDraft): Boolean = try {
         val uid = authRepository.currentUser?.uid ?: "guest"
@@ -85,4 +192,11 @@ class EngagementViewModel @Inject constructor(
     } catch (_: Exception) {
         false
     }
+}
+
+sealed class OperationState {
+    object Idle : OperationState()
+    object Loading : OperationState()
+    data class Success(val message: String) : OperationState()
+    data class Error(val message: String) : OperationState()
 }

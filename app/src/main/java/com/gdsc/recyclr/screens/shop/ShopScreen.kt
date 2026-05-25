@@ -64,6 +64,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gdsc.recyclr.R
+import com.gdsc.recyclr.components.common.ErrorState
+import com.gdsc.recyclr.components.common.ProductGridShimmer
+import com.gdsc.recyclr.components.shop.EnhancedProductCard
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.ShopItem
 import com.gdsc.recyclr.screens.engagement.DonationHubSection
@@ -238,27 +241,40 @@ fun ShopScreen(
                         )
                         when (shopItemsResponse) {
                             is Response.Loading -> {
-                                ShopGridShimmer()
-                            }
-                            is Response.Failure -> {
-                                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                    Text(stringResource(R.string.shop_load_failed))
+                                if (allItems.isEmpty()) {
+                                    ProductGridShimmer(modifier = Modifier.fillMaxSize())
+                                } else {
+                                    ShopProductGrid(
+                                        items = filteredItems,
+                                        viewModel = viewModel,
+                                        onSelectItem = { selectedItem = it },
+                                    )
                                 }
                             }
+                            is Response.Failure -> {
+                                ErrorState(
+                                    message = stringResource(R.string.shop_load_failed),
+                                    onRetry = { viewModel.refreshShop() },
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
                             is Response.Success -> {
-                                LazyVerticalGrid(
-                                    columns = GridCells.Fixed(3),
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentPadding = PaddingValues(12.dp),
-                                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                ) {
-                                    items(filteredItems, key = { it.id }) { item ->
-                                        ShopItemCard(
-                                            shopItem = item,
-                                            onItemClick = { selectedItem = it },
+                                if (filteredItems.isEmpty()) {
+                                    Box(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        Text(
+                                            stringResource(R.string.shop_empty),
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
                                     }
+                                } else {
+                                    ShopProductGrid(
+                                        items = filteredItems,
+                                        viewModel = viewModel,
+                                        onSelectItem = { selectedItem = it },
+                                    )
                                 }
                             }
                         }
@@ -327,6 +343,30 @@ fun ShopScreen(
                 }
             },
         )
+    }
+}
+
+@Composable
+private fun ShopProductGrid(
+    items: List<ShopItem>,
+    viewModel: ShopViewModel,
+    onSelectItem: (ShopItem) -> Unit,
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        items(items, key = { it.id }) { item ->
+            EnhancedProductCard(
+                item = item,
+                isWishlisted = viewModel.isWishlisted(item.id),
+                onItemClick = { onSelectItem(item) },
+                onWishlistToggle = { viewModel.toggleWishlist(item.id) },
+            )
+        }
     }
 }
 

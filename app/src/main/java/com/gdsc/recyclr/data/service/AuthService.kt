@@ -41,6 +41,10 @@ interface AuthService {
 
     suspend fun updateProfilePhoto(photoUrl: String): Result<Boolean>
 
+    suspend fun updateDisplayName(displayName: String): Result<Boolean>
+
+    fun getAccountCreationMillis(): Long?
+
     suspend fun uploadProfilePhoto(userId: String, bitmap: Bitmap): Result<String>
 
     fun signOut()

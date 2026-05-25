@@ -172,53 +172,49 @@ fun HomeGreetingHeader(
     onProfileClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val headerColor = LocalHomeRedesignPalette.current.headerBackground
     val headerShape = RoundedCornerShape(
         bottomStart = GreenHero.CornerHeader,
         bottomEnd   = GreenHero.CornerHeader,
     )
-    Surface(
-        color          = LocalHomeRedesignPalette.current.headerBackground,
-        shape          = headerShape,
-        tonalElevation = 0.dp,
-        modifier       = modifier.fillMaxWidth(),
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(headerShape)
+            .background(headerColor)
+            .padding(bottom = if (liveActivity != null) 8.dp else 12.dp),
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .padding(bottom = 16.dp),
-        ) {
+        Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
         Row(
             modifier          = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 14.dp),
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             // Avatar / profile photo
-            IconButton(onClick = onProfileClick, modifier = Modifier.size(44.dp)) {
-                Box(
-                    modifier         = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.22f)),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    if (!photoUrl.isNullOrBlank()) {
-                        AsyncImage(
-                            model        = photoUrl,
-                            contentDescription = null,
-                            modifier     = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop,
-                        )
-                    } else {
-                        Icon(
-                            Icons.Outlined.EnergySavingsLeaf,
-                            contentDescription = null,
-                            tint               = Color.White,
-                            modifier           = Modifier.size(22.dp),
-                        )
-                    }
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.22f))
+                    .clickable(onClick = onProfileClick),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (!photoUrl.isNullOrBlank()) {
+                    AsyncImage(
+                        model = photoUrl,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                    )
+                } else {
+                    Icon(
+                        Icons.Outlined.EnergySavingsLeaf,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp),
+                    )
                 }
             }
 
@@ -268,14 +264,13 @@ fun HomeGreetingHeader(
                 }
             }
         }
-            liveActivity?.let { activity ->
-                HomeLiveTicker(
-                    activity = activity,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .padding(top = 4.dp),
-                )
-            }
+        liveActivity?.let { activity ->
+            HomeLiveTicker(
+                activity = activity,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 4.dp),
+            )
         }
     }
 }

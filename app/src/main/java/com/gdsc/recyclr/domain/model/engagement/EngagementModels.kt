@@ -45,6 +45,7 @@ data class RecWallet(
     val conversionRate: Int,
     val carbonCreditsTonnes: Float,
     val lifetimeRecMinted: Double,
+    val address: String = "rRecyclr${System.currentTimeMillis().toString().takeLast(20)}",
 )
 
 data class DonationCause(
@@ -67,6 +68,7 @@ data class UserBadge(
     val title: String,
     val description: String,
     val earned: Boolean,
+    val progress: Float = 0f,
 )
 
 data class HomeDashboard(

@@ -212,6 +212,34 @@ class AuthServiceImpl @Inject constructor(
         }
     }
 
+    override suspend fun updateDisplayName(displayName: String): Result<Boolean> {
+        return try {
+            val trimmed = displayName.trim()
+            if (trimmed.isBlank()) throw IllegalArgumentException("Display name cannot be empty")
+            val user = firebaseAuth.currentUser ?: throw Exception("User not signed in")
+            user.updateProfile(
+                UserProfileChangeRequest.Builder()
+                    .setDisplayName(trimmed)
+                    .build(),
+            ).await()
+            firestore.collection("users").document(user.uid)
+                .update(mapOf("displayName" to trimmed))
+                .await()
+            runCatching {
+                firestore.collection("user_impact").document(user.uid)
+                    .update(mapOf("displayName" to trimmed))
+                    .await()
+            }
+            Result.success(true)
+        } catch (e: Exception) {
+            AppLogger.w("updateDisplayName", e)
+            Result.failure(e)
+        }
+    }
+
+    override fun getAccountCreationMillis(): Long? =
+        firebaseAuth.currentUser?.metadata?.creationTimestamp
+
     override suspend fun uploadProfilePhoto(userId: String, bitmap: Bitmap): Result<String> {
         return try {
             val baos = ByteArrayOutputStream()

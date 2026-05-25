@@ -20,8 +20,16 @@ import com.gdsc.recyclr.domain.model.engagement.PickupRequestDraft
 import com.gdsc.recyclr.domain.model.engagement.RecWallet
 import com.gdsc.recyclr.domain.model.engagement.UserBadge
 import com.gdsc.recyclr.domain.model.engagement.WeeklyChallenge
+import com.gdsc.recyclr.domain.model.engagement.WalletTransaction
+import com.gdsc.recyclr.domain.model.engagement.WithdrawalResult
+import com.gdsc.recyclr.domain.model.engagement.TransactionType
+import com.gdsc.recyclr.domain.model.engagement.TransactionStatus
+import com.gdsc.recyclr.domain.model.engagement.Currency
 import com.gdsc.recyclr.domain.repository.EngagementRepository
 import com.gdsc.recyclr.domain.repository.ScanRecordsRepository
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import kotlinx.coroutines.tasks.await
 import java.util.Calendar
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -35,6 +43,7 @@ class EngagementRepositoryImpl @Inject constructor(
     private val engagementService: EngagementService,
     private val barcodeCacheDao: BarcodeCacheDao,
     private val pickupQueueDao: PickupQueueDao,
+    private val firestore: FirebaseFirestore,
 ) : EngagementRepository {
 
     override suspend fun getHomeDashboard(userId: String, pointsBalance: Int): Response<HomeDashboard> {
@@ -365,11 +374,305 @@ class EngagementRepositoryImpl @Inject constructor(
     }
 
     private fun defaultBadges(streakDays: Int, weeklyScans: Int): List<UserBadge> = listOf(
-        UserBadge("streak", "Eco-Streak", "Scan on consecutive days.", earned = streakDays >= 3),
-        UserBadge("lake", "Lake Guardian", "Join a lake cleanup challenge.", earned = weeklyScans >= 10),
-        UserBadge("watch", "Eco-Watch", "Report illegal dumping.", earned = false),
-        UserBadge("reuse", "Reuse Hero", "Complete a reuse mini-game.", earned = false),
+        UserBadge(
+            "streak",
+            "Eco-Streak",
+            "Scan on consecutive days.",
+            earned = streakDays >= 3,
+            progress = (streakDays / 3f).coerceIn(0f, 1f)
+        ),
+        UserBadge(
+            "lake",
+            "Lake Guardian",
+            "Join a lake cleanup challenge.",
+            earned = weeklyScans >= 10,
+            progress = (weeklyScans / 10f).coerceIn(0f, 1f)
+        ),
+        UserBadge("watch", "Eco-Watch", "Report illegal dumping.", earned = false, progress = 0.2f),
+        UserBadge("reuse", "Reuse Hero", "Complete a reuse mini-game.", earned = false, progress = 0.5f),
     )
+
+    override suspend fun getTransactionHistory(
+        userId: String,
+        limit: Int
+    ): Response<List<WalletTransaction>> {
+        return try {
+            val snapshot = firestore.collection("transactions")
+                .whereEqualTo("userId", userId)
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .limit(limit.toLong())
+                .get()
+                .await()
+            
+            val transactions = snapshot.documents.mapNotNull { doc ->
+                try {
+                    WalletTransaction(
+                        id = doc.getString("id") ?: doc.id,
+                        userId = doc.getString("userId") ?: userId,
+                        type = TransactionType.valueOf(doc.getString("type") ?: "SCAN_REWARD"),
+                        amount = (doc.getDouble("amount") ?: 0.0).toFloat(),
+                        currency = Currency.valueOf(doc.getString("currency") ?: "REC"),
+                        status = TransactionStatus.valueOf(doc.getString("status") ?: "COMPLETED"),
+                        fromAddress = doc.getString("fromAddress") ?: "",
+                        toAddress = doc.getString("toAddress") ?: "",
+                        description = doc.getString("description") ?: "",
+                        timestamp = doc.getLong("timestamp") ?: System.currentTimeMillis(),
+                        metadata = doc.get("metadata") as? Map<String, String> ?: emptyMap()
+                    )
+                } catch (e: Exception) {
+                    null
+                }
+            }
+            
+            Response.Success(transactions)
+        } catch (e: Exception) {
+            Response.Failure(e)
+        }
+    }
+
+    override suspend fun sellCarbonCredits(
+        userId: String,
+        amount: Float
+    ): Response<WithdrawalResult> {
+        return try {
+            if (amount <= 0) {
+                return Response.Failure(Exception("Invalid amount"))
+            }
+            
+            val walletDoc = firestore.collection("wallets")
+                .document(userId)
+                .get()
+                .await()
+            
+            if (!walletDoc.exists()) {
+                return Response.Failure(Exception("Wallet not found"))
+            }
+            
+            val carbonCredits = (walletDoc.getDouble("carbonCreditsTonnes") ?: 0.0).toFloat()
+            val recBalance = (walletDoc.getDouble("recBalance") ?: 0.0).toFloat()
+            
+            if (carbonCredits < amount) {
+                return Response.Failure(Exception("Insufficient carbon credits"))
+            }
+            
+            // Market rate: $10 per tCO2, REC = $0.64
+            val saleValue = amount * 10f
+            val recAmount = saleValue / 0.64f
+            
+            val transactionId = firestore.collection("transactions").document().id
+            val transaction = hashMapOf(
+                "id" to transactionId,
+                "userId" to userId,
+                "type" to TransactionType.CARBON_SALE.name,
+                "amount" to amount,
+                "currency" to Currency.CARBON_CREDITS.name,
+                "status" to TransactionStatus.COMPLETED.name,
+                "fromAddress" to "",
+                "toAddress" to "",
+                "description" to "Sold $amount tCO2 for ${String.format("%.2f", recAmount)} REC",
+                "timestamp" to System.currentTimeMillis(),
+                "metadata" to mapOf(
+                    "saleValue" to saleValue.toString(),
+                    "recAmount" to recAmount.toString()
+                )
+            )
+            
+            firestore.runBatch { batch ->
+                batch.update(
+                    walletDoc.reference,
+                    mapOf(
+                        "carbonCreditsTonnes" to (carbonCredits - amount),
+                        "recBalance" to (recBalance + recAmount)
+                    )
+                )
+                
+                batch.set(
+                    firestore.collection("transactions").document(transactionId),
+                    transaction
+                )
+            }.await()
+            
+            Response.Success(
+                WithdrawalResult(
+                    success = true,
+                    transactionId = transactionId,
+                    message = "Successfully sold $amount tCO2 for ${String.format("%.2f", recAmount)} REC"
+                )
+            )
+        } catch (e: Exception) {
+            Response.Failure(e)
+        }
+    }
+
+    override suspend fun withdrawREC(
+        userId: String,
+        amount: Float,
+        toAddress: String
+    ): Response<WithdrawalResult> {
+        return try {
+            if (amount <= 0) {
+                return Response.Failure(Exception("Invalid amount"))
+            }
+            
+            if (!isValidXRPLAddress(toAddress)) {
+                return Response.Failure(Exception("Invalid XRPL address"))
+            }
+            
+            val walletDoc = firestore.collection("wallets")
+                .document(userId)
+                .get()
+                .await()
+            
+            if (!walletDoc.exists()) {
+                return Response.Failure(Exception("Wallet not found"))
+            }
+            
+            val recBalance = (walletDoc.getDouble("recBalance") ?: 0.0).toFloat()
+            val walletAddress = walletDoc.getString("address") ?: ""
+            
+            if (recBalance < amount) {
+                return Response.Failure(Exception("Insufficient REC balance"))
+            }
+            
+            if (amount < 10f) {
+                return Response.Failure(Exception("Minimum withdrawal is 10 REC"))
+            }
+            
+            val transactionId = firestore.collection("transactions").document().id
+            val transaction = hashMapOf(
+                "id" to transactionId,
+                "userId" to userId,
+                "type" to TransactionType.REC_WITHDRAWAL.name,
+                "amount" to amount,
+                "currency" to Currency.REC.name,
+                "status" to TransactionStatus.PENDING.name,
+                "fromAddress" to walletAddress,
+                "toAddress" to toAddress,
+                "description" to "Withdrawal to external wallet",
+                "timestamp" to System.currentTimeMillis(),
+                "metadata" to emptyMap<String, String>()
+            )
+            
+            firestore.runBatch { batch ->
+                batch.update(
+                    walletDoc.reference,
+                    "recBalance",
+                    recBalance - amount
+                )
+                
+                batch.set(
+                    firestore.collection("transactions").document(transactionId),
+                    transaction
+                )
+            }.await()
+            
+            Response.Success(
+                WithdrawalResult(
+                    success = true,
+                    transactionId = transactionId,
+                    message = "Withdrawal initiated. Processing time: 2-5 minutes",
+                    estimatedCompletionTime = System.currentTimeMillis() + (2 * 60 * 1000)
+                )
+            )
+        } catch (e: Exception) {
+            Response.Failure(e)
+        }
+    }
+
+    override suspend fun sendREC(
+        userId: String,
+        toAddress: String,
+        amount: Float,
+        note: String
+    ): Response<WalletTransaction> {
+        return try {
+            if (amount <= 0) {
+                return Response.Failure(Exception("Invalid amount"))
+            }
+            
+            if (!isValidXRPLAddress(toAddress)) {
+                return Response.Failure(Exception("Invalid recipient address"))
+            }
+            
+            val walletDoc = firestore.collection("wallets")
+                .document(userId)
+                .get()
+                .await()
+            
+            if (!walletDoc.exists()) {
+                return Response.Failure(Exception("Wallet not found"))
+            }
+            
+            val recBalance = (walletDoc.getDouble("recBalance") ?: 0.0).toFloat()
+            val walletAddress = walletDoc.getString("address") ?: ""
+            
+            if (recBalance < amount) {
+                return Response.Failure(Exception("Insufficient balance"))
+            }
+            
+            val transactionId = firestore.collection("transactions").document().id
+            val transaction = WalletTransaction(
+                id = transactionId,
+                userId = userId,
+                type = TransactionType.REC_SEND,
+                amount = amount,
+                currency = Currency.REC,
+                status = TransactionStatus.COMPLETED,
+                fromAddress = walletAddress,
+                toAddress = toAddress,
+                description = note.ifBlank { "Sent REC" },
+                timestamp = System.currentTimeMillis()
+            )
+            
+            val transactionMap = hashMapOf(
+                "id" to transaction.id,
+                "userId" to transaction.userId,
+                "type" to transaction.type.name,
+                "amount" to transaction.amount,
+                "currency" to transaction.currency.name,
+                "status" to transaction.status.name,
+                "fromAddress" to transaction.fromAddress,
+                "toAddress" to transaction.toAddress,
+                "description" to transaction.description,
+                "timestamp" to transaction.timestamp,
+                "metadata" to transaction.metadata
+            )
+            
+            firestore.runBatch { batch ->
+                batch.update(
+                    walletDoc.reference,
+                    "recBalance",
+                    recBalance - amount
+                )
+                
+                batch.set(
+                    firestore.collection("transactions").document(transactionId),
+                    transactionMap
+                )
+            }.await()
+            
+            Response.Success(transaction)
+        } catch (e: Exception) {
+            Response.Failure(e)
+        }
+    }
+
+    override suspend fun validateWalletAddress(
+        address: String
+    ): Response<Boolean> {
+        return try {
+            val isValid = isValidXRPLAddress(address)
+            Response.Success(isValid)
+        } catch (e: Exception) {
+            Response.Failure(e)
+        }
+    }
+
+    private fun isValidXRPLAddress(address: String): Boolean {
+        return address.startsWith("r") && 
+               address.length in 25..35 &&
+               address.all { it.isLetterOrDigit() }
+    }
 
     companion object {
         private val SEED_BARCODES = mapOf(

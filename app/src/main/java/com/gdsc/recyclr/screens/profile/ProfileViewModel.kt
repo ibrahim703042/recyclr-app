@@ -22,6 +22,9 @@ import com.gdsc.recyclr.util.AppLogger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
+import java.text.DateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -45,7 +48,22 @@ class ProfileViewModel @Inject constructor(
     var userWithRole by mutableStateOf<User?>(null)
         private set
 
+    var updateDisplayNameResponse by mutableStateOf<Response<Boolean>>(Success(false))
+        private set
+
     val currentUser get() = userWithRole ?: repo.currentUser
+
+    val accountActiveDays: Int
+        get() {
+            val createdAt = repo.getAccountCreationMillis() ?: return 1
+            val elapsedDays = ((System.currentTimeMillis() - createdAt) / 86_400_000L).toInt()
+            return maxOf(1, elapsedDays + 1)
+        }
+
+    fun getMemberSinceFormatted(locale: Locale = Locale.getDefault()): String? {
+        val createdAt = repo.getAccountCreationMillis() ?: return null
+        return DateFormat.getDateInstance(DateFormat.MEDIUM, locale).format(Date(createdAt))
+    }
 
     fun refreshProfileSnapshot() {
         viewModelScope.launch {
@@ -78,6 +96,15 @@ class ProfileViewModel @Inject constructor(
         revokeAccessResponse = Loading
         revokeAccessResponse = repo.revokeAccess()
         GoogleCredentialAuth.clearCredentialState(appContext)
+    }
+
+    fun updateDisplayName(displayName: String) = viewModelScope.launch {
+        updateDisplayNameResponse = Loading
+        updateDisplayNameResponse = repo.updateDisplayName(displayName)
+        if (updateDisplayNameResponse is Success) {
+            repo.reloadUser()
+            refreshProfileSnapshot()
+        }
     }
 
     fun loadImpact() {

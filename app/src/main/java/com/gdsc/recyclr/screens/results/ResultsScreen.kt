@@ -45,6 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.gdsc.recyclr.R
+import com.gdsc.recyclr.components.results.CelebrationConfetti
 
 @Composable
 fun ResultsScreen(
@@ -62,15 +63,16 @@ fun ResultsScreen(
     val accentPoints = MaterialTheme.colorScheme.primary
     val accentCo2 = MaterialTheme.colorScheme.tertiary
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(scroll)
-            .navigationBarsPadding()
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .verticalScroll(scroll)
+                .navigationBarsPadding()
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Surface(
@@ -211,6 +213,10 @@ fun ResultsScreen(
         }
 
         Spacer(modifier = Modifier.height(32.dp))
+    }
+        
+        // Celebration confetti overlay
+        CelebrationConfetti(modifier = Modifier.fillMaxSize())
     }
 }
 

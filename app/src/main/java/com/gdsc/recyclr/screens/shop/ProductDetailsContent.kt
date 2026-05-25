@@ -52,6 +52,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
 import com.gdsc.recyclr.R
+import com.gdsc.recyclr.components.shop.*
 import com.gdsc.recyclr.domain.model.ProductReview
 import com.gdsc.recyclr.domain.model.ShopItem
 
@@ -85,89 +86,91 @@ fun ProductDetailsContent(
     val accent = MaterialTheme.colorScheme.primary
     val galleryBg = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.28f)
     val chipBg = MaterialTheme.colorScheme.surfaceVariant
+    val scrollState = rememberScrollState()
 
-    Column(Modifier.fillMaxSize()) {
+    Box(Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState()),
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(bottom = ProductCheckoutFooterHeight + 8.dp),
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(250.dp)
-                    .background(galleryBg),
-            ) {
-                when {
-                    item.id == "seed_tree" && item.galleryUrls.isEmpty() -> {
-                        Image(
-                            painter = painterResource(R.drawable.people_planting_a_tree),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(16.dp)
-                                .clickable { showZoom = true },
-                            contentScale = ContentScale.Fit,
-                        )
-                    }
-                    item.galleryUrls.isNotEmpty() -> {
-                        AsyncImage(
-                            model = item.galleryUrls.first(),
-                            contentDescription = item.title,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clickable { showZoom = true },
-                            contentScale = ContentScale.Crop,
-                        )
-                    }
-                    else -> {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clickable { showZoom = true },
-                            contentAlignment = Alignment.Center,
-                        ) {
+            // Enhanced Image Gallery with Pager
+            if (item.galleryUrls.isNotEmpty()) {
+                Box {
+                    EnhancedImageGallery(
+                        images = item.galleryUrls,
+                        onImageClick = { showZoom = true },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    
+                    // Action buttons overlay
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp),
+                    ) {
+                        IconButton(onClick = onShare) {
+                            Icon(Icons.Default.Share, contentDescription = null, tint = titleColor)
+                        }
+                        IconButton(onClick = onToggleWishlist) {
                             Icon(
-                                painter = painterResource(R.drawable.recycle),
+                                imageVector = if (wishlisted) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                                 contentDescription = null,
-                                modifier = Modifier.size(96.dp),
-                                tint = accent.copy(alpha = 0.45f),
+                                tint = if (wishlisted) MaterialTheme.colorScheme.error else titleColor,
                             )
                         }
                     }
                 }
-                Row(
+            } else {
+                // Fallback for items without gallery
+                Box(
                     modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(8.dp),
+                        .fillMaxWidth()
+                        .height(250.dp)
+                        .background(galleryBg),
                 ) {
-                    IconButton(onClick = onShare) {
-                        Icon(Icons.Default.Share, contentDescription = null, tint = titleColor)
-                    }
-                    IconButton(onClick = onToggleWishlist) {
-                        Icon(
-                            imageVector = if (wishlisted) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                            contentDescription = null,
-                            tint = if (wishlisted) MaterialTheme.colorScheme.error else titleColor,
-                        )
-                    }
-                }
-                if (item.galleryUrls.size > 1) {
-                    Row(
-                        Modifier
-                            .align(Alignment.BottomCenter)
-                            .padding(12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    ) {
-                        repeat(item.galleryUrls.size.coerceAtMost(5)) {
+                    when {
+                        item.id == "seed_tree" -> {
+                            Image(
+                                painter = painterResource(R.drawable.people_planting_a_tree),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(16.dp)
+                                    .clickable { showZoom = true },
+                                contentScale = ContentScale.Fit,
+                            )
+                        }
+                        else -> {
                             Box(
                                 modifier = Modifier
-                                    .size(8.dp)
-                                    .clip(CircleShape)
-                                    .background(
-                                        if (it == 0) accent
-                                        else MaterialTheme.colorScheme.outline.copy(alpha = 0.45f),
-                                    ),
+                                    .fillMaxSize()
+                                    .clickable { showZoom = true },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.recycle),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(96.dp),
+                                    tint = accent.copy(alpha = 0.45f),
+                                )
+                            }
+                        }
+                    }
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp),
+                    ) {
+                        IconButton(onClick = onShare) {
+                            Icon(Icons.Default.Share, contentDescription = null, tint = titleColor)
+                        }
+                        IconButton(onClick = onToggleWishlist) {
+                            Icon(
+                                imageVector = if (wishlisted) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                contentDescription = null,
+                                tint = if (wishlisted) MaterialTheme.colorScheme.error else titleColor,
                             )
                         }
                     }
@@ -196,58 +199,19 @@ fun ProductDetailsContent(
                 }
                 Spacer(Modifier.height(8.dp))
                 RatingRow(rating = item.avgRating, reviewCount = item.reviewsCount)
-                Spacer(Modifier.height(16.dp))
-
-                Row(verticalAlignment = Alignment.Bottom) {
-                    Text(
-                        text = "$totalPoints",
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Black,
-                        color = accent,
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    Text(
-                        text = stringResource(R.string.shop_points_suffix),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = accent,
-                        modifier = Modifier.padding(bottom = 2.dp),
-                    )
-                }
-                item.marketPrice?.let { mp ->
-                    if (mp > unitPoints) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = "$mp",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textDecoration = TextDecoration.LineThrough,
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            val pct = ((1f - unitPoints.toFloat() / mp) * 100).toInt().coerceIn(0, 99)
-                            Text(
-                                text = stringResource(R.string.shop_you_save_pct, pct),
-                                fontSize = 12.sp,
-                                color = accent,
-                                fontWeight = FontWeight.Medium,
-                            )
-                        }
-                    }
-                }
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    text = stringResource(R.string.shop_your_balance, userPoints),
-                    color = if (insufficientPoints) Color(0xFFC62828) else MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.Medium,
+                Spacer(Modifier.height(12.dp))
+                ProductInlinePriceRow(
+                    unitPoints = unitPoints,
+                    marketPrice = item.marketPrice,
                 )
-                if (insufficientPoints) {
-                    Text(
-                        text = stringResource(R.string.shop_need_more_points, totalPoints - userPoints),
-                        color = Color(0xFFC62828),
-                        fontSize = 13.sp,
-                    )
-                }
-
+                Spacer(Modifier.height(12.dp))
+                
+                // Delivery Estimate Card
+                DeliveryEstimateCard(
+                    deliveryDays = 3,
+                    isFastDelivery = item.verifiedPartner
+                )
+                
                 Spacer(Modifier.height(16.dp))
                 if (item.verifiedPartner) {
                     Surface(color = galleryBg, shape = RoundedCornerShape(12.dp)) {
@@ -341,18 +305,15 @@ fun ProductDetailsContent(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(stringResource(R.string.product_quantity), fontWeight = FontWeight.Bold, color = titleColor)
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            TextButton(
-                                onClick = { quantity = (quantity - 1).coerceAtLeast(1) },
-                                enabled = quantity > 1,
-                            ) { Text("−") }
-                            Text(quantity.toString(), fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 12.dp))
-                            TextButton(
-                                onClick = { quantity = (quantity + 1).coerceAtMost(maxQty) },
-                                enabled = quantity < maxQty,
-                            ) { Text("+") }
-                        }
+                        
+                        // Enhanced Quantity Selector
+                        EnhancedQuantitySelector(
+                            quantity = quantity,
+                            maxQuantity = maxQty,
+                            onQuantityChange = { quantity = it }
+                        )
                     }
+                    Spacer(Modifier.height(8.dp))
                     Text(
                         stringResource(R.string.product_total_points, totalPoints),
                         fontWeight = FontWeight.Bold,
@@ -393,6 +354,16 @@ fun ProductDetailsContent(
                 }
 
                 Spacer(Modifier.height(24.dp))
+                
+                // Customers Also Bought Section
+                if (relatedItems.isNotEmpty()) {
+                    CustomersAlsoBoughtSection(
+                        items = relatedItems,
+                        onItemClick = onPickRelated
+                    )
+                    Spacer(Modifier.height(24.dp))
+                }
+                
                 Text(
                     stringResource(R.string.product_recently_viewed),
                     fontWeight = FontWeight.Bold,
@@ -436,64 +407,25 @@ fun ProductDetailsContent(
                         }
                     }
                 }
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(16.dp))
             }
         }
 
-        HorizontalDivider()
-        Surface(
-            tonalElevation = 2.dp,
-            shadowElevation = 6.dp,
-            color = MaterialTheme.colorScheme.surface,
-            modifier = Modifier.navigationBarsPadding()
-        ) {
-            Column(Modifier.fillMaxWidth().padding(16.dp)) {
-                Button(
-                    onClick = { showRedeemDialog = true },
-                    enabled = !insufficientPoints,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
-                    shape = RoundedCornerShape(28.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = accent,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        disabledContentColor = MaterialTheme.colorScheme.onSurface,
-                    ),
-                ) {
-                    Text(
-                        text = if (item.isDonation) "Support this cause" else stringResource(R.string.redeem),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                    )
-                }
-                Spacer(Modifier.height(12.dp))
-                OutlinedButton(
-                    onClick = onToggleWishlist,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    shape = RoundedCornerShape(28.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = MaterialTheme.colorScheme.primary,
-                    ),
-                    border = androidx.compose.foundation.BorderStroke(
-                        1.dp,
-                        MaterialTheme.colorScheme.outline,
-                    ),
-                ) {
-                    Icon(
-                        imageVector = if (wishlisted) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(if (wishlisted) "In Wishlist" else stringResource(R.string.product_add_wishlist))
-                }
-                Spacer(Modifier.height(12.dp))
-            }
-        }
+        ShopStickyCheckoutBar(
+            modifier = Modifier.align(Alignment.BottomCenter),
+            totalPoints = totalPoints,
+            actionLabel = if (item.isDonation) {
+                stringResource(R.string.shop_support_cause)
+            } else {
+                stringResource(R.string.redeem)
+            },
+            enabled = !insufficientPoints,
+            isLoading = false,
+            onAction = { showRedeemDialog = true },
+            userBalance = userPoints,
+            showInsufficientHint = insufficientPoints,
+            pointsNeeded = (totalPoints - userPoints).coerceAtLeast(0),
+        )
     }
 
     if (showRedeemDialog) {
@@ -553,6 +485,53 @@ fun ProductDetailsContent(
                             contentScale = ContentScale.Fit,
                         )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProductInlinePriceRow(
+    unitPoints: Int,
+    marketPrice: Int?,
+) {
+    val accent = MaterialTheme.colorScheme.primary
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Surface(
+            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
+            shape = RoundedCornerShape(12.dp),
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.coins),
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                    tint = Color(0xFFFFA726),
+                )
+                Text(
+                    text = stringResource(R.string.shop_points_format, unitPoints),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = accent,
+                )
+            }
+        }
+        marketPrice?.let { mp ->
+            if (mp > unitPoints) {
+                val pct = ((1f - unitPoints.toFloat() / mp) * 100).toInt().coerceIn(0, 99)
+                Text(
+                    text = stringResource(R.string.shop_you_save_pct, pct),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }

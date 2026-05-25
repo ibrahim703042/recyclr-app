@@ -99,7 +99,8 @@ class ShopViewModel @Inject constructor(
 
     private fun loadShopItems() {
         viewModelScope.launch {
-            shopItemsResponse = Response.Loading
+            val hasCached = (shopItemsResponse as? Success)?.data?.isNotEmpty() == true
+            if (!hasCached) shopItemsResponse = Response.Loading
             shopItemsResponse = repository.getAllShopItems()
         }
     }

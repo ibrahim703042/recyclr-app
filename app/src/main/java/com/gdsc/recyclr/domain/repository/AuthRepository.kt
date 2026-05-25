@@ -46,6 +46,10 @@ interface AuthRepository {
 
     suspend fun updateProfilePhoto(photoUrl: String): Response<Boolean>
 
+    suspend fun updateDisplayName(displayName: String): Response<Boolean>
+
+    fun getAccountCreationMillis(): Long?
+
     suspend fun uploadProfilePhoto(userId: String, bitmap: Bitmap): Response<String>
 
     fun signOut()

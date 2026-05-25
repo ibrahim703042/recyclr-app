@@ -1,5 +1,7 @@
 package com.gdsc.recyclr.screens.engagement
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -25,7 +27,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.gdsc.recyclr.R
+import com.gdsc.recyclr.components.common.ErrorState
+import com.gdsc.recyclr.components.common.ShimmerEffect
 import com.gdsc.recyclr.components.composable.BasicTopBar
+import com.gdsc.recyclr.components.design.RecyclrFeatureScaffold
 import com.gdsc.recyclr.domain.model.Response
 import com.gdsc.recyclr.domain.model.UserRole
 import com.gdsc.recyclr.domain.model.engagement.*
@@ -34,7 +39,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun ChallengeScreen(onBack: () -> Unit, viewModel: EngagementViewModel = hiltViewModel()) {
-    FeatureScaffold(title = stringResource(R.string.challenge_title), onBack = onBack) {
+    RecyclrFeatureScaffold(title = stringResource(R.string.challenge_title), onBack = onBack) {
         when (val response = viewModel.challengeResponse) {
             is Response.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
             is Response.Failure -> Text(response.e.message ?: stringResource(R.string.error_generic))
@@ -329,7 +334,7 @@ fun WalletScreen(
     onOpenBlockchainWallet: () -> Unit = {},
     viewModel: EngagementViewModel = hiltViewModel(),
 ) {
-    FeatureScaffold(title = stringResource(R.string.wallet_title), onBack = onBack) {
+    RecyclrFeatureScaffold(title = stringResource(R.string.wallet_title), onBack = onBack) {
         when (val response = viewModel.walletResponse) {
             is Response.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
             is Response.Failure -> Text(response.e.message ?: stringResource(R.string.error_generic))
@@ -340,6 +345,40 @@ fun WalletScreen(
 
 @Composable
 private fun WalletBody(wallet: RecWallet, onOpenBlockchainWallet: () -> Unit) {
+    val viewModel: EngagementViewModel = hiltViewModel()
+    var showSellDialog by remember { mutableStateOf(false) }
+    var showWithdrawDialog by remember { mutableStateOf(false) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    
+    // Handle operation states
+    LaunchedEffect(viewModel.sellOperationState) {
+        when (val state = viewModel.sellOperationState) {
+            is OperationState.Success -> {
+                android.widget.Toast.makeText(context, state.message, android.widget.Toast.LENGTH_LONG).show()
+                showSellDialog = false
+                viewModel.resetOperationState("sell")
+            }
+            is OperationState.Error -> {
+                android.widget.Toast.makeText(context, state.message, android.widget.Toast.LENGTH_LONG).show()
+            }
+            else -> {}
+        }
+    }
+    
+    LaunchedEffect(viewModel.withdrawOperationState) {
+        when (val state = viewModel.withdrawOperationState) {
+            is OperationState.Success -> {
+                android.widget.Toast.makeText(context, state.message, android.widget.Toast.LENGTH_LONG).show()
+                showWithdrawDialog = false
+                viewModel.resetOperationState("withdraw")
+            }
+            is OperationState.Error -> {
+                android.widget.Toast.makeText(context, state.message, android.widget.Toast.LENGTH_LONG).show()
+            }
+            else -> {}
+        }
+    }
+    
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(20.dp)
@@ -390,7 +429,11 @@ private fun WalletBody(wallet: RecWallet, onOpenBlockchainWallet: () -> Unit) {
                     Text("🌱 ${wallet.carbonCreditsTonnes} tCO2", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     Text("Market value: ~$${String.format("%.2f", wallet.carbonCreditsTonnes * 10)}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
                 }
-                Button(onClick = { /* TODO */ }, shape = MaterialTheme.shapes.medium) {
+                Button(
+                    onClick = { showSellDialog = true },
+                    shape = MaterialTheme.shapes.medium,
+                    enabled = wallet.carbonCreditsTonnes > 0
+                ) {
                     Text("Sell")
                 }
             }
@@ -408,9 +451,10 @@ private fun WalletBody(wallet: RecWallet, onOpenBlockchainWallet: () -> Unit) {
                 Text(stringResource(R.string.wallet_donate_rec), fontWeight = FontWeight.Bold) 
             }
             OutlinedButton(
-                onClick = {},
+                onClick = { showWithdrawDialog = true },
                 modifier = Modifier.weight(1f).height(56.dp),
-                shape = MaterialTheme.shapes.large
+                shape = MaterialTheme.shapes.large,
+                enabled = wallet.recBalance >= 10f
             ) { 
                 Text("Withdraw", fontWeight = FontWeight.Bold) 
             }
@@ -426,11 +470,95 @@ private fun WalletBody(wallet: RecWallet, onOpenBlockchainWallet: () -> Unit) {
         
         Text("Transaction History", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            TransactionItem("Scan Reward", "+5 REC", "2 hours ago")
-            TransactionItem("Tree Redemption", "-2 REC", "Yesterday")
-            TransactionItem("Carbon Sale", "+1.5 REC", "3 days ago")
+        // Transaction History from ViewModel
+        when (val response = viewModel.transactionHistoryResponse) {
+            is Response.Loading -> {
+                Box(
+                    modifier = Modifier.fillMaxWidth().height(200.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        repeat(3) {
+                            ShimmerEffect(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(80.dp)
+                            )
+                        }
+                    }
+                }
+            }
+            is Response.Failure -> {
+                ErrorState(
+                    message = response.e.message ?: "Failed to load transactions",
+                    onRetry = { viewModel.loadTransactionHistory() }
+                )
+            }
+            is Response.Success -> {
+                val transactions = response.data.orEmpty()
+                if (transactions.isEmpty()) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        )
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "No transactions yet",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                } else {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        transactions.take(10).forEach { transaction ->
+                            com.gdsc.recyclr.components.engagement.TransactionHistoryCard(
+                                transaction = transaction
+                            )
+                        }
+                    }
+                }
+            }
         }
+    }
+    
+    // Dialogs
+    if (showSellDialog) {
+        com.gdsc.recyclr.components.engagement.SellCarbonCreditsDialog(
+            availableCredits = wallet.carbonCreditsTonnes,
+            onDismiss = { 
+                showSellDialog = false
+                viewModel.resetOperationState("sell")
+            },
+            onConfirm = { amount ->
+                viewModel.sellCarbonCredits(amount)
+            },
+            isLoading = viewModel.sellOperationState is OperationState.Loading
+        )
+    }
+    
+    if (showWithdrawDialog) {
+        com.gdsc.recyclr.components.engagement.WithdrawRECDialog(
+            availableREC = wallet.recBalance.toFloat(),
+            onDismiss = { 
+                showWithdrawDialog = false
+                viewModel.resetOperationState("withdraw")
+            },
+            onConfirm = { amount, address ->
+                viewModel.withdrawREC(amount, address)
+            },
+            isLoading = viewModel.withdrawOperationState is OperationState.Loading
+        )
     }
 }
 
@@ -465,7 +593,7 @@ fun PickupScreen(onBack: () -> Unit, viewModel: EngagementViewModel = hiltViewMo
     var repeatWeeks by remember { mutableStateOf(false) }
     var submitted by remember { mutableStateOf(false) }
 
-    FeatureScaffold(title = stringResource(R.string.pickup_title), onBack = onBack) {
+    RecyclrFeatureScaffold(title = stringResource(R.string.pickup_title), onBack = onBack) {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             OutlinedTextField(
                 value = address,
@@ -632,40 +760,16 @@ private fun DonationCard(cause: DonationCause, onSupport: (DonationCause) -> Uni
                 
                 Button(
                     onClick = { onSupport(cause) },
-                    modifier = Modifier.fillMaxWidth().height(52.dp),
-                    shape = MaterialTheme.shapes.large
+                    modifier = Modifier.fillMaxWidth().height(44.dp),
+                    shape = MaterialTheme.shapes.medium,
                 ) {
                     Text(
-                        text = "Support this cause",
+                        text = stringResource(R.string.shop_support_cause),
                         style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun FeatureScaffold(
-    title: String,
-    onBack: () -> Unit,
-    content: @Composable () -> Unit,
-) {
-    Scaffold(
-        topBar = {
-            BasicTopBar(title = title, onBack = onBack)
-        },
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(20.dp),
-        ) {
-            content()
         }
     }
 }
